@@ -135,9 +135,13 @@ Supprimer `src/App.css`, non utilisé.
 
 - [ ] **Step 6: Initialiser shadcn/ui**
 
+Le CLI shadcn a été réécrit en v4 : `--base-color` y a disparu au profit d'un système de
+`--preset`, et `--base` y désigne désormais la bibliothèque de composants. On épingle la
+dernière version d'avant la réécriture, dont la surface de commandes est celle décrite ici.
+
 ```bash
 cd "/Users/svbri/Saas Playbook app"
-pnpm dlx shadcn@latest init --base-color neutral --yes
+pnpm dlx shadcn@3.8.5 init --base-color neutral --yes
 ```
 
 Attendu : création de `components.json`, de `src/lib/utils.ts`, et injection des variables de thème dans `src/index.css`.
@@ -146,7 +150,7 @@ Attendu : création de `components.json`, de `src/lib/utils.ts`, et injection de
 
 ```bash
 cd "/Users/svbri/Saas Playbook app"
-pnpm dlx shadcn@latest add https://shadcnthemer.com/r/themes/418a8650-514e-483b-a8cd-2c6e619ee97c.json --yes
+pnpm dlx shadcn@3.8.5 add https://shadcnthemer.com/r/themes/418a8650-514e-483b-a8cd-2c6e619ee97c.json --yes
 ```
 
 Attendu : `src/index.css` contient désormais des blocs `:root` et `.dark` avec des couleurs en `oklch`, dont `--radius: 0.625rem` et cinq `--chart-*`.
@@ -155,7 +159,7 @@ Attendu : `src/index.css` contient désormais des blocs `:root` et `.dark` avec 
 
 ```bash
 cd "/Users/svbri/Saas Playbook app"
-pnpm dlx shadcn@latest add slider card badge accordion popover button toggle-group sheet tooltip sonner input label separator --yes
+pnpm dlx shadcn@3.8.5 add slider card badge accordion popover button toggle-group sheet tooltip sonner input label separator --yes
 ```
 
 - [ ] **Step 9: Écran de vérification**
