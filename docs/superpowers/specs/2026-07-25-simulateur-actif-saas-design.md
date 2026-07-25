@@ -97,6 +97,15 @@ segmentés, sauf la concentration qui reste une jauge.
 - `topClientShare` : part du MRR portée par le plus gros client, 0 à 60 %
 - `ageMonths` : ancienneté de l'activité, 0 à 96 mois
 
+### 3.6 Surcharge de barème
+
+- `baseMultipleOverride` : `number | null`, 0,5 à 15×
+
+`null` signifie « suivre la courbe du §4.6 ». Cette entrée n'a pas de jauge dans le panneau de
+contrôle : elle se règle depuis la carte de valorisation (voir §5.4). Elle appartient malgré tout
+à `SimulatorInputs`, et se trouve donc versionnée, épinglée dans les scénarios et partagée dans
+l'URL comme le reste.
+
 ## 4. Moteur de calcul
 
 Ordre de calcul strict. Chaque étape ne dépend que des précédentes.
@@ -168,59 +177,103 @@ La série est bornée à `0` par le bas.
 
 ### 4.6 Valorisation
 
-**Profil et base.** Le profil est déduit du MRR, pas choisi par l'utilisateur, avec une
-possibilité de forçage manuel.
+Aucun seuil de cette section ne produit de discontinuité. C'est une contrainte critique ici :
+l'utilisateur traverse les paliers de taille en faisant glisser une jauge, et un saut de
+valorisation détruirait la crédibilité de l'outil. Les paliers existent donc comme **libellés**,
+jamais comme branchements de calcul.
 
-| Profil | Condition | Base | Multiple de base |
-|---|---|---|---|
-| `micro` | MRR < 5 000 € | SDE annuel | 3,0× |
-| `bootstrapped` | 5 000 € ≤ MRR < 50 000 € | SDE annuel | 4,0× |
-| `established` | MRR ≥ 50 000 € | ARR | 4,0× |
+**Deux bases, mélangées progressivement.** Les petits actifs se négocient sur le profit (SDE) ;
+les gros sur le revenu (ARR). Plutôt que de basculer d'une base à l'autre, on calcule les deux
+et on les mélange :
 
-Les micro-actifs et les SaaS bootstrappés se négocient sur le profit ; au-delà d'environ
-600 k€ d'ARR, le marché bascule sur des multiples de revenu. C'est la pratique des places de
-marché (Acquire.com, Flippa) et des brokers spécialisés.
+```
+w = smoothstep(60 000, 140 000, mrr)      // 0 en dessous de 60 k€, 1 au-dessus de 140 k€
+valuation = (1 − w) × valuationSde + w × valuationArr
+```
 
-**Ajustements.** Chaque critère produit un delta additif sur le multiple, par interpolation
-linéaire entre points d'ancrage. En dehors des bornes, la valeur est écrêtée à l'ancrage
-extrême. Cette forme garantit la continuité exigée au principe 2.
+`smoothstep(a, b, x)` vaut 0 pour `x ≤ a`, 1 pour `x ≥ b`, et `3t² − 2t³` avec
+`t = (x − a) / (b − a)` entre les deux. Sa dérivée est nulle aux deux bornes : la transition est
+lisse, sans coude visible.
+
+Le seuil est volontairement haut. Un SaaS bootstrappé et rentable continue de se valoriser au
+SDE bien au-delà du million d'ARR ; la bascule sur le revenu concerne les actifs assez gros pour
+intéresser un acquéreur financier.
+
+**Multiples de base, continus.** Chaque base a sa propre courbe, interpolée linéairement sur
+`log(MRR)` — c'est l'échelle sur laquelle le marché raisonne, un actif à 2 k€ étant plus proche
+d'un actif à 4 k€ que d'un actif à 500 €.
+
+| MRR | Multiple SDE | | ARR | Multiple ARR |
+|---|---|---|---|---|
+| 500 € | 2,2× | | 600 k€ | 2,6× |
+| 2 000 € | 2,6× | | 1,2 M€ | 3,0× |
+| 5 000 € | 2,9× | | 3 M€ | 3,6× |
+| 15 000 € | 3,3× | | 10 M€ | 4,5× |
+| 50 000 € | 3,8× | | | |
+| 150 000 € | 4,3× | | | |
+
+Ces valeurs correspondent aux transactions réellement observées sur les places de marché
+spécialisées et chez les brokers, après la compression des multiples de 2022. Un micro-SaaS à
+3 k€ de MRR qui se vend 2,7× son profit annuel est un résultat normal, pas un échec.
+
+**Ajustements, en pourcentage de la base.** Chaque critère produit un delta exprimé en
+**pourcentage du multiple de base**, et non en points de multiple. C'est ce qui permet au même
+barème de s'appliquer cohéremment aux deux bases, dont les ordres de grandeur diffèrent.
+L'interpolation est linéaire par morceaux entre points d'ancrage, écrêtée aux ancrages extrêmes.
 
 | Critère | Ancrages (valeur → delta) |
 |---|---|
-| `revenueChurn` | 0 % → +0,80 · 2 % → +0,50 · 3 % → +0,20 · 5 % → 0 · 8 % → −0,60 · 15 % → −1,20 |
-| `growthMoM` | 0 % → −0,40 · 2 % → 0 · 5 % → +0,45 · 10 % → +0,90 · 20 % → +1,40 |
-| `nrr` | 80 % → −0,50 · 95 % → −0,15 · 100 % → 0 · 110 % → +0,45 · 130 % → +0,90 |
-| `ruleOf40` | 0 → −0,35 · 20 → −0,15 · 40 → +0,15 · 60 → +0,40 · 100 → +0,70 |
-| `grossMargin` | 50 % → −0,50 · 70 % → −0,20 · 80 % → 0 · 90 % → +0,25 |
-| `topClientShare` | 0 % → +0,10 · 10 % → 0 · 25 % → −0,35 · 50 % → −0,80 |
-| `ageMonths` | 0 → −0,50 · 12 → −0,20 · 24 → 0 · 48 → +0,25 |
-| `founderDependency` | low → +0,25 · medium → 0 · high → −0,50 |
-| `techTransferability` | low → −0,30 · medium → 0 · high → +0,15 |
+| `revenueChurn` | 0 % → +20 % · 2 % → +12 % · 3 % → +5 % · 5 % → 0 · 8 % → −15 % · 15 % → −30 % |
+| `growthMoM` | 0 % → −10 % · 2 % → 0 · 5 % → +12 % · 10 % → +22 % · 20 % → +35 % |
+| `nrr` | 80 % → −12 % · 95 % → −4 % · 100 % → 0 · 110 % → +11 % · 130 % → +22 % |
+| `ruleOf40` | 0 → −9 % · 20 → −4 % · 40 → +4 % · 60 → +10 % · 100 → +17 % |
+| `grossMargin` | 50 % → −12 % · 70 % → −5 % · 80 % → 0 · 90 % → +6 % |
+| `topClientShare` | 0 % → +3 % · 10 % → 0 · 25 % → −9 % · 50 % → −20 % |
+| `ageMonths` | 0 → −12 % · 12 → −5 % · 24 → 0 · 48 → +6 % |
+| `founderDependency` | low → +6 % · medium → 0 · high → −12 % |
+| `techTransferability` | low → −7 % · medium → 0 · high → +4 % |
 
-Les deux derniers critères sont discrets par nature ; la contrainte de continuité ne s'y
-applique pas puisqu'ils ne sont pas pilotés par une jauge.
+Les deux derniers critères sont discrets par nature ; la contrainte de continuité ne s'y applique
+pas puisqu'ils ne sont pas pilotés par une jauge.
 
-**Écrêtage et résultat.**
-
-```
-rawMultiple = base + Σ deltas
-multiple    = clamp(rawMultiple, 1,0, ceiling[profil])
-```
-
-Plafonds : `micro` 6,0× · `bootstrapped` 8,0× · `established` 12,0×. Ils empêchent qu'un
-empilement d'hypothèses optimistes produise un multiple que le marché ne pratique pas. Quand
-l'écrêtage s'applique, l'interface l'indique en dernière ligne de la décomposition.
+**Écrêtage et résultat.** Le cumul est borné avant application, puis le multiple final est borné
+en absolu :
 
 ```
-baseAmount = profil === 'established' ? arr : sdeAnnual
-valuation  = max(0, multiple × baseAmount)
-low        = valuation × 0,85
-high       = valuation × 1,15
+adj        = clamp(Σ deltas, −0,60, +0,90)
+multiple   = clamp(baseMultiple × (1 + adj), 1,0, 10,0)
 ```
 
-Si `sdeAnnual ≤ 0` sur un profil valorisé au SDE, la valorisation n'est pas calculée. L'interface
-affiche « actif déficitaire — pas de valorisation sur le profit » et invite à réduire le CAC ou
-les charges fixes. Une valorisation négative n'a pas de sens et ne doit jamais s'afficher.
+L'écrêtage du cumul empêche qu'un empilement d'hypothèses toutes optimistes produise un multiple
+que le marché ne pratique pas. Quand l'un des deux écrêtages s'applique, l'interface l'indique en
+dernière ligne de la décomposition.
+
+**Réconciliation de l'affichage.** La décomposition présente des points de multiple, pas des
+pourcentages, parce que « +0,42× » se lit mieux que « +11 % ». La conversion est exacte : la
+ligne du critère `i` affiche `baseMultiple × delta_i`, et
+`baseMultiple + Σ(baseMultiple × delta_i) = baseMultiple × (1 + Σ delta_i)`. Le total affiché
+égale donc toujours le multiple calculé, hors écrêtage — qui est justement matérialisé par sa
+propre ligne.
+
+**Montants.**
+
+```
+valuationSde = max(0, multiple × sdeAnnual)
+valuationArr = multiple × arr
+valuation    = (1 − w) × valuationSde + w × valuationArr
+low          = valuation × 0,85
+high         = valuation × 1,15
+```
+
+Le `max(0, …)` sur la composante SDE traite le cas déficitaire : un actif qui perd de l'argent ne
+vaut pas un montant négatif, sa valeur de rendement est simplement nulle. Si `sdeAnnual ≤ 0` et
+`w = 0`, la valorisation vaut 0 et l'interface affiche « actif déficitaire — pas de valorisation
+sur le profit » plutôt qu'un zéro sec, en indiquant les deux leviers concernés (CAC, charges
+fixes). Une valorisation négative ne doit jamais s'afficher.
+
+**Libellés de profil.** Purement cosmétiques, affichés en badge sur la carte de valorisation :
+`micro` sous 5 k€ de MRR, `bootstrappé` de 5 k€ à 100 k€, `établi` au-delà. Ils ne participent à
+aucun calcul.
 
 ## 5. Repères de marché et garde-fous
 
@@ -269,6 +322,27 @@ Si `revenueChurn` est inférieur à la borne basse de la plage correspondante, l
 affiche une alerte non bloquante : « hypothèse de churn optimiste pour un ARPU de X € ». C'est
 un signal, pas une contrainte : l'utilisateur peut avoir raison, et rien n'est verrouillé.
 
+### 5.4 Barème ajustable
+
+Les barèmes du §4.6 sont un point de vue sur le marché, pas une vérité. Deux niveaux de
+modification, selon l'engagement :
+
+**Dans l'application.** La carte de valorisation porte un bouton discret « Barème » qui ouvre un
+`Popover` contenant une seule commande : le **multiple de base**, pré-rempli avec la valeur issue
+de la courbe et surchargeable. Un état surchargé est signalé sur la carte par un badge « barème
+personnalisé » et un bouton de réinitialisation. La surcharge est persistée avec les scénarios et
+fait partie de `SimulatorInputs`.
+
+Une seule commande, et pas un éditeur de toutes les courbes d'ajustement : le multiple de base est
+le seul chiffre dont un utilisateur averti a une opinion propre — « dans mon secteur c'est plutôt
+4,5× ». Les pondérations relatives entre churn, croissance et dépendance fondateur relèvent du
+modèle, pas de la préférence.
+
+**Dans le code.** Tout le reste — courbes de base, ancrages d'ajustement, seuils de santé, zones
+de prix, bornes d'écrêtage — vit exclusivement dans `benchmarks.ts`, en constantes typées et
+commentées. Réviser l'application dans un an doit se limiter à éditer ce fichier, sans toucher au
+moteur ni aux composants.
+
 ## 6. Scénarios
 
 L'utilisateur épingle l'état courant sous forme de scénario nommé. Maximum 3, persistés en
@@ -282,6 +356,19 @@ dédiée : la comparaison doit rester dans le champ de vision des jauges.
 
 Si le schéma d'entrée évolue, une clé de version différente invalide les scénarios existants
 plutôt que de tenter une migration.
+
+### 6.1 Partage par URL
+
+Un bouton « Copier le lien » sérialise `SimulatorInputs` en JSON compact, l'encode en base64url
+et l'écrit dans le fragment d'URL (`#s=…`). Au chargement, un fragment présent écrase les valeurs
+par défaut.
+
+Le fragment plutôt que la query : il n'est jamais transmis au serveur ni journalisé, et les
+hypothèses financières d'un actif n'ont rien à faire dans des logs. L'application étant
+entièrement statique, aucune donnée ne quitte le navigateur.
+
+Un fragment illisible ou d'une version inconnue est ignoré silencieusement au profit des valeurs
+par défaut, avec un `toast` non bloquant. Un lien périmé ne doit jamais produire un écran cassé.
 
 ## 7. Interface
 
@@ -342,8 +429,11 @@ son intérêt sur mobile.
 | `revenueChurn = 0` | LTV non définie, affichée `—` avec infobulle |
 | `cac = 0` | Payback 0 mois. LTV:CAC non défini : badge « acquisition organique », pas `—` |
 | `netChurn ≤ 0` | Pas de plafond ; note explicite sous la courbe |
-| `sdeAnnual ≤ 0` sur profil SDE | Pas de valorisation ; message d'actif déficitaire |
+| `sdeAnnual ≤ 0`, `w = 0` | Valorisation 0 ; message d'actif déficitaire, leviers CAC et charges fixes |
+| `sdeAnnual ≤ 0`, `w > 0` | Seule la composante ARR contribue ; note « valorisé sur le revenu, l'exploitation étant déficitaire » |
 | Multiple écrêté | Ligne « plafonné à N× » en pied de décomposition |
+| Multiple de base surchargé | Badge « barème personnalisé » et bouton de réinitialisation sur la carte |
+| Fragment d'URL invalide | Valeurs par défaut, `toast` non bloquant |
 
 ### 7.7 Accessibilité
 
@@ -358,14 +448,16 @@ src/
   lib/
     engine/
       types.ts          SimulatorInputs, SimulatorResults, Profile
-      interpolate.ts    interpolation linéaire par morceaux + clamp
+      interpolate.ts    interpolation linéaire par morceaux, clamp, smoothstep
       benchmarks.ts     barèmes, ancrages, seuils, zones de prix
       revenue.ts        ARPU, MRR, ARR, compte de résultat
       economics.ts      LTV, ratios, NRR, Rule of 40
       projection.ts     série 36 mois, plafond
-      valuation.ts      profil, deltas, multiple, fourchette
+      valuation.ts      base continue, deltas, fondu SDE/ARR, fourchette
       index.ts          compute(inputs): SimulatorResults
     format.ts           formatage monnaie / pourcentage, locale fr-FR
+    logScale.ts         position ↔ valeur des jauges logarithmiques
+    urlState.ts         encodage / décodage du fragment de partage
   store/
     simulator.ts        état Zustand : inputs, scénarios, thème
   components/
@@ -394,21 +486,32 @@ Le moteur est développé en TDD. Vitest, tests colocalisés en `*.test.ts`.
 - `economics` : LTV avec marge brute, `null` à churn nul, payback, NRR, Rule of 40
 - `projection` : convergence effective vers `mrrCeiling` à 36 mois, absence de plafond à
   rétention nette négative, monotonie quand `newMrr > mrr × netChurn`
-- `valuation` : sélection du profil aux bornes 5 000 € et 50 000 €, interpolation aux ancrages
-  et entre ancrages, écrêtage haut et bas, refus de valoriser un SDE négatif
-- `interpolate` : **continuité** — pour chaque courbe d'ajustement, un balayage du domaine par
-  pas fin ne doit produire aucun saut supérieur à un epsilon. C'est le test qui protège le
-  principe 2.
+- `valuation` : courbe de base aux ancrages et entre ancrages, réconciliation de la décomposition
+  (somme des lignes = multiple affiché), écrêtage du cumul et écrêtage absolu, composante SDE
+  nulle et non négative en cas de perte, surcharge du multiple de base
+- `interpolate` : valeurs exactes aux ancrages, interpolation linéaire entre deux ancrages,
+  écrêtage hors domaine ; `smoothstep` vaut 0 et 1 aux bornes et 0,5 au milieu
+
+**Le test de continuité globale.** Un test balaie chaque jauge sur tout son domaine, à pas fin,
+toutes les autres entrées étant fixées, et vérifie qu'entre deux pas consécutifs la valorisation
+ne varie jamais de plus d'un seuil relatif. Le balayage de `customers` doit traverser la zone de
+fondu SDE→ARR (60 k€ à 140 k€ de MRR), qui est l'endroit exact où une régression réintroduirait
+un saut.
+
+Ce test est la garantie exécutable du principe 2. La première version de cette spec contenait une
+bascule de base par seuil dur, qui produisait un saut de valorisation de plusieurs centaines de
+milliers d'euros au franchissement de 50 000 € de MRR ; c'est ce test qui l'aurait révélé.
 
 L'interface n'est pas testée automatiquement. Le rapport valeur/coût ne le justifie pas à cette
 échelle, et le moteur concentre tout le risque de justesse.
 
 ## 10. Hors périmètre
 
-Écartés volontairement : connexion Stripe ou toute source de revenu réelle, export PDF,
-comptes utilisateurs, partage de scénario par URL, multi-devises, saisonnalité, cohortes,
-distinction churn logo / churn revenu, plans annuels et remises.
+Écartés volontairement : connexion Stripe ou toute source de revenu réelle, export PDF, comptes
+utilisateurs, multi-devises, saisonnalité, cohortes, distinction churn logo / churn revenu, plans
+annuels et remises, éditeur intégral des courbes d'ajustement.
 
-Le partage par URL et les plans annuels sont les deux extensions les plus probables ; le
-schéma `SimulatorInputs` est plat et sérialisable, ce qui les laisse ouvertes sans les
-implémenter aujourd'hui.
+Les plans annuels sont l'extension la plus probable. Ils ne sont pas un simple champ en plus :
+un mix mensuel/annuel change le churn effectif, la trésorerie et la base de calcul du MRR. C'est
+un travail de modélisation à part entière, qui mérite sa propre spec plutôt qu'un ajout
+opportuniste à celle-ci.
