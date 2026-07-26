@@ -1,4 +1,5 @@
 import type { Level, SimulatorInputs, Tier } from '@/lib/engine/types'
+import { clampTo, INPUT_BOUNDS, TIER_BOUNDS, TIER_COUNT_BOUNDS } from '@/lib/inputBounds'
 
 /**
  * L'état voyage dans le fragment et non dans la query : un fragment n'est
@@ -45,7 +46,12 @@ export function decodeInputs(fragment: string): SimulatorInputs | null {
   if (typeof parsed !== 'object' || parsed === null) return null
   const candidate = parsed as Record<string, unknown>
 
-  if (!Array.isArray(candidate.tiers) || candidate.tiers.length !== 3) return null
+  if (
+    !Array.isArray(candidate.tiers) ||
+    candidate.tiers.length < TIER_COUNT_BOUNDS.min ||
+    candidate.tiers.length > TIER_COUNT_BOUNDS.max
+  )
+    return null
   if (!candidate.tiers.every(isTier)) return null
 
   const numericKeys = [
@@ -67,7 +73,30 @@ export function decodeInputs(fragment: string): SimulatorInputs | null {
   const override = candidate.baseMultipleOverride
   if (override !== null && !isNumber(override)) return null
 
-  return candidate as unknown as SimulatorInputs
+  // Types valides ne veut pas dire valeurs plausibles : un lien forgé peut
+  // porter -5 clients ou un prix de 1e308. On écrête sur les bornes des jauges.
+  const raw = candidate as unknown as SimulatorInputs
+  return {
+    ...raw,
+    tiers: raw.tiers.map((tier) => ({
+      ...tier,
+      price: clampTo(TIER_BOUNDS.price, tier.price),
+      mix: clampTo(TIER_BOUNDS.mix, tier.mix),
+    })),
+    customers: clampTo(INPUT_BOUNDS.customers, raw.customers),
+    newCustomersPerMonth: clampTo(INPUT_BOUNDS.newCustomersPerMonth, raw.newCustomersPerMonth),
+    cac: clampTo(INPUT_BOUNDS.cac, raw.cac),
+    revenueChurn: clampTo(INPUT_BOUNDS.revenueChurn, raw.revenueChurn),
+    expansion: clampTo(INPUT_BOUNDS.expansion, raw.expansion),
+    grossMargin: clampTo(INPUT_BOUNDS.grossMargin, raw.grossMargin),
+    fixedCosts: clampTo(INPUT_BOUNDS.fixedCosts, raw.fixedCosts),
+    topClientShare: clampTo(INPUT_BOUNDS.topClientShare, raw.topClientShare),
+    ageMonths: clampTo(INPUT_BOUNDS.ageMonths, raw.ageMonths),
+    baseMultipleOverride:
+      raw.baseMultipleOverride === null
+        ? null
+        : clampTo(INPUT_BOUNDS.baseMultipleOverride, raw.baseMultipleOverride),
+  }
 }
 
 export function readInputsFromHash(): SimulatorInputs | null {

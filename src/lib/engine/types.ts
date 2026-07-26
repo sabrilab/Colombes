@@ -11,7 +11,8 @@ export interface Tier {
 }
 
 export interface SimulatorInputs {
-  tiers: [Tier, Tier, Tier]
+  /** De 1 à 4 plans (TIER_COUNT_BOUNDS dans inputBounds.ts). */
+  tiers: Tier[]
   customers: number
   newCustomersPerMonth: number
   /** Coût d'acquisition par client, en euros. */
@@ -49,6 +50,7 @@ export interface Economics {
   ltv: number | null
   ltvCacRatio: number | null
   paybackMonths: number | null
+  /** NRR annuel : rétention nette mensuelle composée sur 12 mois, décimal. */
   nrr: number
 }
 

@@ -71,8 +71,14 @@ describe('computeEconomics', () => {
     expect(result.paybackMonths).toBeNull()
   })
 
-  it('calcule le NRR à partir du churn et de l expansion', () => {
-    expect(economicsOf().nrr).toBeCloseTo(0.98)
-    expect(economicsOf({ expansion: 0.05 }).nrr).toBeCloseTo(1.02)
+  it('annualise le NRR : rétention nette mensuelle composée sur 12 mois', () => {
+    // 1 − 0,03 + 0,01 = 0,98 mensuel → 0,98^12 annuel (convention de marché,
+    // cohérente avec les ancres et seuils annuels de benchmarks.ts)
+    expect(economicsOf().nrr).toBeCloseTo(0.98 ** 12)
+    expect(economicsOf({ expansion: 0.05 }).nrr).toBeCloseTo(1.02 ** 12)
+  })
+
+  it('un NRR mensuel neutre reste neutre en annuel', () => {
+    expect(economicsOf({ revenueChurn: 0.02, expansion: 0.02 }).nrr).toBeCloseTo(1)
   })
 })
