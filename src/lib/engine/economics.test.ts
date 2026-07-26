@@ -1,0 +1,78 @@
+import { describe, expect, it } from 'vitest'
+import { computeEconomics } from './economics'
+import { computeRevenue } from './revenue'
+import type { SimulatorInputs } from './types'
+
+function inputs(overrides: Partial<SimulatorInputs> = {}): SimulatorInputs {
+  return {
+    tiers: [
+      { name: 'Starter', price: 10, mix: 0.5 },
+      { name: 'Pro', price: 20, mix: 0.5 },
+      { name: 'Scale', price: 100, mix: 0 },
+    ],
+    customers: 100,
+    newCustomersPerMonth: 10,
+    cac: 50,
+    revenueChurn: 0.03,
+    expansion: 0.01,
+    grossMargin: 0.8,
+    fixedCosts: 500,
+    founderDependency: 'medium',
+    techTransferability: 'medium',
+    topClientShare: 0.1,
+    ageMonths: 24,
+    baseMultipleOverride: null,
+    ...overrides,
+  }
+}
+
+function economicsOf(overrides: Partial<SimulatorInputs> = {}) {
+  const i = inputs(overrides)
+  return computeEconomics(i, computeRevenue(i))
+}
+
+describe('computeEconomics', () => {
+  it('calcule la LTV sur la marge brute et le churn brut', () => {
+    expect(economicsOf().ltv).toBeCloseTo((15 * 0.8) / 0.03)
+  })
+
+  it('ignore l expansion dans la LTV', () => {
+    const withExpansion = economicsOf({ expansion: 0.02 })
+    const withoutExpansion = economicsOf({ expansion: 0 })
+    expect(withExpansion.ltv).toBeCloseTo(withoutExpansion.ltv as number)
+  })
+
+  it('rend une LTV nulle-définie quand le churn est nul', () => {
+    const result = economicsOf({ revenueChurn: 0 })
+    expect(result.ltv).toBeNull()
+    expect(result.ltvCacRatio).toBeNull()
+  })
+
+  it('calcule le ratio LTV:CAC', () => {
+    const result = economicsOf()
+    expect(result.ltvCacRatio).toBeCloseTo(400 / 50)
+  })
+
+  it('laisse le ratio non défini quand le CAC est nul', () => {
+    const result = economicsOf({ cac: 0 })
+    expect(result.ltvCacRatio).toBeNull()
+  })
+
+  it('calcule le payback en mois', () => {
+    expect(economicsOf().paybackMonths).toBeCloseTo(50 / (15 * 0.8))
+  })
+
+  it('rend un payback nul pour une acquisition organique', () => {
+    expect(economicsOf({ cac: 0 }).paybackMonths).toBe(0)
+  })
+
+  it('laisse le payback non défini quand la marge unitaire est nulle', () => {
+    const result = economicsOf({ grossMargin: 0 })
+    expect(result.paybackMonths).toBeNull()
+  })
+
+  it('calcule le NRR à partir du churn et de l expansion', () => {
+    expect(economicsOf().nrr).toBeCloseTo(0.98)
+    expect(economicsOf({ expansion: 0.05 }).nrr).toBeCloseTo(1.02)
+  })
+})
