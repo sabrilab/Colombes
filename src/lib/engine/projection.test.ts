@@ -88,6 +88,20 @@ describe('computeProjection', () => {
     expect(projectionOf()[1]).toBeCloseTo(1500 * 0.95 + 150)
   })
 
+  it('suit la solution analytique de la récurrence', () => {
+    // x(t) = plafond − (plafond − x0) × rétention^t. Contrairement aux bornes
+    // larges des tests de convergence, cette forme distingue la récurrence
+    // correcte d'une inversion d'ordre plausible : « (prev + newMrr) × rétention »
+    // atterrit à 80,09 % du plafond au mois 36, soit dans la bande 80-100 %.
+    const series = projectionOf({ customers: 1 })
+    const ceiling = 150 / 0.05
+    const retention = 0.95
+
+    for (const month of [1, 6, 18, 36]) {
+      expect(series[month]).toBeCloseTo(ceiling - (ceiling - 15) * retention ** month, 6)
+    }
+  })
+
   it('converge vers le plafond quand le churn net est positif', () => {
     const series = projectionOf({ customers: 1 })
     const ceiling = 150 / 0.05
@@ -109,8 +123,14 @@ describe('computeProjection', () => {
     expect(series[18]).toBeGreaterThan(series[0])
   })
 
-  it('ne descend jamais sous zéro', () => {
-    const series = projectionOf({ customers: 0, newCustomersPerMonth: 0 })
-    expect(series.every((value) => value >= 0)).toBe(true)
+  it('écrête à zéro et y reste quand la rétention devient négative', () => {
+    // Hors de la plage de l'interface (churn plafonné à 15 %), mais le type
+    // l'autorise. Sans ce test le plancher Math.max(0, …) n'est jamais exercé
+    // et pourrait disparaître sans qu'aucun test ne le remarque.
+    const series = projectionOf({ revenueChurn: 2, expansion: 0, newCustomersPerMonth: 0 })
+
+    expect(series[0]).toBeGreaterThan(0)
+    expect(series[1]).toBe(0)
+    expect(series.slice(1).every((value) => value === 0)).toBe(true)
   })
 })
