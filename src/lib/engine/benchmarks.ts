@@ -134,8 +134,8 @@ export interface PriceZone {
 
 export const PRICE_ZONES: PriceZone[] = [
   { key: 'b2c', label: 'B2C / prosumer', maxArpu: 15, churnMin: 0.05, churnMax: 0.08 },
-  { key: 'smb', label: 'Prosumer / TPE', maxArpu: 50, churnMin: 0.03, churnMax: 0.05 },
-  { key: 'b2b', label: 'PME / B2B', maxArpu: 200, churnMin: 0.02, churnMax: 0.03 },
+  { key: 'smb', label: 'Prosumer / micro-SMB', maxArpu: 50, churnMin: 0.03, churnMax: 0.05 },
+  { key: 'b2b', label: 'SMB / B2B', maxArpu: 200, churnMin: 0.02, churnMax: 0.03 },
   { key: 'midmarket', label: 'B2B mid-market', maxArpu: Infinity, churnMin: 0.01, churnMax: 0.02 },
 ]
 
@@ -160,12 +160,12 @@ interface Threshold {
 }
 
 export const HEALTH_THRESHOLDS: Record<HealthMetric, Threshold> = {
-  revenueChurn: { direction: 'down', good: 0.03, warn: 0.05, label: 'Bon ≤ 3 %/mois, à surveiller jusqu à 5 %' },
-  ltvCacRatio: { direction: 'up', good: 3, warn: 1.5, label: 'Bon ≥ 3, à surveiller jusqu à 1,5' },
-  paybackMonths: { direction: 'down', good: 12, warn: 18, label: 'Bon ≤ 12 mois, à surveiller jusqu à 18' },
-  nrr: { direction: 'up', good: 1, warn: 0.9, label: 'Bon ≥ 100 %, à surveiller jusqu à 90 %' },
-  ruleOf40: { direction: 'up', good: 40, warn: 20, label: 'Bon ≥ 40, à surveiller jusqu à 20' },
-  grossMargin: { direction: 'up', good: 0.8, warn: 0.7, label: 'Bon ≥ 80 %, à surveiller jusqu à 70 %' },
+  revenueChurn: { direction: 'down', good: 0.03, warn: 0.05, label: 'Good ≤ 3%/mo, watch up to 5%' },
+  ltvCacRatio: { direction: 'up', good: 3, warn: 1.5, label: 'Good ≥ 3, watch down to 1.5' },
+  paybackMonths: { direction: 'down', good: 12, warn: 18, label: 'Good ≤ 12 months, watch up to 18' },
+  nrr: { direction: 'up', good: 1, warn: 0.9, label: 'Good ≥ 100%, watch down to 90%' },
+  ruleOf40: { direction: 'up', good: 40, warn: 20, label: 'Good ≥ 40, watch down to 20' },
+  grossMargin: { direction: 'up', good: 0.8, warn: 0.7, label: 'Good ≥ 80%, watch down to 70%' },
 }
 
 export function healthOf(metric: HealthMetric, value: number | null): Health | null {

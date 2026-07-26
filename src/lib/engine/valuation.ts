@@ -54,7 +54,7 @@ export function computeValuation(
     },
     {
       key: 'growthMoM',
-      label: 'Croissance mensuelle',
+      label: 'Monthly growth',
       deltaPct: interpolate(ADJUSTMENT_ANCHORS.growthMoM, growth.growthMoM),
     },
     { key: 'nrr', label: 'NRR', deltaPct: interpolate(ADJUSTMENT_ANCHORS.nrr, economics.nrr) },
@@ -65,27 +65,27 @@ export function computeValuation(
     },
     {
       key: 'grossMargin',
-      label: 'Marge brute',
+      label: 'Gross margin',
       deltaPct: interpolate(ADJUSTMENT_ANCHORS.grossMargin, inputs.grossMargin),
     },
     {
       key: 'topClientShare',
-      label: 'Concentration client',
+      label: 'Client concentration',
       deltaPct: interpolate(ADJUSTMENT_ANCHORS.topClientShare, inputs.topClientShare),
     },
     {
       key: 'ageMonths',
-      label: 'Ancienneté',
+      label: 'Age',
       deltaPct: interpolate(ADJUSTMENT_ANCHORS.ageMonths, inputs.ageMonths),
     },
     {
       key: 'founderDependency',
-      label: 'Dépendance fondateur',
+      label: 'Founder dependency',
       deltaPct: LEVEL_DELTAS.founderDependency[inputs.founderDependency],
     },
     {
       key: 'techTransferability',
-      label: 'Transférabilité technique',
+      label: 'Tech transferability',
       deltaPct: LEVEL_DELTAS.techTransferability[inputs.techTransferability],
     },
   ]

@@ -18,7 +18,7 @@ export function ProjectionChart() {
 
   return (
     <Card className="p-5">
-      <p className="text-sm font-medium">Projection 36 mois</p>
+      <p className="text-sm font-medium">36-month projection</p>
 
       <div className="mt-4 h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -43,7 +43,7 @@ export function ProjectionChart() {
             />
             <Tooltip
               formatter={(value) => [formatCurrency(Number(value)), 'MRR']}
-              labelFormatter={(month) => `Mois ${month}`}
+              labelFormatter={(month) => `Month ${month}`}
               contentStyle={{
                 background: 'var(--popover)',
                 border: '1px solid var(--border)',
@@ -58,7 +58,7 @@ export function ProjectionChart() {
                 stroke="var(--muted-foreground)"
                 strokeDasharray="4 4"
                 label={{
-                  value: `Plafond ${formatCurrency(growth.mrrCeiling)}`,
+                  value: `Ceiling ${formatCurrency(growth.mrrCeiling)}`,
                   position: 'insideTopLeft',
                   fill: 'var(--muted-foreground)',
                   fontSize: 11,
@@ -79,11 +79,11 @@ export function ProjectionChart() {
 
       <p className="mt-3 text-xs text-muted-foreground">
         {growth.mrrCeiling !== null
-          ? `À churn et acquisition constants, le MRR converge vers ${formatCurrency(growth.mrrCeiling)}. Relever ce plafond passe par moins de churn ou plus d'acquisition.`
-          : "Rétention nette négative : l'expansion dépasse le churn, il n'y a pas de plafond."}
+          ? `At constant churn and acquisition, MRR converges to ${formatCurrency(growth.mrrCeiling)}. Raising that ceiling takes less churn or more acquisition.`
+          : 'No ceiling: expansion outpaces churn, the base compounds on its own.'}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Hypothèse : rythme d'acquisition constant sur toute la période.
+        Assumption: constant acquisition pace over the whole period.
       </p>
     </Card>
   )

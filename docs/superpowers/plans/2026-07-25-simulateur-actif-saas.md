@@ -1974,7 +1974,7 @@ Attendu : `Test Files 1 passed`, 16 tests passés. Si un test de continuité éc
 cd "/Users/svbri/Saas Playbook app" && pnpm exec vitest run
 ```
 
-Attendu : 7 fichiers de test, 103 tests passés.
+Attendu : 7 fichiers de test, 107 tests passés.
 
 - [ ] **Step 7: Commit**
 
@@ -3789,7 +3789,7 @@ Cette tâche ne produit pas de fonctionnalité : elle établit par des preuves q
 cd "/Users/svbri/Saas Playbook app" && pnpm exec vitest run
 ```
 
-Attendu : 9 fichiers de test, 118 tests passés, aucun échec.
+Attendu : 9 fichiers de test, 122 tests passés, aucun échec.
 
 - [ ] **Step 2: Vérifier les types sur tout le projet**
 

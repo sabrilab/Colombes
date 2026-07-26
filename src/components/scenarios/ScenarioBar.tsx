@@ -17,14 +17,14 @@ export function ScenarioBar() {
   const [name, setName] = useState('')
 
   function handlePin() {
-    const label = name.trim() || `Scénario ${scenarios.length + 1}`
+    const label = name.trim() || `Scenario ${scenarios.length + 1}`
     pinScenario(label)
     setName('')
   }
 
   async function handleShare() {
     await navigator.clipboard.writeText(buildShareUrl(inputs))
-    toast('Lien copié dans le presse-papiers')
+    toast('Link copied to clipboard')
   }
 
   return (
@@ -33,9 +33,9 @@ export function ScenarioBar() {
         <Input
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Nom du scénario"
+          placeholder="Scenario name"
           className="h-9 w-44"
-          aria-label="Nom du scénario à épingler"
+          aria-label="Name of the scenario to pin"
         />
         <Button
           variant="outline"
@@ -43,14 +43,14 @@ export function ScenarioBar() {
           onClick={handlePin}
           disabled={scenarios.length >= MAX_SCENARIOS}
         >
-          Épingler ce scénario
+          Pin this scenario
         </Button>
         <Button variant="ghost" size="sm" onClick={handleShare}>
-          Copier le lien
+          Copy link
         </Button>
         {scenarios.length >= MAX_SCENARIOS && (
           <span className="text-xs text-muted-foreground">
-            Maximum {MAX_SCENARIOS} scénarios — en retirer un pour en épingler un autre.
+            Up to {MAX_SCENARIOS} scenarios — remove one to pin another.
           </span>
         )}
       </div>
@@ -71,9 +71,9 @@ export function ScenarioBar() {
                     size="sm"
                     className="h-6 px-1 text-xs"
                     onClick={() => removeScenario(scenario.id)}
-                    aria-label={`Retirer le scénario ${scenario.name}`}
+                    aria-label={`Remove scenario ${scenario.name}`}
                   >
-                    Retirer
+                    Remove
                   </Button>
                 </div>
                 <p className="font-mono text-lg tabular-nums">
@@ -81,7 +81,7 @@ export function ScenarioBar() {
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {formatMultiple(pinned.multiple)} ·{' '}
-                  {formatCompactCurrency(compute(scenario.inputs).revenue.mrr)} de MRR
+                  MRR {formatCompactCurrency(compute(scenario.inputs).revenue.mrr)}
                 </p>
                 <p
                   className={`text-xs ${
@@ -90,8 +90,8 @@ export function ScenarioBar() {
                       : 'text-red-600 dark:text-red-500'
                   }`}
                 >
-                  Écart avec l'état courant : {delta >= 0 ? '+' : ''}
-                  {formatCompactCurrency(delta)} ({(relative * 100).toFixed(0)} %)
+                  vs current: {delta >= 0 ? '+' : ''}
+                  {formatCompactCurrency(delta)} ({(relative * 100).toFixed(0)}%)
                 </p>
               </div>
             )

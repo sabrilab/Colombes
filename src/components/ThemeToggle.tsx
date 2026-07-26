@@ -10,9 +10,9 @@ export function ThemeToggle() {
       variant="ghost"
       size="sm"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      aria-label={theme === 'dark' ? 'Passer en thème clair' : 'Passer en thème sombre'}
+      aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
     >
-      {theme === 'dark' ? 'Clair' : 'Sombre'}
+      {theme === 'dark' ? 'Light' : 'Dark'}
     </Button>
   )
 }

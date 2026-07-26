@@ -86,7 +86,7 @@ export function GaugeRow({
               if (event.key === 'Escape') setEditing(false)
             }}
             className="h-7 w-24 text-right font-mono text-sm tabular-nums"
-            aria-label={`${label} — saisie directe`}
+            aria-label={`${label} — direct input`}
           />
         ) : (
           <button
@@ -94,7 +94,7 @@ export function GaugeRow({
             onClick={startEditing}
             onFocus={startEditing}
             className="rounded-sm px-1 font-mono text-sm tabular-nums hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            aria-label={`${label} : ${format(value)}. Activer pour saisir une valeur exacte.`}
+            aria-label={`${label}: ${format(value)}. Activate to type an exact value.`}
           >
             {format(value)}
           </button>

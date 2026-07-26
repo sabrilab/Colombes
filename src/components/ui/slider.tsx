@@ -9,20 +9,22 @@ interface SliderProps extends React.ComponentProps<typeof SliderPrimitive.Root> 
   thumbValueText?: string
 }
 
+/** Barre d'instrument : piste creusée, remplissage « lume » qui irradie
+    doucement, poignée pleine. Le niveau se lit de loin, comme une jauge. */
 function Slider({ className, thumbLabel, thumbValueText, ...props }: SliderProps) {
   return (
     <SliderPrimitive.Root
       data-slot="slider"
-      className={cn('relative flex w-full touch-none select-none items-center', className)}
+      className={cn('relative flex w-full touch-none select-none items-center py-1', className)}
       {...props}
     >
-      <SliderPrimitive.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-secondary">
-        <SliderPrimitive.Range className="absolute h-full bg-primary" />
+      <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]">
+        <SliderPrimitive.Range className="absolute h-full rounded-full bg-lume shadow-[0_0_10px_-2px_var(--lume)]" />
       </SliderPrimitive.Track>
       <SliderPrimitive.Thumb
         aria-label={thumbLabel}
         aria-valuetext={thumbValueText}
-        className="block size-4 shrink-0 rounded-full border border-primary/50 bg-background shadow-sm transition-[color,box-shadow] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:opacity-50"
+        className="block size-4 shrink-0 rounded-full border-2 border-background bg-foreground shadow-md transition-[transform,box-shadow] hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-lume/40 disabled:pointer-events-none disabled:opacity-50"
       />
     </SliderPrimitive.Root>
   )

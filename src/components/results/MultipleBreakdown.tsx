@@ -8,12 +8,12 @@ export function MultipleBreakdown() {
 
   return (
     <Card className="p-5">
-      <p className="text-sm font-medium">Construction du multiple</p>
+      <p className="text-sm font-medium">Multiple build-up</p>
 
       <dl className="mt-4 space-y-1 text-sm">
         <div className="flex justify-between gap-4">
           <dt className="text-muted-foreground">
-            Base {valuation.isOverridden ? '(personnalisée)' : '(barème)'}
+            Base {valuation.isOverridden ? '(custom)' : '(market curve)'}
           </dt>
           <dd className="font-mono tabular-nums">{formatMultiple(valuation.baseMultiple)}</dd>
         </div>
@@ -40,15 +40,15 @@ export function MultipleBreakdown() {
         {valuation.adjClamped && (
           <div className="flex justify-between gap-4">
             <dt className="text-muted-foreground">
-              Cumul écrêté à {formatPercent(valuation.adjSum, 0)}
+              Adjustments clamped at {formatPercent(valuation.adjSum, 0)}
             </dt>
-            <dd className="font-mono tabular-nums text-muted-foreground">ajusté</dd>
+            <dd className="font-mono tabular-nums text-muted-foreground">capped</dd>
           </div>
         )}
 
         {valuation.multipleClamped && (
           <div className="flex justify-between gap-4">
-            <dt className="text-muted-foreground">Plafonné au maximum du barème</dt>
+            <dt className="text-muted-foreground">Capped at the curve maximum</dt>
             <dd className="font-mono tabular-nums text-muted-foreground">
               {formatMultiple(valuation.multiple)}
             </dd>
@@ -56,7 +56,7 @@ export function MultipleBreakdown() {
         )}
 
         <div className="flex justify-between gap-4 border-t border-border pt-2">
-          <dt className="font-medium">Multiple ajusté</dt>
+          <dt className="font-medium">Adjusted multiple</dt>
           <dd className="font-mono font-medium tabular-nums">
             {formatMultiple(valuation.multiple)}
           </dd>

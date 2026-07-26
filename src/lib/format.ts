@@ -1,10 +1,10 @@
-const currency = new Intl.NumberFormat('fr-FR', {
+const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'EUR',
   maximumFractionDigits: 0,
 })
 
-const compactCurrency = new Intl.NumberFormat('fr-FR', {
+const compactCurrency = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'EUR',
   notation: 'compact',
@@ -20,16 +20,16 @@ export function formatCompactCurrency(value: number): string {
 }
 
 export function formatPercent(value: number, digits = 1): string {
-  return `${(value * 100).toFixed(digits).replace('.', ',')} %`
+  return `${(value * 100).toFixed(digits)}%`
 }
 
 export function formatMultiple(value: number, signed = false): string {
   const sign = signed && value > 0 ? '+' : ''
-  return `${sign}${value.toFixed(2).replace('.', ',')}×`
+  return `${sign}${value.toFixed(2)}×`
 }
 
 export function formatMonths(value: number): string {
-  return `${Math.round(value)} mois`
+  return `${Math.round(value)} mo`
 }
 
 /** Rend le tiret cadratin pour une grandeur non définie, jamais un zéro inventé. */
