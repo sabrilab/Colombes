@@ -58,9 +58,18 @@ describe('smoothstep', () => {
   })
 
   it('a une dérivée nulle aux bornes', () => {
-    const epsilon = 1e-4
-    expect(smoothstep(0, 1, epsilon)).toBeLessThan(epsilon)
-    expect(1 - smoothstep(0, 1, 1 - epsilon)).toBeLessThan(epsilon)
+    // Une fonction à dérivée nulle croît quadratiquement près de sa borne :
+    // f(e) / f(e/2) tend vers 4. Une rampe linéaire donnerait 2, quelle que
+    // soit sa pente — c'est ce rapport, et non la petitesse de f(e), qui
+    // distingue réellement une dérivée nulle.
+    const epsilon = 1e-3
+
+    const atZero = smoothstep(0, 1, epsilon) / smoothstep(0, 1, epsilon / 2)
+    expect(atZero).toBeCloseTo(4, 1)
+
+    const atOne =
+      (1 - smoothstep(0, 1, 1 - epsilon)) / (1 - smoothstep(0, 1, 1 - epsilon / 2))
+    expect(atOne).toBeCloseTo(4, 1)
   })
 })
 
