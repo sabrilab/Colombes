@@ -8,10 +8,22 @@ function withInput(patch: Partial<SimulatorInputs>): SimulatorInputs {
 }
 
 /**
- * Plus grand écart local, comparé à ses deux pas voisins immédiats.
+ * Médiane d'un tableau de nombres (copie triée, ne mute pas l'entrée).
+ */
+function median(xs: number[]): number {
+  if (xs.length === 0) return 0
+  const sorted = [...xs].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+}
+
+/**
+ * Plus grand écart local, comparé à une base de référence tirée d'une
+ * fenêtre de pas plus éloignés de chaque côté (voisins immédiats exclus).
  *
- * Deux dénominateurs plus simples ont été essayés et mesurés, tous deux
- * invalidés :
+ * Trois dénominateurs plus simples ont été essayés et mesurés, tous trois
+ * invalidés (voir .superpowers/sdd/task-9-report.md pour les tableaux
+ * complets) :
  * - la valeur locale (`max(|v[i]|, |v[i-1]|, plancher)`) casse au passage par
  *   zéro : la valorisation traverse exactement 0 au seuil de rentabilité, et
  *   un mouvement minuscule en absolu s'y lit comme un saut de 100 % relatif.
@@ -19,38 +31,70 @@ function withInput(patch: Partial<SimulatorInputs>): SimulatorInputs {
  *   domaine : sur le balayage `customers`, la valorisation à l'extrémité haute
  *   atteint ~30 M€, si bien qu'une vraie marche de 27 897 € au franchissement
  *   des 100 000 € de MRR se lit comme 0.09 % et passe sous le seuil.
+ * - le maximum des deux voisins immédiats (`max(|Δ_{i-1}|, |Δ_{i+1}|,
+ *   plancher)`) se défend lui-même : une marche qui atterrit sur deux pas
+ *   consécutifs comparables voit chaque moitié excusée par l'autre. Un saut
+ *   de 50 000 € scindé en deux pas de 25 000 € mesurait ~1.0 avec ce
+ *   dénominateur — sous le seuil de 5 — alors qu'il est plus grand que le
+ *   saut unique de 27 897 € que la métrique doit détecter.
  *
- * Comparer chaque pas à ses voisins immédiats élimine les deux biais : le
- * dénominateur suit localement l'échelle de la fonction, qu'elle soit proche
- * de zéro ou très grande, et n'est jamais écrasé par une zone lointaine du
- * domaine. Une fonction lisse donne des ratios proches de 1 partout ; une
- * marche donne un ratio très supérieur, quel que soit l'endroit du domaine où
- * elle se produit. Le plancher (en euros absolus) évite une division par une
- * quasi-zéro dans les zones plates.
+ * Comparer chaque pas à une fenêtre de référence qui exclut ses deux voisins
+ * immédiats élimine les trois biais : le dénominateur suit localement
+ * l'échelle de la fonction (pas de dilution par la queue du domaine), n'est
+ * pas écrasé par un passage à zéro (fenêtre plutôt que valeur locale), et
+ * n'est pas contaminé par l'autre moitié d'un saut scindé (les voisins
+ * immédiats sont exclus, et la médiane — pas le maximum — n'est pas déplacée
+ * par une poignée d'entrées contaminées si le saut s'étale sur plus de deux
+ * pas). Une fonction lisse donne des ratios proches de 1 partout ; une
+ * marche, scindée ou non, donne un ratio très supérieur. Le plancher (en
+ * euros absolus) évite une division par une quasi-zéro dans les zones
+ * plates.
  */
-function maxLocalDiscontinuity(values: number[], floor = 1): number {
+function maxWindowedDiscontinuity(values: number[], floor = 1, window = 8): number {
   const deltas: number[] = []
   for (let i = 1; i < values.length; i++) deltas.push(values[i] - values[i - 1])
 
   let worst = 0
   for (let i = 0; i < deltas.length; i++) {
-    const neighbors: number[] = [floor]
-    if (i > 0) neighbors.push(Math.abs(deltas[i - 1]))
-    if (i < deltas.length - 1) neighbors.push(Math.abs(deltas[i + 1]))
-    const denom = Math.max(...neighbors)
+    const leftStart = Math.max(0, i - window)
+    const leftEnd = Math.max(0, i - 1) // exclusif : inclut jusqu'à i-2
+    const left = deltas.slice(leftStart, leftEnd)
+
+    const rightStart = Math.min(deltas.length, i + 2)
+    const rightEnd = Math.min(deltas.length, i + window + 1)
+    const right = deltas.slice(rightStart, rightEnd)
+
+    const baseline = median([...left, ...right].map(Math.abs))
+    const denom = Math.max(baseline, floor)
     worst = Math.max(worst, Math.abs(deltas[i]) / denom)
   }
   return worst
 }
 
 /**
- * Seuil choisi par mesure (voir .superpowers/sdd/task-9-report.md) : le pire
- * ratio du moteur correct sur tous les curseurs est ~1.0035, le ratio du
- * curseur `customers` sous la mutation « bascule dure » de arrWeight est
- * ~19.92. 5 offre une marge ×4.98 au-dessus du moteur correct et ×3.98
- * en dessous de la mutation détectée.
+ * Seuil choisi par mesure (voir .superpowers/sdd/task-9-report.md, section
+ * « reprise fenêtre glissante, tentative 4 »).
+ *
+ * - Table A (moteur correct, non modifié) : pire ratio tous curseurs
+ *   confondus (y compris les six dimensions de tiers) = 2.0576, sur
+ *   `newCustomersPerMonth`. Ce n'est pas un défaut : c'est un coude réel et
+ *   attendu d'un barème d'ajustement linéaire par morceaux (les segments de
+ *   `ADJUSTMENT_ANCHORS` ont des pentes qui diffèrent jusqu'à ×2 d'un
+ *   segment à l'autre), amplifié par une fenêtre qui exclut les voisins
+ *   immédiats.
+ * - Table B (mutation « bascule dure », `arrWeight = mrr >= 100_000 ? 1 : 0`)
+ *   : ratio `customers` = 20.3925.
+ * - Table C (mutation « saut scindé », `arrWeight = mrr >= 100_000 ? 1 : mrr
+ *   >= 99_000 ? 0.5 : 0`, le cas qui a motivé ce correctif) : ratio
+ *   `customers` = 87.2205.
+ *
+ * Seuil retenu : 6.5, à égale distance (en échelle log) des deux bornes.
+ * Marge basse : 6.5 / 2.0576 ≈ ×3.16 au-dessus du pire cas du moteur
+ * correct. Marge haute : min(20.3925, 87.2205) / 6.5 ≈ ×3.14 en dessous du
+ * plus petit des deux ratios de régression détectés. Les deux marges
+ * dépassent le ×3 minimal requis.
  */
-const CONTINUITY_THRESHOLD = 5
+const CONTINUITY_THRESHOLD = 6.5
 
 function sweepValuation(
   apply: (x: number) => SimulatorInputs,
@@ -81,6 +125,27 @@ function sweepValuationInt(apply: (n: number) => SimulatorInputs, from: number, 
     values.push(compute(apply(n)).valuation.value)
   }
   return values
+}
+
+/**
+ * Balaye une seule dimension (`price` ou `mix`) d'un seul tier, les deux
+ * autres tiers restant aux valeurs par défaut. Domaine prix : 0 → 500 € ;
+ * domaine mix : 0 → 1. Les deux sont continus, balayés fractionnairement
+ * (`sweepValuation`, sans arrondi).
+ */
+function sweepTierDimension(tierIndex: 0 | 1 | 2, dimension: 'price' | 'mix', steps = 1_500): number[] {
+  const to = dimension === 'price' ? 500 : 1
+  return sweepValuation(
+    (x) =>
+      withInput({
+        tiers: DEFAULT_INPUTS.tiers.map((tier, i) =>
+          i === tierIndex ? { ...tier, [dimension]: x } : tier,
+        ) as SimulatorInputs['tiers'],
+      }),
+    0,
+    to,
+    steps,
+  )
 }
 
 describe('compute', () => {
@@ -133,90 +198,67 @@ describe('compute', () => {
 describe('continuité de la valorisation', () => {
   it('reste continue en balayant le nombre de clients à travers la zone de fondu', () => {
     const values = sweepValuationInt((n) => withInput({ customers: n }), 0, 20_000)
-    expect(maxLocalDiscontinuity(values)).toBeLessThan(CONTINUITY_THRESHOLD)
+    expect(maxWindowedDiscontinuity(values)).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
   it('reste continue en balayant le churn', () => {
     expect(
-      maxLocalDiscontinuity(sweepValuation((x) => withInput({ revenueChurn: x }), 0, 0.15)),
+      maxWindowedDiscontinuity(sweepValuation((x) => withInput({ revenueChurn: x }), 0, 0.15)),
     ).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
   it('reste continue en balayant l expansion', () => {
     expect(
-      maxLocalDiscontinuity(sweepValuation((x) => withInput({ expansion: x }), 0, 0.1)),
+      maxWindowedDiscontinuity(sweepValuation((x) => withInput({ expansion: x }), 0, 0.1)),
     ).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
-  it('reste continue en balayant le prix du plan Pro', () => {
-    expect(
-      maxLocalDiscontinuity(
-        sweepValuation(
-          (x) =>
-            withInput({
-              tiers: [
-                DEFAULT_INPUTS.tiers[0],
-                { ...DEFAULT_INPUTS.tiers[1], price: x },
-                DEFAULT_INPUTS.tiers[2],
-              ],
-            }),
-          0,
-          500,
-        ),
-      ),
-    ).toBeLessThan(CONTINUITY_THRESHOLD)
-  })
+  const TIER_LABELS = ['Starter', 'Pro', 'Scale'] as const
+  const TIER_SWEEPS = (['price', 'mix'] as const).flatMap((dimension) =>
+    ([0, 1, 2] as const).map((tierIndex) => ({
+      tierIndex,
+      dimension,
+      label: `${dimension === 'price' ? 'le prix' : 'le mix'} du plan ${TIER_LABELS[tierIndex]}`,
+    })),
+  )
 
-  it('reste continue en balayant le mix du plan Scale', () => {
-    expect(
-      maxLocalDiscontinuity(
-        sweepValuation(
-          (x) =>
-            withInput({
-              tiers: [
-                DEFAULT_INPUTS.tiers[0],
-                DEFAULT_INPUTS.tiers[1],
-                { ...DEFAULT_INPUTS.tiers[2], mix: x },
-              ],
-            }),
-          0,
-          1,
-        ),
-      ),
-    ).toBeLessThan(CONTINUITY_THRESHOLD)
+  it.each(TIER_SWEEPS)('reste continue en balayant $label', ({ tierIndex, dimension }) => {
+    expect(maxWindowedDiscontinuity(sweepTierDimension(tierIndex, dimension))).toBeLessThan(
+      CONTINUITY_THRESHOLD,
+    )
   })
 
   it('reste continue en balayant le CAC à travers le passage en perte', () => {
     expect(
-      maxLocalDiscontinuity(sweepValuation((x) => withInput({ cac: x }), 0, 2_000)),
+      maxWindowedDiscontinuity(sweepValuation((x) => withInput({ cac: x }), 0, 2_000)),
     ).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
   it('reste continue en balayant les charges fixes à travers le passage en perte', () => {
     expect(
-      maxLocalDiscontinuity(sweepValuation((x) => withInput({ fixedCosts: x }), 0, 100_000)),
+      maxWindowedDiscontinuity(sweepValuation((x) => withInput({ fixedCosts: x }), 0, 100_000)),
     ).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
   it('reste continue en balayant la marge brute', () => {
     expect(
-      maxLocalDiscontinuity(sweepValuation((x) => withInput({ grossMargin: x }), 0.5, 0.99)),
+      maxWindowedDiscontinuity(sweepValuation((x) => withInput({ grossMargin: x }), 0.5, 0.99)),
     ).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
   it('reste continue en balayant l acquisition', () => {
     const values = sweepValuationInt((n) => withInput({ newCustomersPerMonth: n }), 0, 1_000)
-    expect(maxLocalDiscontinuity(values)).toBeLessThan(CONTINUITY_THRESHOLD)
+    expect(maxWindowedDiscontinuity(values)).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
   it('reste continue en balayant la concentration client', () => {
     expect(
-      maxLocalDiscontinuity(sweepValuation((x) => withInput({ topClientShare: x }), 0, 0.6)),
+      maxWindowedDiscontinuity(sweepValuation((x) => withInput({ topClientShare: x }), 0, 0.6)),
     ).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 
   it('reste continue en balayant l ancienneté', () => {
     const values = sweepValuationInt((n) => withInput({ ageMonths: n }), 0, 96)
-    expect(maxLocalDiscontinuity(values)).toBeLessThan(CONTINUITY_THRESHOLD)
+    expect(maxWindowedDiscontinuity(values)).toBeLessThan(CONTINUITY_THRESHOLD)
   })
 })
