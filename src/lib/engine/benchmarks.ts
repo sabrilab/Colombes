@@ -33,6 +33,17 @@ export const ARR_BLEND_FROM = 60_000
 export const ARR_BLEND_TO = 140_000
 
 /**
+ * Seuils des libellés de profil, en MRR mensuel. Purement cosmétiques :
+ * aucun calcul de valorisation ne les lit, ils n'alimentent qu'un badge.
+ * Ils vivent ici malgré tout, parce que ce fichier est le point unique de
+ * vérité pour tout chiffre de marché — y compris ceux qui ne pilotent rien.
+ */
+export const PROFILE_MRR_THRESHOLDS = {
+  micro: 5_000,
+  established: 100_000,
+} as const
+
+/**
  * Deltas exprimés en pourcentage du multiple de base, en décimal.
  * Unité de l'abscisse indiquée par courbe.
  */

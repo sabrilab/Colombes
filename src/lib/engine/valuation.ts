@@ -8,6 +8,7 @@ import {
   LEVEL_DELTAS,
   MULTIPLE_MAX,
   MULTIPLE_MIN,
+  PROFILE_MRR_THRESHOLDS,
   SDE_BASE_ANCHORS,
   VALUATION_SPREAD,
 } from './benchmarks'
@@ -24,8 +25,8 @@ import type {
 
 /** Purement cosmétique : ces seuils ne participent à aucun calcul. */
 export function profileLabelFor(mrr: number): ProfileLabel {
-  if (mrr < 5_000) return 'micro'
-  return mrr < 100_000 ? 'bootstrapped' : 'established'
+  if (mrr < PROFILE_MRR_THRESHOLDS.micro) return 'micro'
+  return mrr < PROFILE_MRR_THRESHOLDS.established ? 'bootstrapped' : 'established'
 }
 
 export function computeValuation(
@@ -91,6 +92,8 @@ export function computeValuation(
 
   // deltaMultiple est calculé sur le cumul non écrêté, pour que
   // baseMultiple + Σ deltaMultiple reconcilie avec le multiple avant écrêtage.
+  // Deux écrêtages indépendants suivent (adjSum puis multiple) ; l'identité ne
+  // tient que si ni adjClamped ni multipleClamped ne sont vrais.
   const lines: ValuationLine[] = deltas.map((delta) => ({
     ...delta,
     deltaMultiple: baseMultiple * delta.deltaPct,

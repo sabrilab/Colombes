@@ -3,7 +3,7 @@ import { computeEconomics } from './economics'
 import { computeGrowth } from './projection'
 import { computeRevenue } from './revenue'
 import { computeValuation, profileLabelFor } from './valuation'
-import { ADJ_SUM_MAX, MULTIPLE_MAX, MULTIPLE_MIN } from './benchmarks'
+import { ADJ_SUM_MAX, ADJ_SUM_MIN, MULTIPLE_MAX, MULTIPLE_MIN } from './benchmarks'
 import type { SimulatorInputs } from './types'
 
 function inputs(overrides: Partial<SimulatorInputs> = {}): SimulatorInputs {
@@ -104,6 +104,22 @@ describe('computeValuation — multiple', () => {
     expect(valuation.adjSum).toBeCloseTo(ADJ_SUM_MAX)
   })
 
+  it('écrête le cumul des deltas vers le bas quand tout est défavorable', () => {
+    const { valuation } = valuationOf({
+      revenueChurn: 0.15,
+      expansion: 0,
+      grossMargin: 0.5,
+      topClientShare: 0.6,
+      ageMonths: 0,
+      founderDependency: 'high',
+      techTransferability: 'low',
+      newCustomersPerMonth: 0,
+      fixedCosts: 50_000,
+    })
+    expect(valuation.adjClamped).toBe(true)
+    expect(valuation.adjSum).toBeCloseTo(ADJ_SUM_MIN)
+  })
+
   it('maintient le multiple dans ses bornes absolues', () => {
     const { valuation } = valuationOf({ revenueChurn: 0.15, grossMargin: 0.5, ageMonths: 0 })
     expect(valuation.multiple).toBeGreaterThanOrEqual(MULTIPLE_MIN)
@@ -156,5 +172,21 @@ describe('computeValuation — montants', () => {
     const { valuation } = valuationOf()
     expect(valuation.low).toBeCloseTo(valuation.value * 0.85)
     expect(valuation.high).toBeCloseTo(valuation.value * 1.15)
+  })
+
+  it('ne laisse pas les libellés de profil influencer la valorisation', () => {
+    // Les seuils de libellé (5 k€ et 100 k€ de MRR) sont les seuls seuils durs
+    // du fichier. Ce test vérifie qu'ils ne pilotent aucun euro : en franchissant
+    // chacun d'un seul client, le libellé change mais la valeur ne saute pas.
+    for (const threshold of [5_000, 100_000]) {
+      const arpu = 26
+      const below = valuationOf({ customers: Math.floor((threshold - 1) / arpu) }).valuation
+      const above = valuationOf({ customers: Math.ceil((threshold + 1) / arpu) }).valuation
+
+      expect(below.profileLabel).not.toBe(above.profileLabel)
+
+      const scale = Math.max(below.value, above.value, 1_000)
+      expect(Math.abs(above.value - below.value) / scale).toBeLessThan(0.02)
+    }
   })
 })
