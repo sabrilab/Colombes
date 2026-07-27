@@ -37,7 +37,11 @@ const THREE_QUARTER_YAW = Math.PI / 7
  * qui s'en écarterait se corrige par une entrée dans BASE_YAW_OVERRIDES.
  */
 const DEFAULT_BASE_YAW = (3 * Math.PI) / 2
-const BASE_YAW_OVERRIDES: Record<string, number> = {}
+const BASE_YAW_OVERRIDES: Record<string, number> = {
+  // Le cerf est authored d'équerre par rapport aux autres : le quart de tour
+  // commun le laisse face caméra, il lui faut un demi-tour.
+  Deer: Math.PI,
+}
 
 /**
  * Le plus gros maillage donne le cadre. Certains modèles traînent un nœud

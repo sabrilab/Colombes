@@ -4,6 +4,7 @@ import { BrandMark } from '@/components/BrandMark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PricePad } from '@/components/home/PricePad'
+import { Landmarks } from '@/components/home/Landmarks'
 import { SavedLibrary } from '@/components/home/SavedLibrary'
 import { TierCarousel } from '@/components/home/TierCarousel'
 import { animalFor } from '@/lib/pricePad'
@@ -191,6 +192,8 @@ export function HomeView() {
             simulator's market benchmarks (Acquire.com, FE International, ChartMogul).
           </p>
         </section>
+
+        <Landmarks />
       </main>
     </>
   )
