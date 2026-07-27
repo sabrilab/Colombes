@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ControlPanel } from '@/components/controls/ControlPanel'
 import { ValuationCard } from '@/components/results/ValuationCard'
+import { GoalCard } from '@/components/results/GoalCard'
 import { KpiGrid } from '@/components/results/KpiGrid'
 import { ProjectionChart } from '@/components/results/ProjectionChart'
 import { MultipleBreakdown } from '@/components/results/MultipleBreakdown'
@@ -41,6 +42,7 @@ function Results() {
         <ValuationCard />
       </div>
       <SaveBar />
+      <GoalCard />
       <ScenarioBar />
       <KpiGrid />
       <ProjectionChart />

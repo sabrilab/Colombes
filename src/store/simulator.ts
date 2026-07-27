@@ -6,6 +6,7 @@ import { DEFAULT_INPUTS } from '@/lib/defaults'
 import { addTierTo, removeTierAt } from '@/lib/tiers'
 import { readInputsFromHash } from '@/lib/urlState'
 import { detectLanguage, translate, type Language } from '@/lib/i18n'
+import type { Goal } from '@/lib/goals'
 
 export interface Scenario {
   id: string
@@ -34,6 +35,8 @@ interface SimulatorState {
   panelMode: PanelMode
   language: Language
   setLanguage: (language: Language) => void
+  goal: Goal
+  setGoal: (goal: Goal) => void
   setInput: <K extends keyof SimulatorInputs>(key: K, value: SimulatorInputs[K]) => void
   setTier: (index: number, patch: Partial<Tier>) => void
   addTier: () => void
@@ -60,6 +63,9 @@ export const useSimulator = create<SimulatorState>()(
       scenarios: [],
       panelMode: 'expert',
       language: detectLanguage(),
+      goal: { metric: 'mrr', target: 30_000, months: 18 },
+
+      setGoal: (goal) => set({ goal }),
 
       setLanguage: (language) => set({ language }),
 
@@ -152,6 +158,7 @@ export const useSimulator = create<SimulatorState>()(
         scenarios: state.scenarios,
         panelMode: state.panelMode,
         language: state.language,
+        goal: state.goal,
         savedSims: state.savedSims,
       }),
     },

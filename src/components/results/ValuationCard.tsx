@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { TierBadge } from '@/components/AnimalGlyph'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,6 +18,9 @@ const PROFILE_LABELS: Record<ProfileLabel, string> = {
   bootstrapped: 'Bootstrapped SaaS',
   established: 'Established SaaS',
 }
+
+/** Le palier incarné, comme sur l'accueil. Chargé à la demande. */
+const AnimalStage3D = lazy(() => import('@/components/home/AnimalStage3D'))
 
 const TONE_DOTS: Record<InsightTone, string> = {
   bad: 'bg-red-500',
@@ -49,6 +53,12 @@ export function ValuationCard() {
             {formatCurrency(animated)}
           </p>
         </div>
+        <div className="flex items-start gap-2">
+          <div className="hidden h-20 w-28 shrink-0 sm:block">
+            <Suspense fallback={null}>
+              <AnimalStage3D animal={animalFor(results.revenue.arpu).name} />
+            </Suspense>
+          </div>
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
@@ -87,6 +97,7 @@ export function ValuationCard() {
             )}
           </PopoverContent>
         </Popover>
+        </div>
       </div>
 
       {/* Le MRR mérite d'être lu d'un coup d'œil, pas déduit de la grille. */}

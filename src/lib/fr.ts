@@ -254,4 +254,24 @@ export const FR: Record<string, string> = {
   'Prosumer / micro-SMB': 'Prosumer / TPE',
   'SMB / B2B': 'PME / B2B',
   'B2B mid-market': 'B2B mid-market',
+  // — Objectifs —
+  'Your goal': 'Votre objectif',
+  'Target MRR': 'MRR visé',
+  Within: 'D’ici',
+  '{n} months': '{n} mois',
+  'Your ceiling: {value}': 'Votre plafond : {value}',
+  'Already there — you are {over} past the goal.':
+    'C’est déjà fait — vous dépassez l’objectif de {over}.',
+  'Out of reach at these settings: your MRR converges to {ceiling}, below the {target} goal.':
+    'Hors d’atteinte à ces réglages : votre MRR converge vers {ceiling}, sous l’objectif de {target}.',
+  'Either bring {count} new customers a month, instead of {current}.':
+    'Soit amener {count} nouveaux clients par mois, au lieu de {current}.',
+  'Or bring churn down to {churn}/mo, from {current}.':
+    'Soit descendre le churn à {churn}/mois, contre {current} aujourd’hui.',
+  'On track: you reach {target} in month {month}, {gap} from here.':
+    'Sur la trajectoire : vous atteignez {target} au mois {month}, à {gap} d’ici.',
+  'Late: you reach it in month {month}, past your {horizon}-month window.':
+    'En retard : vous y arrivez au mois {month}, après votre fenêtre de {horizon} mois.',
+  'Not within 36 months at this pace — {gap} still to go.':
+    'Pas d’ici 36 mois à ce rythme — il reste {gap} à parcourir.',
 }
