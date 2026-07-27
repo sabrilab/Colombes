@@ -7,22 +7,21 @@ const AnimalStage3D = lazy(() => import('./AnimalStage3D'))
 
 export function AnimalStage({ animal }: { animal: PricingAnimal }) {
   return (
-    <div className="flex items-end gap-4">
-      {/* Pas de cadre : l'animal pose à même la carte. */}
-      <div className="h-28 w-32 shrink-0 sm:h-32 sm:w-40">
+    <div>
+      {/* Pas de cadre : l'animal pose à même la carte, en grand. */}
+      <div className="h-44 w-full sm:h-52">
         <Suspense fallback={null}>
           <AnimalStage3D animal={animal.name} />
         </Suspense>
       </div>
 
-      <div className="pb-1">
+      <div className="-mt-2 flex flex-wrap items-baseline gap-x-3">
         <p className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-lume">
           {animal.name}
         </p>
-        <p className="text-[11px] leading-snug text-muted-foreground">
-          ~${animal.annualAcv.toLocaleString('en-US')}/yr per customer
-          <br />
-          {animal.customersFor100M} customers for $100M ARR
+        <p className="text-[11px] text-muted-foreground">
+          ~${animal.annualAcv.toLocaleString('en-US')}/yr per customer ·{' '}
+          {animal.customersFor100M} for $100M ARR
         </p>
       </div>
     </div>

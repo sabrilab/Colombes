@@ -19,8 +19,52 @@ const MODEL_URLS: Record<string, string> = {
   Whales: '/models/whale.glb',
 }
 
-/** Vue trois-quarts du dessus, figée une fois pour toutes. */
-const CAMERA_POSITION = new THREE.Vector3(2.1, 1.75, 2.5)
+/**
+ * Caméra dans le plan YZ : l'axe X du monde tombe donc exactement sur
+ * l'horizontale de l'écran. Un modèle couché sur X se lit tête à gauche,
+ * corps à droite. L'élévation (~32°) donne le trois-quarts plongeant.
+ */
+const CAMERA_POSITION = new THREE.Vector3(0, 1.6, 2.55)
+
+/** Le quart de tour qui fait le trois-quarts : le sujet s'ouvre vers nous. */
+const THREE_QUARTER_YAW = Math.PI / 7
+
+/**
+ * Chaque modèle arrive dans son propre repère, et aucune heuristique ne
+ * devine où est la tête : les bois d'un cerf élargissent sa boîte autant
+ * que son corps l'allonge. Ces quarts de tour sont donc constatés à l'œil,
+ * modèle par modèle, pour poser toutes les bêtes tête à gauche.
+ */
+const BASE_YAW: Record<string, number> = {
+  Mice: (3 * Math.PI) / 2,
+  Rabbits: Math.PI / 2,
+  Deer: 0,
+  Elephants: Math.PI / 2,
+  Whales: Math.PI / 2,
+}
+
+/**
+ * Le plus gros maillage donne le cadre. Certains modèles traînent un nœud
+ * parasite très loin de la bête : s'y fier ferait rétrécir le sujet à un
+ * point. On mesure donc chaque maillage et on garde le plus volumineux.
+ */
+function framingBox(group: THREE.Object3D): THREE.Box3 {
+  let box: THREE.Box3 | null = null
+  let biggest = -1
+
+  group.traverse((child) => {
+    if (!(child instanceof THREE.Mesh) || !child.geometry) return
+    const candidate = new THREE.Box3().setFromObject(child)
+    const size = candidate.getSize(new THREE.Vector3())
+    const volume = size.x * size.y * size.z
+    if (volume > biggest) {
+      biggest = volume
+      box = candidate
+    }
+  })
+
+  return box ?? new THREE.Box3().setFromObject(group)
+}
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -130,27 +174,22 @@ export default function AnimalStage3D({ animal }: { animal: string }) {
         }
       })
 
-      // Chaque modèle arrive dans son propre repère : on normalise d'abord
-      // l'orientation en alignant sa longueur (museau-queue) sur l'axe X,
-      // pour que tous adoptent réellement la même vue trois-quarts.
-      const rawBox = new THREE.Box3().setFromObject(group)
-      const size = rawBox.getSize(new THREE.Vector3())
-      if (size.z > size.x) group.rotateY(Math.PI / 2)
+      group.rotateY(BASE_YAW[animal] ?? 0)
+      group.updateWorldMatrix(true, true)
 
-      // Mise à l'échelle : une souris et une baleine occupent le même cadre.
-      const box = new THREE.Box3().setFromObject(group)
+      // Mise à l'échelle sur la sphère englobante : une souris et une baleine
+      // occupent exactement le même cadre.
+      const box = framingBox(group)
       const sphere = box.getBoundingSphere(new THREE.Sphere())
       const scale = 1 / (sphere.radius || 1)
       group.scale.setScalar(scale)
 
-      // Recentré horizontalement, mais posé bas : l'animal repose sur le
-      // socle de la carte au lieu de flotter au milieu.
+      // Recentré, à peine posé bas : le sujet remplit le cadre.
       const center = sphere.center.clone().multiplyScalar(scale)
-      const floor = box.min.y * scale
-      group.position.set(-center.x, -floor - 0.85, -center.z)
+      group.position.set(-center.x, -center.y - 0.12, -center.z)
 
-      // Trois-quarts : on tourne le sujet, pas la caméra.
-      group.rotation.y -= Math.PI / 5
+      // Trois-quarts : on tourne le sujet, jamais la caméra.
+      group.rotation.y += THREE_QUARTER_YAW
       group.userData.baseRotation = group.rotation.y
       group.userData.baseY = group.position.y
 

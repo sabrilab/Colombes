@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { AnimalStage } from '@/components/home/AnimalStage'
 import { PricePad } from '@/components/home/PricePad'
 import { SavedLibrary } from '@/components/home/SavedLibrary'
+import { TierGuide } from '@/components/home/TierGuide'
 import { animalFor } from '@/lib/pricePad'
 import { AVIARY, type Colombe } from '@/lib/aviary'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
@@ -126,9 +127,12 @@ export function HomeView() {
     <>
       <AppHeader
         actions={
-          <Button size="sm" variant="outline" onClick={() => navigate('#/simulateur')}>
-            Full simulator
-          </Button>
+          <>
+            <TierGuide />
+            <Button size="sm" variant="outline" onClick={() => navigate('#/simulateur')}>
+              Full simulator
+            </Button>
+          </>
         }
       />
       <main className="mx-auto max-w-5xl px-4 py-10 lg:px-6 lg:py-14">

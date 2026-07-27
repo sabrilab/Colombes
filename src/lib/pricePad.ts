@@ -61,6 +61,8 @@ export interface PricingAnimal {
   annualAcv: number
   /** Clients qu'il faut à ce palier pour atteindre 100 M$ d'ARR. */
   customersFor100M: string
+  /** Ce que le palier impose vraiment, côté produit et acquisition. */
+  whatItMeans: string
 }
 
 /**
@@ -70,15 +72,50 @@ export interface PricingAnimal {
  * géométriques entre deux repères canoniques, ramenées au mois.
  */
 export const PRICING_ANIMALS: PricingAnimal[] = [
-  { name: 'Mice', minPrice: 1, maxPrice: 3, annualAcv: 10, customersFor100M: '10M' },
-  { name: 'Rabbits', minPrice: 3, maxPrice: 26, annualAcv: 100, customersFor100M: '1M' },
-  { name: 'Deer', minPrice: 26, maxPrice: 263, annualAcv: 1_000, customersFor100M: '100K' },
+  {
+    name: 'Mice',
+    minPrice: 1,
+    maxPrice: 3,
+    annualAcv: 10,
+    customersFor100M: '10M',
+    whatItMeans:
+      'Consumer scale. Nobody talks to a salesperson, and nobody can afford to answer a support ticket. Everything rides on distribution — app stores, virality, an audience you already own — and on a product that explains itself in ten seconds.',
+  },
+  {
+    name: 'Rabbits',
+    minPrice: 3,
+    maxPrice: 26,
+    annualAcv: 100,
+    customersFor100M: '1M',
+    whatItMeans:
+      'Prosumer self-serve. People pay with a card after a free trial, never a demo. Growth comes from content, SEO and word of mouth; the whole game is keeping churn low enough that a €15 subscription is still worth acquiring.',
+  },
+  {
+    name: 'Deer',
+    minPrice: 26,
+    maxPrice: 263,
+    annualAcv: 1_000,
+    customersFor100M: '100K',
+    whatItMeans:
+      'Small-business SaaS, the sweet spot for a bootstrapped team. Self-serve still works, but onboarding decides whether they stay. One person can support a few hundred customers, and the maths of a solo founder finally close here.',
+  },
   {
     name: 'Elephants',
     minPrice: 263,
-    maxPrice: Infinity,
+    maxPrice: 2_634,
     annualAcv: 10_000,
     customersFor100M: '10K',
+    whatItMeans:
+      'Mid-market. There is a sales call, a security questionnaire and an annual contract. You need a real go-to-market machine, so acquisition eats the margin long before the profit shows — and retention becomes the entire asset.',
+  },
+  {
+    name: 'Whales',
+    minPrice: 2_634,
+    maxPrice: Infinity,
+    annualAcv: 100_000,
+    customersFor100M: '1K',
+    whatItMeans:
+      'Enterprise. A thousand customers is a whole company. Field sales, procurement, months of cycle and custom work: the revenue is enormous per logo, but so is the cost of winning and keeping it. Beyond this simulator’s price range.',
   },
 ]
 
