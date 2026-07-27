@@ -3,10 +3,9 @@ import { AppHeader } from '@/components/AppHeader'
 import { BrandMark } from '@/components/BrandMark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { AnimalStage } from '@/components/home/AnimalStage'
 import { PricePad } from '@/components/home/PricePad'
 import { SavedLibrary } from '@/components/home/SavedLibrary'
-import { TierGuide } from '@/components/home/TierGuide'
+import { TierCarousel } from '@/components/home/TierCarousel'
 import { animalFor } from '@/lib/pricePad'
 import { AVIARY, type Colombe } from '@/lib/aviary'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
@@ -21,6 +20,7 @@ import { useSimulator } from '@/store/simulator'
     Tout le reste vient d'hypothèses médianes (quickSim.ts), affichées. */
 function MiniSimulator() {
   const [params, setParams] = useState({ price: 29, customers: 500 })
+  const [showTiers, setShowTiers] = useState(false)
   const loadInputs = useSimulator((state) => state.loadInputs)
 
   const inputs = useMemo(() => quickInputs(params), [params])
@@ -34,11 +34,30 @@ function MiniSimulator() {
 
   return (
     <Card className="reveal mt-8 gap-0 overflow-hidden p-5 lg:p-6" style={{ '--reveal-order': 2 } as React.CSSProperties}>
+      {/* Le bascule des paliers vit dans la carte : ils s'y montrent, sans
+          panneau qui recouvre tout. */}
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          {showTiers ? 'The five tiers' : 'Your SaaS, ballpark'}
+        </p>
+        <Button
+          variant={showTiers ? 'default' : 'outline'}
+          size="sm"
+          className="h-7 rounded-full px-3 text-xs"
+          aria-pressed={showTiers}
+          onClick={() => setShowTiers((value) => !value)}
+        >
+          Tiers
+        </Button>
+      </div>
+
+      {showTiers ? (
+        <div className="mx-auto max-w-xl py-2">
+          <TierCarousel current={animalFor(params.price)} />
+        </div>
+      ) : (
       <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
         <div>
-          <p className="font-display pb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Your SaaS, ballpark
-          </p>
           <PricePad params={params} onChange={setParams} />
           <p className="pt-3 text-xs text-muted-foreground">
             Median assumptions applied: churn {formatPercent(inputs.revenueChurn)}/mo,{' '}
@@ -46,8 +65,8 @@ function MiniSimulator() {
           </p>
         </div>
         <div className="flex flex-col justify-center lg:border-l lg:border-border/60 lg:pl-6">
-          {/* Le palier de Janz, incarné, juste au-dessus du chiffre. */}
-          <AnimalStage animal={animalFor(params.price)} />
+          {/* Les paliers en ronde, juste au-dessus du chiffre. */}
+          <TierCarousel current={animalFor(params.price)} />
 
           <p className="mt-3 text-sm text-muted-foreground" id="mini-simulateur-valo">
             Estimated valuation
@@ -75,6 +94,7 @@ function MiniSimulator() {
           </Button>
         </div>
       </div>
+      )}
     </Card>
   )
 }
@@ -127,12 +147,9 @@ export function HomeView() {
     <>
       <AppHeader
         actions={
-          <>
-            <TierGuide />
-            <Button size="sm" variant="outline" onClick={() => navigate('#/simulateur')}>
-              Full simulator
-            </Button>
-          </>
+          <Button size="sm" variant="outline" onClick={() => navigate('#/simulateur')}>
+            Full simulator
+          </Button>
         }
       />
       <main className="mx-auto max-w-5xl px-4 py-10 lg:px-6 lg:py-14">

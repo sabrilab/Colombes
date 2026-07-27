@@ -24,24 +24,20 @@ const MODEL_URLS: Record<string, string> = {
  * l'horizontale de l'écran. Un modèle couché sur X se lit tête à gauche,
  * corps à droite. L'élévation (~32°) donne le trois-quarts plongeant.
  */
-const CAMERA_POSITION = new THREE.Vector3(0, 1.6, 2.55)
+const CAMERA_POSITION = new THREE.Vector3(0, 1.05, 2.8)
 
 /** Le quart de tour qui fait le trois-quarts : le sujet s'ouvre vers nous. */
 const THREE_QUARTER_YAW = Math.PI / 7
 
 /**
- * Chaque modèle arrive dans son propre repère, et aucune heuristique ne
- * devine où est la tête : les bois d'un cerf élargissent sa boîte autant
- * que son corps l'allonge. Ces quarts de tour sont donc constatés à l'œil,
- * modèle par modèle, pour poser toutes les bêtes tête à gauche.
+ * Quart de tour qui couche la bête sur l'axe X, tête à gauche. Aucune
+ * heuristique ne devine où est la tête — les bois d'un cerf élargissent sa
+ * boîte autant que son corps l'allonge —, la valeur est donc constatée à
+ * l'œil. Les cinq modèles fournis partagent la même convention ; un modèle
+ * qui s'en écarterait se corrige par une entrée dans BASE_YAW_OVERRIDES.
  */
-const BASE_YAW: Record<string, number> = {
-  Mice: (3 * Math.PI) / 2,
-  Rabbits: Math.PI / 2,
-  Deer: 0,
-  Elephants: Math.PI / 2,
-  Whales: Math.PI / 2,
-}
+const DEFAULT_BASE_YAW = (3 * Math.PI) / 2
+const BASE_YAW_OVERRIDES: Record<string, number> = {}
 
 /**
  * Le plus gros maillage donne le cadre. Certains modèles traînent un nœud
@@ -174,7 +170,7 @@ export default function AnimalStage3D({ animal }: { animal: string }) {
         }
       })
 
-      group.rotateY(BASE_YAW[animal] ?? 0)
+      group.rotateY(BASE_YAW_OVERRIDES[animal] ?? DEFAULT_BASE_YAW)
       group.updateWorldMatrix(true, true)
 
       // Mise à l'échelle sur la sphère englobante : une souris et une baleine

@@ -30,7 +30,6 @@ export type PanelMode = 'simple' | 'expert'
 interface SimulatorState {
   inputs: SimulatorInputs
   scenarios: Scenario[]
-  theme: 'light' | 'dark'
   panelMode: PanelMode
   setInput: <K extends keyof SimulatorInputs>(key: K, value: SimulatorInputs[K]) => void
   setTier: (index: number, patch: Partial<Tier>) => void
@@ -48,13 +47,7 @@ interface SimulatorState {
   openSimulation: (id: string) => void
   pinScenario: (name: string) => void
   removeScenario: (id: string) => void
-  setTheme: (theme: 'light' | 'dark') => void
   setPanelMode: (mode: PanelMode) => void
-}
-
-function initialTheme(): 'light' | 'dark' {
-  if (typeof window === 'undefined') return 'light'
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
 export const useSimulator = create<SimulatorState>()(
@@ -62,7 +55,6 @@ export const useSimulator = create<SimulatorState>()(
     (set) => ({
       inputs: DEFAULT_INPUTS,
       scenarios: [],
-      theme: initialTheme(),
       panelMode: 'expert',
 
       setInput: (key, value) => set((state) => ({ inputs: { ...state.inputs, [key]: value } })),
@@ -144,11 +136,6 @@ export const useSimulator = create<SimulatorState>()(
       removeScenario: (id) =>
         set((state) => ({ scenarios: state.scenarios.filter((scenario) => scenario.id !== id) })),
 
-      setTheme: (theme) => {
-        document.documentElement.classList.toggle('dark', theme === 'dark')
-        set({ theme })
-      },
-
       setPanelMode: (mode) => set({ panelMode: mode }),
     }),
     {
@@ -157,13 +144,9 @@ export const useSimulator = create<SimulatorState>()(
       name: 'saas-simulator:v1',
       partialize: (state) => ({
         scenarios: state.scenarios,
-        theme: state.theme,
         panelMode: state.panelMode,
         savedSims: state.savedSims,
       }),
-      onRehydrateStorage: () => (state) => {
-        if (state) document.documentElement.classList.toggle('dark', state.theme === 'dark')
-      },
     },
   ),
 )

@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { ColombesWordmark, DoveLogo } from '@/components/DoveLogo'
-import { ThemeToggle } from '@/components/ThemeToggle'
 import { navigate } from '@/lib/router'
 
 interface AppHeaderProps {
@@ -19,10 +18,7 @@ export function AppHeader({ actions }: AppHeaderProps) {
         <DoveLogo className="h-6 w-[1.9rem] text-foreground" />
         <ColombesWordmark className="h-[0.72rem] w-auto text-foreground" />
       </button>
-      <div className="flex items-center gap-1.5">
-        {actions}
-        <ThemeToggle />
-      </div>
+      <div className="flex items-center gap-1.5">{actions}</div>
     </header>
   )
 }

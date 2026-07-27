@@ -329,7 +329,7 @@ export function PricePad({ params, onChange }: PricePadProps) {
             <span className="orb-invite absolute inset-0 rounded-full border border-lume/70" />
           )}
           <span className="dove-orb flex size-11 items-center justify-center rounded-full">
-            <DoveLogo className="h-4 w-5 text-background drop-shadow-sm" />
+            <DoveLogo className="h-4 w-5 text-lume drop-shadow-[0_0_6px_var(--lume)]" />
           </span>
         </span>
       </div>
