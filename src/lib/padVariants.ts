@@ -38,12 +38,23 @@ const ALL: PadLayers = {
   crosshair: true,
 }
 
+/** La variante retenue à l'issue du banc d'essai : celle que le site affiche. */
+const TIERS: PadLayers = {
+  bands: true,
+  isoLines: false,
+  isoLabels: false,
+  quadrant: true,
+  swarm: false,
+  ticks: false,
+  crosshair: true,
+}
+
 export const PAD_VARIANTS: PadVariant[] = [
   {
     id: 'current',
     name: 'Current',
     rationale:
-      'What the site ships today: tier bands, revenue contours, the lit quadrant and its swarm. The most informative, and the busiest.',
+      'Every layer at once: tier bands, revenue contours, the lit quadrant and its swarm. The most informative, and the busiest.',
     layers: ALL,
   },
   {
@@ -95,17 +106,9 @@ export const PAD_VARIANTS: PadVariant[] = [
     id: 'tiers',
     name: 'Tiers',
     rationale:
-      'Tier bands and the quadrant. You always know which animal you are in and how big you have grown, without any numeric clutter.',
-    layers: {
-      bands: true,
-      isoLines: false,
-      isoLabels: false,
-      quadrant: true,
-      swarm: false,
-      ticks: false,
-      crosshair: true,
-    },
+      'What the site ships. Tier bands and the quadrant: you always know which animal you are in and how big you have grown, without any numeric clutter.',
+    layers: TIERS,
   },
 ]
 
-export const DEFAULT_LAYERS = ALL
+export const DEFAULT_LAYERS = TIERS

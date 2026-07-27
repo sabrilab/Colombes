@@ -313,14 +313,14 @@ export const FR: Record<string, string> = {
   Instrument: 'Instrument',
   Quadrant: 'Quadrant',
   Contours: 'Contours',
-  'What the site ships today: tier bands, revenue contours, the lit quadrant and its swarm. The most informative, and the busiest.':
-    'Ce que le site affiche aujourd’hui : bandes de paliers, courbes de revenu, quadrant éclairé et son essaim. La plus informative, et la plus chargée.',
+  'Every layer at once: tier bands, revenue contours, the lit quadrant and its swarm. The most informative, and the busiest.':
+    'Toutes les couches à la fois : bandes de paliers, courbes de revenu, quadrant éclairé et son essaim. La plus informative, et la plus chargée.',
   'Axis markers and a crosshair, nothing else. The pad reads like a measuring tool: your position is exact, but nothing tells you what a good position would be.':
     'Repères d’axes et croix de visée, rien d’autre. Le pad se lit comme un instrument de mesure : votre position est exacte, mais rien ne dit ce que serait une bonne position.',
   'Only the lit area and the swarm. The size of the glow is the whole message — bigger means bigger business. Nothing to read, everything to feel.':
     'Seulement la zone éclairée et l’essaim. La taille de la lueur est tout le message — plus grand veut dire plus gros. Rien à lire, tout à ressentir.',
   'Revenue contours, labelled. You see the €10K and €100K MRR lines and how far you sit from them — the most useful for someone chasing a number, at the cost of a busier surface.':
     'Les courbes de revenu, étiquetées. Vous voyez les lignes à 10 k€ et 100 k€ de MRR et votre distance à chacune — la plus utile quand on court après un chiffre, au prix d’une surface plus chargée.',
-  'Tier bands and the quadrant. You always know which animal you are in and how big you have grown, without any numeric clutter.':
-    'Bandes de paliers et quadrant. Vous savez toujours dans quel animal vous êtes et jusqu’où vous avez grandi, sans aucun encombrement chiffré.',
+  'What the site ships. Tier bands and the quadrant: you always know which animal you are in and how big you have grown, without any numeric clutter.':
+    'Celle du site. Bandes de paliers et quadrant : vous savez toujours dans quel animal vous êtes et jusqu’où vous avez grandi, sans aucun encombrement chiffré.',
 }
