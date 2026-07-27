@@ -28,8 +28,21 @@ export function computeRevenue(inputs: SimulatorInputs): Revenue {
    */
   const ltdCashMonthly = inputs.ltdPerMonth * inputs.ltdPrice
 
+  /**
+   * Une audience détenue ne fabrique pas de la demande : elle rend gratuite
+   * une part de celle qu'on visait déjà. On la plafonne donc au nombre de
+   * nouveaux clients, et le reste se paie au prix fort.
+   */
+  const ownedNewCustomers = Math.min(
+    Math.floor(inputs.audienceSize * inputs.audienceConversion),
+    inputs.newCustomersPerMonth,
+  )
+  const paidNewCustomers = inputs.newCustomersPerMonth - ownedNewCustomers
+
   const variableCost = mrr * (1 - inputs.grossMargin)
-  const acquisitionCost = inputs.newCustomersPerMonth * inputs.cac
+  const acquisitionCost = paidNewCustomers * inputs.cac
+  const blendedCac =
+    inputs.newCustomersPerMonth > 0 ? acquisitionCost / inputs.newCustomersPerMonth : inputs.cac
   const sdeMonthly = mrr - variableCost - acquisitionCost - inputs.fixedCosts
   const sdeAnnual = sdeMonthly * 12
   const netMargin = mrr > 0 ? sdeMonthly / mrr : 0
@@ -41,6 +54,8 @@ export function computeRevenue(inputs: SimulatorInputs): Revenue {
     newMrr,
     variableCost,
     acquisitionCost,
+    ownedNewCustomers,
+    blendedCac,
     sdeMonthly,
     sdeAnnual,
     netMargin,

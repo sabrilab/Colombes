@@ -24,6 +24,8 @@ function inputs(overrides: Partial<SimulatorInputs> = {}): SimulatorInputs {
     techTransferability: 'medium',
     topClientShare: 0.08,
     ageMonths: 30,
+    audienceSize: 0,
+    audienceConversion: 0.005,
     annualShare: 0,
     annualDiscount: 0.17,
     ltdPerMonth: 0,

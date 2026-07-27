@@ -30,6 +30,10 @@ export interface SimulatorInputs {
   /** Part du MRR portée par le plus gros client, décimal. */
   topClientShare: number
   ageMonths: number
+  /** Taille de l'audience que vous possédez déjà : liste, abonnés, réseau. */
+  audienceSize: number
+  /** Part de cette audience qui devient cliente chaque mois, décimal. */
+  audienceConversion: number
   /** Part des clients qui paient l'année d'avance, décimal. */
   annualShare: number
   /** Remise accordée pour le paiement annuel, décimal. */
@@ -52,6 +56,10 @@ export interface Revenue {
   sdeMonthly: number
   sdeAnnual: number
   netMargin: number
+  /** Nouveaux clients venus de l'audience détenue, donc sans coût d'achat. */
+  ownedNewCustomers: number
+  /** Coût d'acquisition moyen une fois l'audience prise en compte. */
+  blendedCac: number
   /** Encaissé d'avance par les abonnements annuels, sur un an. */
   cashUpfront: number
   /**

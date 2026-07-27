@@ -21,6 +21,8 @@ export interface Colombe {
 }
 
 const base = {
+  audienceSize: 0,
+  audienceConversion: 0.002,
   annualShare: 0,
   annualDiscount: 0.17,
   ltdPerMonth: 0,

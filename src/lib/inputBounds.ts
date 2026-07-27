@@ -27,6 +27,8 @@ export const INPUT_BOUNDS = {
   fixedCosts: { min: 0, max: 100_000 },
   topClientShare: { min: 0, max: 0.6 },
   ageMonths: { min: 0, max: 96 },
+  audienceSize: { min: 0, max: 1_000_000 },
+  audienceConversion: { min: 0, max: 0.05 },
   annualShare: { min: 0, max: 1 },
   annualDiscount: { min: 0, max: 0.4 },
   ltdPerMonth: { min: 0, max: 500 },

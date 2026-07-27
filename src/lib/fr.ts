@@ -292,4 +292,14 @@ export const FR: Record<string, string> = {
   'Lifetime deal price': 'Prix du lifetime deal',
   'Lifetime deals bring {cash} of cash a month, and are deliberately left out of MRR, ARR and the valuation: a multiple is paid on recurring revenue, and counting one-off sales in it would inflate the number.':
     'Les lifetime deals apportent {cash} de trésorerie par mois, et restent délibérément hors du MRR, de l’ARR et de la valorisation : un multiple se paie sur du récurrent, et y compter des ventes uniques gonflerait le chiffre.',
+  // — Leviers d'actif —
+  Leverage: 'Leviers',
+  'Audience you own': 'Audience que vous possédez',
+  'Mailing list, followers, community, network — people you can reach for free.':
+    'Liste mail, abonnés, communauté, réseau — les gens que vous touchez sans payer.',
+  'Converts each month': 'Convertit chaque mois',
+  '{owned} of your {total} new customers cost nothing to reach, so your real CAC is {blended} instead of {list}.':
+    '{owned} de vos {total} nouveaux clients ne coûtent rien à atteindre : votre vrai CAC est de {blended} au lieu de {list}.',
+  'An audience makes acquisition cheaper — it never makes the asset worth more on its own. A buyer pays for what transfers with the company, and your following usually does not.':
+    'Une audience rend l’acquisition moins chère — elle ne rend jamais l’actif plus cher à elle seule. Un acheteur paie ce qui se transmet avec l’entreprise, et votre audience, en général, ne se transmet pas.',
 }

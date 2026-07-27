@@ -238,6 +238,52 @@ export function ControlPanel() {
         )}
 
         {expert && (
+          <AccordionItem value="leverage">
+            <AccordionTrigger>{t('Leverage')}</AccordionTrigger>
+            <AccordionContent>
+              <GaugeRow
+                label={t('Audience you own')}
+                value={inputs.audienceSize}
+                onChange={(value) => setInput('audienceSize', value)}
+                max={INPUT_BOUNDS.audienceSize.max}
+                scale="log"
+                format={(value) => value.toLocaleString('en-US')}
+                hint={t('Mailing list, followers, community, network — people you can reach for free.')}
+              />
+              {inputs.audienceSize > 0 && (
+                <GaugeRow
+                  label={t('Converts each month')}
+                  value={inputs.audienceConversion}
+                  onChange={(value) => setInput('audienceConversion', value)}
+                  max={INPUT_BOUNDS.audienceConversion.max}
+                  step={0.001}
+                  format={(value) => formatPercent(value, 1)}
+                  inputScale={100}
+                />
+              )}
+              {revenue.ownedNewCustomers > 0 && (
+                <p className="pt-1 text-xs text-muted-foreground">
+                  {t(
+                    '{owned} of your {total} new customers cost nothing to reach, so your real CAC is {blended} instead of {list}.',
+                    {
+                      owned: revenue.ownedNewCustomers,
+                      total: inputs.newCustomersPerMonth,
+                      blended: formatCurrency(revenue.blendedCac),
+                      list: formatCurrency(inputs.cac),
+                    },
+                  )}
+                </p>
+              )}
+              <p className="pt-2 text-xs text-muted-foreground/80">
+                {t(
+                  'An audience makes acquisition cheaper — it never makes the asset worth more on its own. A buyer pays for what transfers with the company, and your following usually does not.',
+                )}
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {expert && (
           <AccordionItem value="billing">
             <AccordionTrigger>{t('Billing')}</AccordionTrigger>
             <AccordionContent>
