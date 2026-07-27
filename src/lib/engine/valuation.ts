@@ -13,6 +13,7 @@ import {
   VALUATION_SPREAD,
 } from './benchmarks'
 import { clamp, interpolate, smoothstep } from './interpolate'
+import { effectiveChurn } from './revenue'
 import type {
   Economics,
   Growth,
@@ -50,7 +51,7 @@ export function computeValuation(
     {
       key: 'revenueChurn',
       label: 'Churn',
-      deltaPct: interpolate(ADJUSTMENT_ANCHORS.revenueChurn, inputs.revenueChurn),
+      deltaPct: interpolate(ADJUSTMENT_ANCHORS.revenueChurn, effectiveChurn(inputs)),
     },
     {
       key: 'growthMoM',

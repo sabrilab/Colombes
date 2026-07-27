@@ -21,6 +21,10 @@ export interface Colombe {
 }
 
 const base = {
+  annualShare: 0,
+  annualDiscount: 0.17,
+  ltdPerMonth: 0,
+  ltdPrice: 300,
   baseMultipleOverride: null,
 } as const
 

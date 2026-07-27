@@ -27,6 +27,10 @@ export const INPUT_BOUNDS = {
   fixedCosts: { min: 0, max: 100_000 },
   topClientShare: { min: 0, max: 0.6 },
   ageMonths: { min: 0, max: 96 },
+  annualShare: { min: 0, max: 1 },
+  annualDiscount: { min: 0, max: 0.4 },
+  ltdPerMonth: { min: 0, max: 500 },
+  ltdPrice: { min: 0, max: 5_000 },
   /** Aligné sur MULTIPLE_MIN / MULTIPLE_MAX de benchmarks.ts. */
   baseMultipleOverride: { min: 1, max: 10 },
 } as const satisfies Record<string, Bounds>

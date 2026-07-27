@@ -274,4 +274,22 @@ export const FR: Record<string, string> = {
     'En retard : vous y arrivez au mois {month}, après votre fenêtre de {horizon} mois.',
   'Not within 36 months at this pace — {gap} still to go.':
     'Pas d’ici 36 mois à ce rythme — il reste {gap} à parcourir.',
+  // — Positionnement —
+  'What your {saas} is really worth': 'Ce que vaut vraiment votre {saas}',
+  'bootstrapped SaaS': 'SaaS bootstrappé',
+  'Set a price and a customer count for a first estimate, then see the levers that move the number: churn, pricing, acquisition. Built for founders between €1K and €100K of MRR — that is where the market benchmarks it uses are calibrated.':
+    'Réglez un prix et un nombre de clients pour une première estimation, puis voyez les leviers qui font bouger le chiffre : churn, pricing, acquisition. Pensé pour les fondateurs entre 1 k€ et 100 k€ de MRR — c’est là que sont calibrés les barèmes de marché utilisés.',
+  // — Facturation —
+  Billing: 'Facturation',
+  'Paid yearly': 'Payé à l’année',
+  'Share of customers who pay twelve months upfront.':
+    'Part des clients qui paient douze mois d’avance.',
+  'Yearly discount': 'Remise annuelle',
+  '17% marker — the classic “two months free”': 'Repère 17 % — le classique « deux mois offerts »',
+  'Yearly plans cash in {cash} upfront and cut effective churn to {churn}/mo — a customer committed for twelve months only decides at renewal.':
+    'L’annuel encaisse {cash} d’avance et ramène le churn effectif à {churn}/mois — un client engagé douze mois ne décide qu’au renouvellement.',
+  'Lifetime deals / mo': 'Lifetime deals / mois',
+  'Lifetime deal price': 'Prix du lifetime deal',
+  'Lifetime deals bring {cash} of cash a month, and are deliberately left out of MRR, ARR and the valuation: a multiple is paid on recurring revenue, and counting one-off sales in it would inflate the number.':
+    'Les lifetime deals apportent {cash} de trésorerie par mois, et restent délibérément hors du MRR, de l’ARR et de la valorisation : un multiple se paie sur du récurrent, et y compter des ventes uniques gonflerait le chiffre.',
 }

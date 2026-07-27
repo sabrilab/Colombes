@@ -21,6 +21,10 @@ function inputs(overrides: Partial<SimulatorInputs> = {}): SimulatorInputs {
     techTransferability: 'medium',
     topClientShare: 0.1,
     ageMonths: 24,
+    annualShare: 0,
+    annualDiscount: 0.17,
+    ltdPerMonth: 0,
+    ltdPrice: 300,
     baseMultipleOverride: null,
     ...overrides,
   }

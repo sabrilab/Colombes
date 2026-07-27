@@ -30,6 +30,14 @@ export interface SimulatorInputs {
   /** Part du MRR portée par le plus gros client, décimal. */
   topClientShare: number
   ageMonths: number
+  /** Part des clients qui paient l'année d'avance, décimal. */
+  annualShare: number
+  /** Remise accordée pour le paiement annuel, décimal. */
+  annualDiscount: number
+  /** Lifetime deals vendus par mois. */
+  ltdPerMonth: number
+  /** Prix d'un lifetime deal, en euros. */
+  ltdPrice: number
   /** `null` = suivre la courbe de barème. */
   baseMultipleOverride: number | null
 }
@@ -44,6 +52,14 @@ export interface Revenue {
   sdeMonthly: number
   sdeAnnual: number
   netMargin: number
+  /** Encaissé d'avance par les abonnements annuels, sur un an. */
+  cashUpfront: number
+  /**
+   * Trésorerie mensuelle des lifetime deals. Volontairement à l'écart du
+   * MRR, de l'ARR et de la valorisation : ce n'est pas du récurrent, et
+   * l'inclure gonflerait un multiple qui se paie sur la récurrence.
+   */
+  ltdCashMonthly: number
 }
 
 export interface Economics {

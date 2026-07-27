@@ -64,6 +64,10 @@ export function decodeInputs(fragment: string): SimulatorInputs | null {
     'fixedCosts',
     'topClientShare',
     'ageMonths',
+    'annualShare',
+    'annualDiscount',
+    'ltdPerMonth',
+    'ltdPrice',
   ] as const
   if (!numericKeys.every((key) => isNumber(candidate[key]))) return null
 
@@ -92,6 +96,10 @@ export function decodeInputs(fragment: string): SimulatorInputs | null {
     fixedCosts: clampTo(INPUT_BOUNDS.fixedCosts, raw.fixedCosts),
     topClientShare: clampTo(INPUT_BOUNDS.topClientShare, raw.topClientShare),
     ageMonths: clampTo(INPUT_BOUNDS.ageMonths, raw.ageMonths),
+    annualShare: clampTo(INPUT_BOUNDS.annualShare, raw.annualShare),
+    annualDiscount: clampTo(INPUT_BOUNDS.annualDiscount, raw.annualDiscount),
+    ltdPerMonth: clampTo(INPUT_BOUNDS.ltdPerMonth, raw.ltdPerMonth),
+    ltdPrice: clampTo(INPUT_BOUNDS.ltdPrice, raw.ltdPrice),
     baseMultipleOverride:
       raw.baseMultipleOverride === null
         ? null

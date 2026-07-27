@@ -121,6 +121,14 @@ export const MULTIPLE_MAX = 10
 /** Demi-largeur de la fourchette affichée. */
 export const VALUATION_SPREAD = 0.15
 
+/**
+ * Réduction du churn apportée par l'engagement annuel. Un client engagé
+ * douze mois ne peut pas partir chaque mois : il ne décide qu'au
+ * renouvellement. Les cohortes annuelles retiennent couramment de l'ordre
+ * du double des mensuelles ; on retient donc la moitié du churn.
+ */
+export const ANNUAL_CHURN_RELIEF = 0.5
+
 export const PROJECTION_MONTHS = 36
 
 export interface PriceZone {

@@ -195,12 +195,17 @@ export function HomeView() {
               className="font-display reveal text-3xl font-bold uppercase tracking-tight lg:text-4xl"
               style={{ '--reveal-order': 0 } as React.CSSProperties}
             >
-              {t('How much is a {saas} worth?', { saas: '\u0000' })
+              {t('What your {saas} is really worth', { saas: '\u0000' })
                 .split('\u0000')
                 .flatMap((part, index) =>
                   index === 0
                     ? [part]
-                    : [<span key="saas" className="text-lume">SaaS</span>, part],
+                    : [
+                        <span key="saas" className="text-lume">
+                          {t('bootstrapped SaaS')}
+                        </span>,
+                        part,
+                      ],
                 )}
             </h1>
             <p
@@ -208,7 +213,7 @@ export function HomeView() {
               style={{ '--reveal-order': 1 } as React.CSSProperties}
             >
               {t(
-                'Set a price and a customer count for a first estimate, explore the aviary to see what makes a great asset — then fine-tune yours in expert mode.',
+                'Set a price and a customer count for a first estimate, then see the levers that move the number: churn, pricing, acquisition. Built for founders between €1K and €100K of MRR — that is where the market benchmarks it uses are calibrated.',
               )}
             </p>
           </div>

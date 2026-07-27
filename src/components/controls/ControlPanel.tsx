@@ -61,7 +61,7 @@ export function ControlPanel() {
   const removeTier = useSimulator((state) => state.removeTier)
   const panelMode = useSimulator((state) => state.panelMode)
   const setPanelMode = useSimulator((state) => state.setPanelMode)
-  const { revenue } = useResults()
+  const { revenue, growth } = useResults()
   const t = useT()
 
   const expert = panelMode === 'expert'
@@ -233,6 +233,74 @@ export function ControlPanel() {
                 step={100}
                 format={formatCurrency}
               />
+            </AccordionContent>
+          </AccordionItem>
+        )}
+
+        {expert && (
+          <AccordionItem value="billing">
+            <AccordionTrigger>{t('Billing')}</AccordionTrigger>
+            <AccordionContent>
+              <GaugeRow
+                label={t('Paid yearly')}
+                value={inputs.annualShare}
+                onChange={(value) => setInput('annualShare', value)}
+                max={INPUT_BOUNDS.annualShare.max}
+                step={0.01}
+                format={(value) => formatPercent(value, 0)}
+                inputScale={100}
+                hint={t('Share of customers who pay twelve months upfront.')}
+              />
+              {inputs.annualShare > 0 && (
+                <GaugeRow
+                  label={t('Yearly discount')}
+                  value={inputs.annualDiscount}
+                  onChange={(value) => setInput('annualDiscount', value)}
+                  max={INPUT_BOUNDS.annualDiscount.max}
+                  step={0.01}
+                  format={(value) => formatPercent(value, 0)}
+                  inputScale={100}
+                  marker={0.17}
+                  markerLabel={t('17% marker — the classic “two months free”')}
+                />
+              )}
+              {inputs.annualShare > 0 && (
+                <p className="pt-1 text-xs text-muted-foreground">
+                  {t(
+                    'Yearly plans cash in {cash} upfront and cut effective churn to {churn}/mo — a customer committed for twelve months only decides at renewal.',
+                    {
+                      cash: formatCurrency(revenue.cashUpfront),
+                      churn: formatPercent(growth.netChurn + inputs.expansion),
+                    },
+                  )}
+                </p>
+              )}
+
+              <GaugeRow
+                label={t('Lifetime deals / mo')}
+                value={inputs.ltdPerMonth}
+                onChange={(value) => setInput('ltdPerMonth', value)}
+                max={INPUT_BOUNDS.ltdPerMonth.max}
+                format={(value) => value.toLocaleString('en-US')}
+              />
+              {inputs.ltdPerMonth > 0 && (
+                <>
+                  <GaugeRow
+                    label={t('Lifetime deal price')}
+                    value={inputs.ltdPrice}
+                    onChange={(value) => setInput('ltdPrice', value)}
+                    max={INPUT_BOUNDS.ltdPrice.max}
+                    step={10}
+                    format={formatCurrency}
+                  />
+                  <p role="status" className="pt-1 text-xs text-amber-600 dark:text-amber-500">
+                    {t(
+                      'Lifetime deals bring {cash} of cash a month, and are deliberately left out of MRR, ARR and the valuation: a multiple is paid on recurring revenue, and counting one-off sales in it would inflate the number.',
+                      { cash: formatCurrency(revenue.ltdCashMonthly) },
+                    )}
+                  </p>
+                </>
+              )}
             </AccordionContent>
           </AccordionItem>
         )}

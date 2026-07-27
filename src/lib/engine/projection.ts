@@ -1,8 +1,9 @@
 import { PROJECTION_MONTHS } from './benchmarks'
+import { effectiveChurn } from './revenue'
 import type { Growth, Revenue, SimulatorInputs } from './types'
 
 export function computeGrowth(inputs: SimulatorInputs, revenue: Revenue): Growth {
-  const netChurn = inputs.revenueChurn - inputs.expansion
+  const netChurn = effectiveChurn(inputs) - inputs.expansion
 
   // Point fixe de la récurrence : mrr* × netChurn = newMrr.
   // À rétention nette négative ou nulle, il n'y a pas de plafond.
@@ -16,7 +17,7 @@ export function computeGrowth(inputs: SimulatorInputs, revenue: Revenue): Growth
 }
 
 export function computeProjection(inputs: SimulatorInputs, revenue: Revenue): number[] {
-  const retention = 1 - inputs.revenueChurn + inputs.expansion
+  const retention = 1 - effectiveChurn(inputs) + inputs.expansion
   const series: number[] = [revenue.mrr]
 
   for (let month = 1; month <= PROJECTION_MONTHS; month++) {
