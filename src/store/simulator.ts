@@ -5,6 +5,7 @@ import type { SimulatorInputs, SimulatorResults, Tier } from '@/lib/engine/types
 import { DEFAULT_INPUTS } from '@/lib/defaults'
 import { addTierTo, removeTierAt } from '@/lib/tiers'
 import { readInputsFromHash } from '@/lib/urlState'
+import { detectLanguage, translate, type Language } from '@/lib/i18n'
 
 export interface Scenario {
   id: string
@@ -31,6 +32,8 @@ interface SimulatorState {
   inputs: SimulatorInputs
   scenarios: Scenario[]
   panelMode: PanelMode
+  language: Language
+  setLanguage: (language: Language) => void
   setInput: <K extends keyof SimulatorInputs>(key: K, value: SimulatorInputs[K]) => void
   setTier: (index: number, patch: Partial<Tier>) => void
   addTier: () => void
@@ -56,6 +59,9 @@ export const useSimulator = create<SimulatorState>()(
       inputs: DEFAULT_INPUTS,
       scenarios: [],
       panelMode: 'expert',
+      language: detectLanguage(),
+
+      setLanguage: (language) => set({ language }),
 
       setInput: (key, value) => set((state) => ({ inputs: { ...state.inputs, [key]: value } })),
 
@@ -145,6 +151,7 @@ export const useSimulator = create<SimulatorState>()(
       partialize: (state) => ({
         scenarios: state.scenarios,
         panelMode: state.panelMode,
+        language: state.language,
         savedSims: state.savedSims,
       }),
     },
@@ -161,4 +168,11 @@ export function applyHashInputs(): boolean {
 
 export function useResults(): SimulatorResults {
   return compute(useSimulator((state) => state.inputs))
+}
+
+/** Traducteur lié à la langue courante. Les composants n'appellent que lui. */
+export function useT() {
+  const language = useSimulator((state) => state.language)
+  return (text: string, vars?: Record<string, string | number>) =>
+    translate(language, text, vars)
 }

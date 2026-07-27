@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { PRICING_ANIMALS, type PricingAnimal } from '@/lib/pricePad'
+import { useT } from '@/store/simulator'
 
 const AnimalStage3D = lazy(() => import('./AnimalStage3D'))
 
@@ -53,6 +54,7 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
   const currentIndex = PRICING_ANIMALS.findIndex((animal) => animal.name === current.name)
   const [index, setIndex] = useState(Math.max(currentIndex, 0))
   const dragStart = useRef<number | null>(null)
+  const t = useT()
 
   // La simulation mène la danse : changer de palier recentre la ronde.
   useEffect(() => {
@@ -112,7 +114,7 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
           type="button"
           onClick={() => go(-1)}
           disabled={index === 0}
-          aria-label="Previous tier"
+          aria-label={t('Previous tier')}
           className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25"
         >
           <ChevronLeft className="size-4" aria-hidden />
@@ -121,7 +123,7 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
           type="button"
           onClick={() => go(1)}
           disabled={index === PRICING_ANIMALS.length - 1}
-          aria-label="Next tier"
+          aria-label={t('Next tier')}
           className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25"
         >
           <ChevronRight className="size-4" aria-hidden />
@@ -131,31 +133,31 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
       <div aria-live="polite">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-lume">
-            {shown.name}
+            {t(shown.name)}
           </p>
           {isYours ? (
             <span className="rounded-full border border-lume/40 px-1.5 text-[10px] uppercase tracking-wider text-lume">
-              your tier
+              {t('your tier')}
             </span>
           ) : (
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-              ${shown.annualAcv.toLocaleString('en-US')}/yr per customer
+              {t('${acv}/yr per customer', { acv: shown.annualAcv.toLocaleString('en-US') })}
             </span>
           )}
         </div>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-          {shown.whatItMeans}
+          {t(shown.whatItMeans)}
         </p>
       </div>
 
-      <div className="mt-2 flex gap-1" role="tablist" aria-label="Pricing tiers">
+      <div className="mt-2 flex gap-1" role="tablist" aria-label={t('Pricing tiers')}>
         {PRICING_ANIMALS.map((animal, position) => (
           <button
             key={animal.name}
             type="button"
             role="tab"
             aria-selected={position === index}
-            aria-label={animal.name}
+            aria-label={t(animal.name)}
             onClick={() => setIndex(position)}
             className={`h-1 flex-1 rounded-full transition-colors ${
               position === index ? 'bg-lume' : 'bg-foreground/15 hover:bg-foreground/30'

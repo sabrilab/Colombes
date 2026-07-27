@@ -138,10 +138,10 @@ export function ColombeProfileView({ id }: { id: string }) {
           className="reveal flex flex-wrap gap-2 pb-6"
           style={{ '--reveal-order': 5 } as React.CSSProperties}
         >
-          <Button className="lume-pill rounded-full px-5" onClick={openInSimulator}>
+          <Button className="lume-pill px-5" onClick={openInSimulator}>
             Open in the simulator
           </Button>
-          <Button variant="outline" className="rounded-full" onClick={() => navigate('#/')}>
+          <Button variant="outline" onClick={() => navigate('#/')}>
             See another dove
           </Button>
         </div>

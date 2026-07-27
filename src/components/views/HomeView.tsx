@@ -17,13 +17,14 @@ import { formatCompactCurrency, formatCurrency, formatMultiple, formatPercent } 
 import { quickInputs } from '@/lib/quickSim'
 import { navigate } from '@/lib/router'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
-import { useSimulator } from '@/store/simulator'
+import { useSimulator, useT } from '@/store/simulator'
 
 /** Le simulateur « à la louche » : deux curseurs, la valo en direct.
     Tout le reste vient d'hypothèses médianes (quickSim.ts), affichées. */
 function MiniSimulator() {
   const [params, setParams] = useState({ price: 29, customers: 500 })
   const [showTiers, setShowTiers] = useState(false)
+  const t = useT()
   const loadInputs = useSimulator((state) => state.loadInputs)
 
   const inputs = useMemo(() => quickInputs(params), [params])
@@ -41,16 +42,16 @@ function MiniSimulator() {
           panneau qui recouvre tout. */}
       <div className="mb-3 flex items-start justify-between gap-3">
         <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {showTiers ? 'The five tiers' : 'Your SaaS, ballpark'}
+          {showTiers ? t('The five tiers') : t('Your SaaS, ballpark')}
         </p>
         <Button
           variant={showTiers ? 'default' : 'outline'}
           size="sm"
-          className="h-7 rounded-full px-3 text-xs"
+          className="h-7 px-3 text-xs"
           aria-pressed={showTiers}
           onClick={() => setShowTiers((value) => !value)}
         >
-          Tiers
+          {t('Tiers')}
         </Button>
       </div>
 
@@ -63,8 +64,10 @@ function MiniSimulator() {
         <div>
           <PricePad params={params} onChange={setParams} />
           <p className="pt-3 text-xs text-muted-foreground">
-            Median assumptions applied: churn {formatPercent(inputs.revenueChurn)}/mo,{' '}
-            {describeHiddenAssumptions(inputs)}.
+            {t('Median assumptions applied: churn {churn}/mo, {rest}.', {
+              churn: formatPercent(inputs.revenueChurn),
+              rest: describeHiddenAssumptions(inputs, t),
+            })}
           </p>
         </div>
         <div className="flex flex-col justify-center lg:border-l lg:border-border/60 lg:pl-6">
@@ -72,7 +75,7 @@ function MiniSimulator() {
           <TierCarousel current={animalFor(params.price)} />
 
           <p className="mt-3 text-sm text-muted-foreground" id="mini-simulateur-valo">
-            Estimated valuation
+            {t('Estimated valuation')}
           </p>
           <p
             className="metal-number font-mono text-4xl font-semibold tabular-nums lg:text-5xl"
@@ -92,8 +95,8 @@ function MiniSimulator() {
               {formatMultiple(results.valuation.multiple)} EBITDA
             </p>
           </div>
-          <Button className="lume-pill mt-4 w-fit rounded-full px-5" onClick={refine}>
-            Refine in the simulator
+          <Button className="lume-pill mt-4 w-fit px-5" onClick={refine}>
+            {t('Refine in the simulator')}
           </Button>
         </div>
       </div>
@@ -104,6 +107,7 @@ function MiniSimulator() {
 
 function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
   const results = useMemo(() => compute(colombe.inputs), [colombe])
+  const t = useT()
 
   return (
     <button
@@ -111,7 +115,7 @@ function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
       onClick={() => navigate(`#/colombe/${colombe.id}`)}
       className="reveal group text-left"
       style={{ '--reveal-order': order } as React.CSSProperties}
-      aria-label={`View ${colombe.name}'s profile`}
+      aria-label={t('View {name}’s profile', { name: colombe.name })}
     >
       <Card className="h-full gap-0 overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-foreground/25 group-focus-visible:border-foreground/40">
         {/* Bandeau d'identité : la marque et son secteur, rien d'autre. */}
@@ -122,7 +126,7 @@ function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
           />
           <div className="min-w-0">
             <p className="font-display text-base font-semibold leading-tight">{colombe.name}</p>
-            <p className="truncate text-xs text-muted-foreground">{colombe.sector}</p>
+            <p className="truncate text-xs text-muted-foreground">{t(colombe.sector)}</p>
           </div>
         </div>
 
@@ -130,7 +134,7 @@ function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
         <div className="flex items-end justify-between gap-3 p-4">
           <div>
             <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-              Valuation
+              {t('Valuation')}
             </p>
             <p className="font-mono text-2xl font-semibold tabular-nums">
               {formatCompactCurrency(results.valuation.value)}
@@ -148,13 +152,18 @@ function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
   )
 }
 
-function announceAccounts() {
-  toast('Accounts are coming soon', {
-    description: 'Until then, your saved simulations live in this browser.',
-  })
+function useAnnounceAccounts() {
+  const t = useT()
+  return () =>
+    toast(t('Accounts are coming soon'), {
+      description: t('Until then, your saved simulations live in this browser.'),
+    })
 }
 
 export function HomeView() {
+  const t = useT()
+  const announceAccounts = useAnnounceAccounts()
+
   return (
     <>
       <AppHeader
@@ -166,15 +175,15 @@ export function HomeView() {
               className="hidden sm:inline-flex"
               onClick={() => navigate('#/simulateur')}
             >
-              Full simulator
+              {t('Full simulator')}
             </Button>
             {/* Les comptes n'existent pas encore : plutôt qu'un bouton mort ou
                 un faux formulaire, on dit où vivent les données aujourd'hui. */}
             <Button size="sm" variant="ghost" onClick={announceAccounts}>
-              Sign in
+              {t('Sign in')}
             </Button>
-            <Button size="sm" className="lume-pill rounded-full px-4" onClick={announceAccounts}>
-              Sign up
+            <Button size="sm" className="lume-pill px-4" onClick={announceAccounts}>
+              {t('Sign up')}
             </Button>
           </>
         }
@@ -186,14 +195,21 @@ export function HomeView() {
               className="font-display reveal text-3xl font-bold uppercase tracking-tight lg:text-4xl"
               style={{ '--reveal-order': 0 } as React.CSSProperties}
             >
-              How much is a <span className="text-lume">SaaS</span> worth?
+              {t('How much is a {saas} worth?', { saas: '\u0000' })
+                .split('\u0000')
+                .flatMap((part, index) =>
+                  index === 0
+                    ? [part]
+                    : [<span key="saas" className="text-lume">SaaS</span>, part],
+                )}
             </h1>
             <p
               className="reveal mt-3 text-muted-foreground"
               style={{ '--reveal-order': 1 } as React.CSSProperties}
             >
-              Set a price and a customer count for a first estimate, explore the aviary to see
-              what makes a great asset — then fine-tune yours in expert mode.
+              {t(
+                'Set a price and a customer count for a first estimate, explore the aviary to see what makes a great asset — then fine-tune yours in expert mode.',
+              )}
             </p>
           </div>
           <MiniSimulator />
@@ -206,7 +222,7 @@ export function HomeView() {
             className="font-display reveal text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground"
             style={{ '--reveal-order': 3 } as React.CSSProperties}
           >
-            The aviary
+            {t('The aviary')}
           </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {AVIARY.map((colombe, index) => (
@@ -214,8 +230,9 @@ export function HomeView() {
             ))}
           </div>
           <p className="mt-6 text-xs text-muted-foreground">
-            Fictional companies, plausible numbers: every profile is calibrated on the
-            simulator's market benchmarks (Acquire.com, FE International, ChartMogul).
+            {t(
+              'Fictional companies, plausible numbers: every profile is calibrated on the simulator’s market benchmarks (Acquire.com, FE International, ChartMogul).',
+            )}
           </p>
         </section>
 

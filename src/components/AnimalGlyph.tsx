@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useT } from '@/store/simulator'
 
 /**
  * Les totems en silhouette : le même bestiaire que la scène 3D, mais en
@@ -82,12 +83,14 @@ export function AnimalGlyph({ animal, className }: { animal: string; className?:
 
 /** Le totem accompagné de son nom : le rappel de palier, partout pareil. */
 export function TierBadge({ animal, className }: { animal: string; className?: string }) {
+  const t = useT()
+
   return (
     <span
       className={`inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-muted-foreground ${className ?? ''}`}
     >
       <AnimalGlyph animal={animal} className="h-3.5 w-5 shrink-0" />
-      {animal}
+      {t(animal)}
     </span>
   )
 }

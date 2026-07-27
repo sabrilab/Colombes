@@ -31,7 +31,7 @@ export function SaveBar() {
         className="h-9 w-48"
         aria-label="Title for this simulation"
       />
-      <Button size="sm" className="lume-pill rounded-full px-4" onClick={handleSave} disabled={full}>
+      <Button size="sm" className="lume-pill px-4" onClick={handleSave} disabled={full}>
         Save simulation
       </Button>
       {full ? (

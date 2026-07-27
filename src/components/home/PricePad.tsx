@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { Lock, LockOpen } from 'lucide-react'
 import { DoveLogo } from '@/components/DoveLogo'
 import { formatCurrency } from '@/lib/format'
+import { useT } from '@/store/simulator'
 import {
   animalFor,
   isoRevenueSegment,
@@ -78,25 +79,26 @@ function Readout({
   onToggleLock: () => void
 }) {
   const LockIcon = locked ? Lock : LockOpen
+  const t = useT()
 
   return (
     <div className="flex items-start gap-2">
       <div>
-        <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{label}</p>
+        <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{t(label)}</p>
         <p
           className={`font-mono text-2xl font-semibold tabular-nums transition-colors lg:text-3xl ${
             locked ? 'text-lume' : ''
           }`}
         >
           {value}
-          {unit && <span className="text-sm font-normal text-muted-foreground">{unit}</span>}
+          {unit && <span className="text-sm font-normal text-muted-foreground">{t(unit)}</span>}
         </p>
       </div>
       <button
         type="button"
         onClick={onToggleLock}
         aria-pressed={locked}
-        aria-label={locked ? `Unlock ${label}` : `Lock ${label}`}
+        aria-label={t(locked ? 'Unlock {label}' : 'Lock {label}', { label: t(label) })}
         className={`mt-4 rounded-md p-1 transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
           locked ? 'text-lume' : 'text-muted-foreground/50 hover:text-foreground'
         }`}
@@ -121,6 +123,7 @@ export function PricePad({ params, onChange }: PricePadProps) {
   const [locked, setLocked] = useState<LockState>({ price: false, customers: false })
   // L'invite au geste s'éteint dès le premier contact, quel qu'il soit.
   const [touched, setTouched] = useState(false)
+  const t = useT()
 
   const position = paramsToPad(params)
   const animal = animalFor(params.price)
@@ -336,12 +339,19 @@ export function PricePad({ params, onChange }: PricePadProps) {
 
       <p className="text-xs text-muted-foreground">
         {bothLocked
-          ? 'Both axes are locked — unlock one to keep exploring.'
+          ? t('Both axes are locked — unlock one to keep exploring.')
           : locked.price
-            ? `Price locked at ${formatCurrency(params.price)}: drag to see how many customers you need.`
+            ? t('Price locked at {price}: drag to see how many customers you need.', {
+                price: formatCurrency(params.price),
+              })
             : locked.customers
-              ? `Customers locked at ${params.customers.toLocaleString('en-US')}: drag to price them.`
-              : `${animal.name} tier · ~$${animal.annualAcv.toLocaleString('en-US')}/yr per customer. Lock an axis to explore the other.`}
+              ? t('Customers locked at {customers}: drag to price them.', {
+                  customers: params.customers.toLocaleString('en-US'),
+                })
+              : t('{tier} tier · ~${acv}/yr per customer. Lock an axis to explore the other.', {
+                  tier: t(animal.name),
+                  acv: animal.annualAcv.toLocaleString('en-US'),
+                })}
       </p>
     </div>
   )
