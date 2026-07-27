@@ -4,6 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { HomeView } from '@/components/views/HomeView'
 import { SimulatorView } from '@/components/views/SimulatorView'
 import { ColombeProfileView } from '@/components/views/ColombeProfileView'
+import { PadLabView } from '@/components/views/PadLabView'
 import { useRoute } from '@/lib/router'
 import { applyHashInputs } from '@/store/simulator'
 
@@ -21,6 +22,7 @@ export default function App() {
       <div className="min-h-svh bg-background text-foreground">
         {route.view === 'home' && <HomeView />}
         {route.view === 'simulator' && <SimulatorView />}
+        {route.view === 'lab' && <PadLabView />}
         {route.view === 'colombe' && <ColombeProfileView id={route.id} />}
       </div>
       <Toaster />

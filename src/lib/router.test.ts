@@ -17,6 +17,10 @@ describe('parseRoute', () => {
     expect(parseRoute('#/colombe/turquoise')).toEqual({ view: 'colombe', id: 'turquoise' })
   })
 
+  it('reconnaît le banc d essai du pad', () => {
+    expect(parseRoute('#/lab')).toEqual({ view: 'lab' })
+  })
+
   it('route les liens de partage historiques vers le simulateur', () => {
     expect(parseRoute('#s=eyJhIjoxfQ')).toEqual({ view: 'simulator' })
   })

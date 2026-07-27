@@ -302,4 +302,25 @@ export const FR: Record<string, string> = {
     '{owned} de vos {total} nouveaux clients ne coûtent rien à atteindre : votre vrai CAC est de {blended} au lieu de {list}.',
   'An audience makes acquisition cheaper — it never makes the asset worth more on its own. A buyer pays for what transfers with the company, and your following usually does not.':
     'Une audience rend l’acquisition moins chère — elle ne rend jamais l’actif plus cher à elle seule. Un acheteur paie ce qui se transmet avec l’entreprise, et votre audience, en général, ne se transmet pas.',
+  // — Banc d'essai du pad —
+  'Pad variants': 'Variantes du pad',
+  'Back to home': 'Retour à l’accueil',
+  'Layers on:': 'Couches actives :',
+  'Every variant below is fully playable — drag the dove, lock an axis. They differ only in which layers are drawn. Tell me which one reads best and it becomes the one that ships.':
+    'Chaque variante ci-dessous est pleinement jouable — faites glisser la colombe, verrouillez un axe. Elles ne diffèrent que par les couches dessinées. Dites-moi laquelle se lit le mieux, elle deviendra celle du site.',
+  // — Variantes du pad —
+  Current: 'Actuelle',
+  Instrument: 'Instrument',
+  Quadrant: 'Quadrant',
+  Contours: 'Contours',
+  'What the site ships today: tier bands, revenue contours, the lit quadrant and its swarm. The most informative, and the busiest.':
+    'Ce que le site affiche aujourd’hui : bandes de paliers, courbes de revenu, quadrant éclairé et son essaim. La plus informative, et la plus chargée.',
+  'Axis markers and a crosshair, nothing else. The pad reads like a measuring tool: your position is exact, but nothing tells you what a good position would be.':
+    'Repères d’axes et croix de visée, rien d’autre. Le pad se lit comme un instrument de mesure : votre position est exacte, mais rien ne dit ce que serait une bonne position.',
+  'Only the lit area and the swarm. The size of the glow is the whole message — bigger means bigger business. Nothing to read, everything to feel.':
+    'Seulement la zone éclairée et l’essaim. La taille de la lueur est tout le message — plus grand veut dire plus gros. Rien à lire, tout à ressentir.',
+  'Revenue contours, labelled. You see the €10K and €100K MRR lines and how far you sit from them — the most useful for someone chasing a number, at the cost of a busier surface.':
+    'Les courbes de revenu, étiquetées. Vous voyez les lignes à 10 k€ et 100 k€ de MRR et votre distance à chacune — la plus utile quand on court après un chiffre, au prix d’une surface plus chargée.',
+  'Tier bands and the quadrant. You always know which animal you are in and how big you have grown, without any numeric clutter.':
+    'Bandes de paliers et quadrant. Vous savez toujours dans quel animal vous êtes et jusqu’où vous avez grandi, sans aucun encombrement chiffré.',
 }

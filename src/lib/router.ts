@@ -1,6 +1,10 @@
 import { useSyncExternalStore } from 'react'
 
-export type Route = { view: 'home' } | { view: 'simulator' } | { view: 'colombe'; id: string }
+export type Route =
+  | { view: 'home' }
+  | { view: 'simulator' }
+  | { view: 'lab' }
+  | { view: 'colombe'; id: string }
 
 /**
  * Mini-routeur par hash : trois routes et la compatibilité avec les liens de
@@ -13,6 +17,7 @@ export function parseRoute(hash: string): Route {
   const path = clean.replace(/\/+$/, '')
   if (path === '' || path === '/') return { view: 'home' }
   if (path === '/simulateur') return { view: 'simulator' }
+  if (path === '/lab') return { view: 'lab' }
 
   const colombe = path.match(/^\/colombe\/([a-z0-9-]+)$/)
   if (colombe) return { view: 'colombe', id: colombe[1] }

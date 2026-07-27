@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState } from 'react'
 import { Lock, LockOpen } from 'lucide-react'
 import { DoveLogo } from '@/components/DoveLogo'
-import { formatCurrency } from '@/lib/format'
+import { formatCompactCurrency, formatCurrency } from '@/lib/format'
 import { useT } from '@/store/simulator'
+import { DEFAULT_LAYERS, type PadLayers } from '@/lib/padVariants'
 import {
   animalFor,
   isoRevenueSegment,
@@ -21,9 +22,13 @@ const ANIMAL_BANDS = PRICING_ANIMALS.map((animal) => {
 })
 
 /** Courbes d'iso-revenu : texture de fond, volontairement muette. */
-const ISO_SEGMENTS = [1_000, 10_000, 100_000, 1_000_000]
-  .map(isoRevenueSegment)
-  .filter((segment): segment is NonNullable<typeof segment> => Boolean(segment))
+const ISO_MRR = [1_000, 10_000, 100_000, 1_000_000]
+const ISO_SEGMENTS = ISO_MRR.map(isoRevenueSegment).filter(
+  (segment): segment is NonNullable<typeof segment> => Boolean(segment),
+)
+const ISO_LABELS = ISO_MRR.filter((mrr) => isoRevenueSegment(mrr) !== null).map(
+  (mrr) => `${formatCompactCurrency(mrr)} MRR`,
+)
 
 /** Repères d'axes, aux ordres de grandeur : ils situent sans strier la surface. */
 const CUSTOMER_TICKS = [1, 10, 100, 1_000, 10_000].map((value) => ({
@@ -112,9 +117,11 @@ function Readout({
 interface PricePadProps {
   params: PadParams
   onChange: (params: PadParams) => void
+  /** Couches affichées. Par défaut, toutes — voir padVariants.ts. */
+  layers?: PadLayers
 }
 
-export function PricePad({ params, onChange }: PricePadProps) {
+export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePadProps) {
   const padRef = useRef<HTMLDivElement>(null)
   // Le garde du glissement vit dans une ref : un pointermove qui arrive dans
   // le même tick que le pointerdown ne doit pas être perdu en attendant un rendu.
@@ -225,7 +232,8 @@ export function PricePad({ params, onChange }: PricePadProps) {
         }`}
       >
         {/* Repères d'axes : les ordres de grandeur, en bordure. */}
-        {CUSTOMER_TICKS.map((tick) => (
+        {layers.ticks &&
+          CUSTOMER_TICKS.map((tick) => (
           <span
             key={tick.value}
             aria-hidden
@@ -233,9 +241,10 @@ export function PricePad({ params, onChange }: PricePadProps) {
             style={{ left: `${tick.x * 100}%` }}
           >
             {tick.label}
-          </span>
-        ))}
-        {PRICE_TICKS.map((tick) => (
+            </span>
+          ))}
+        {layers.ticks &&
+          PRICE_TICKS.map((tick) => (
           <span
             key={tick.value}
             aria-hidden
@@ -243,11 +252,12 @@ export function PricePad({ params, onChange }: PricePadProps) {
             style={{ top: `${tick.y * 100}%` }}
           >
             {tick.label}
-          </span>
-        ))}
+            </span>
+          ))}
 
         {/* Paliers de prix : bandes muettes, seule l'active se teinte. */}
-        {ANIMAL_BANDS.map((band) => (
+        {layers.bands &&
+          ANIMAL_BANDS.map((band) => (
           <div
             key={band.name}
             aria-hidden
@@ -256,11 +266,12 @@ export function PricePad({ params, onChange }: PricePadProps) {
                 ? 'border-lume/20 bg-lume/[0.05]'
                 : 'border-foreground/[0.06]'
             }`}
-            style={{ top: `${band.top * 100}%`, height: `${band.height * 100}%` }}
-          />
-        ))}
+              style={{ top: `${band.top * 100}%`, height: `${band.height * 100}%` }}
+            />
+          ))}
 
-        {/* Courbes d'iso-revenu, sans étiquette : de la texture, pas du texte. */}
+        {/* Courbes d'iso-revenu : de la texture, étiquetée seulement si demandé. */}
+        {layers.isoLines && (
         <svg
           aria-hidden
           className="pointer-events-none absolute inset-0 h-full w-full text-foreground/15"
@@ -281,10 +292,27 @@ export function PricePad({ params, onChange }: PricePadProps) {
             />
           ))}
         </svg>
+        )}
+
+        {layers.isoLabels &&
+          ISO_SEGMENTS.map((segment, index) => (
+            <span
+              key={index}
+              aria-hidden
+              className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded bg-background/70 px-1 font-mono text-[9px] text-muted-foreground/60"
+              style={{
+                left: `${((segment.from.x + segment.to.x) / 2) * 100}%`,
+                top: `${((segment.from.y + segment.to.y) / 2) * 100}%`,
+              }}
+            >
+              {ISO_LABELS[index]}
+            </span>
+          ))}
 
         {/* Le quadrant de revenu : tout ce qui est sous et à gauche de la
             colombe. Il grandit avec le prix et avec les clients — la lecture
             « plus haut, plus à droite, plus gros » se fait sans un mot. */}
+        {layers.quadrant && (
         <div
           aria-hidden
           className="pointer-events-none absolute left-0 bg-gradient-to-tr from-lume/[0.03] via-lume/[0.09] to-lume/20 transition-[width,height,top] duration-150"
@@ -295,16 +323,20 @@ export function PricePad({ params, onChange }: PricePadProps) {
           }}
         >
           {/* L'essaim : la densité dit le volume de clients. */}
-          {SWARM.slice(0, Math.round(4 + position.x * 80)).map((dot, index) => (
+          {layers.swarm &&
+            SWARM.slice(0, Math.round(4 + position.x * 80)).map((dot, index) => (
             <span
               key={index}
               className="absolute size-[3px] rounded-full bg-lume/45"
-              style={{ left: `${dot.u * 100}%`, top: `${dot.v * 100}%` }}
-            />
-          ))}
+                style={{ left: `${dot.u * 100}%`, top: `${dot.v * 100}%` }}
+              />
+            ))}
         </div>
+        )}
 
         {/* Croix de visée. Un axe verrouillé devient un rail plein. */}
+        {layers.crosshair && (
+        <>
         <span
           aria-hidden
           className={`pointer-events-none absolute w-full transition-all ${
@@ -319,6 +351,8 @@ export function PricePad({ params, onChange }: PricePadProps) {
           }`}
           style={{ left: `${position.x * 100}%` }}
         />
+        </>
+        )}
 
         {/* La colombe dans sa sphère : elle remplace le curseur système. */}
         <span
