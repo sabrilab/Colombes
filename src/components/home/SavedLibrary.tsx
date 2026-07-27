@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Copy, Pencil, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { TierBadge } from '@/components/AnimalGlyph'
 import { compute } from '@/lib/engine'
+import { animalFor } from '@/lib/pricePad'
 import { formatCompactCurrency, formatMultiple } from '@/lib/format'
 import { navigate } from '@/lib/router'
 import { colombeById } from '@/lib/aviary'
@@ -16,7 +18,7 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(sim.name)
 
-  const { valuation } = compute(sim.inputs)
+  const { valuation, revenue } = compute(sim.inputs)
   const origin = sim.basedOn ? colombeById(sim.basedOn) : null
 
   function commitRename() {
@@ -96,9 +98,12 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
             {formatCompactCurrency(valuation.value)}
           </p>
         </div>
-        <p className="font-mono text-xs text-muted-foreground tabular-nums">
-          {formatMultiple(valuation.multiple)}
-        </p>
+        <div className="flex flex-col items-end gap-1">
+          <p className="font-mono text-xs text-muted-foreground tabular-nums">
+            {formatMultiple(valuation.multiple)}
+          </p>
+          <TierBadge animal={animalFor(revenue.arpu).name} />
+        </div>
       </button>
     </Card>
   )

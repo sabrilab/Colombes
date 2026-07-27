@@ -1,3 +1,4 @@
+import { TierBadge } from '@/components/AnimalGlyph'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -5,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { diagnose, type InsightTone } from '@/lib/diagnose'
+import { animalFor } from '@/lib/pricePad'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
 import { formatCompactCurrency, formatCurrency, formatMultiple } from '@/lib/format'
 import { useResults, useSimulator } from '@/store/simulator'
@@ -110,6 +112,7 @@ export function ValuationCard() {
         </span>
         <Badge variant="outline">{PROFILE_LABELS[valuation.profileLabel]}</Badge>
         {valuation.isOverridden && <Badge variant="outline">Custom curve</Badge>}
+        <TierBadge animal={animalFor(results.revenue.arpu).name} />
       </div>
 
       {/* La lecture en direct : pourquoi ce scénario marche — ou pas. */}

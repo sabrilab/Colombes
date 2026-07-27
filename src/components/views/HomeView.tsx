@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { AppHeader } from '@/components/AppHeader'
+import { TierBadge } from '@/components/AnimalGlyph'
 import { BrandMark } from '@/components/BrandMark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -134,9 +135,12 @@ function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
               {formatCompactCurrency(results.valuation.value)}
             </p>
           </div>
-          <p className="font-mono text-sm text-muted-foreground tabular-nums">
-            {formatMultiple(results.valuation.multiple)}
-          </p>
+          <div className="flex flex-col items-end gap-1">
+            <p className="font-mono text-sm text-muted-foreground tabular-nums">
+              {formatMultiple(results.valuation.multiple)}
+            </p>
+            <TierBadge animal={animalFor(results.revenue.arpu).name} />
+          </div>
         </div>
       </Card>
     </button>

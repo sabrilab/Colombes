@@ -29,6 +29,9 @@ const CAMERA_POSITION = new THREE.Vector3(0, 1.05, 2.8)
 /** Le quart de tour qui fait le trois-quarts : le sujet s'ouvre vers nous. */
 const THREE_QUARTER_YAW = Math.PI / 7
 
+/** Vitesse du tour sur soi-même : une révolution en quatorze secondes. */
+const SPIN_SPEED = (2 * Math.PI) / 14
+
 /**
  * Quart de tour qui couche la bête sur l'axe X, tête à gauche. Aucune
  * heuristique ne devine où est la tête — les bois d'un cerf élargissent sa
@@ -130,10 +133,10 @@ export default function AnimalStage3D({ animal }: { animal: string }) {
       const group = sceneRef.current?.current
       if (group && !still) {
         const t = (now - start) / 1000
-        // Respiration : l'animal flotte et oscille de quelques degrés, sans
-        // jamais quitter sa vue trois-quarts.
+        // Tour complet en quatorze secondes, plus une respiration : la bête
+        // se présente sous toutes ses faces et repasse par sa pose de départ.
         group.position.y = group.userData.baseY + Math.sin(t * 0.9) * 0.035
-        group.rotation.y = group.userData.baseRotation + Math.sin(t * 0.45) * 0.07
+        group.rotation.y = group.userData.baseRotation + t * SPIN_SPEED
       }
       renderer.render(scene, camera)
       frame = requestAnimationFrame(animate)
