@@ -196,18 +196,24 @@ export default function AnimalStage3D({ animal }: { animal: string }) {
       const scale = (SIZE_TWEAK[animal] ?? 1) / (sphere.radius || 1)
       group.scale.setScalar(scale)
 
-      // Recentré, à peine posé bas : le sujet remplit le cadre.
+      // Le modèle est recentré DANS un pivot, au lieu d'être déplacé lui-même.
+      // C'est le pivot qu'on fera tourner : sans lui, la rotation se ferait
+      // autour de l'origine du fichier et non du centre de la bête, qui
+      // orbiterait alors au lieu de tourner sur place.
       const center = sphere.center.clone().multiplyScalar(scale)
-      group.position.set(-center.x, -center.y - 0.12, -center.z)
+      group.position.set(-center.x, -center.y, -center.z)
 
+      const pivot = new THREE.Group()
+      pivot.add(group)
+      pivot.position.y = -0.12
       // Trois-quarts : on tourne le sujet, jamais la caméra.
-      group.rotation.y += THREE_QUARTER_YAW
-      group.userData.baseRotation = group.rotation.y
-      group.userData.baseY = group.position.y
+      pivot.rotation.y = THREE_QUARTER_YAW
+      pivot.userData.baseRotation = pivot.rotation.y
+      pivot.userData.baseY = pivot.position.y
 
       if (context.current) context.scene.remove(context.current)
-      context.scene.add(group)
-      context.current = group
+      context.scene.add(pivot)
+      context.current = pivot
     })
 
     return () => {

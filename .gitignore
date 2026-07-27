@@ -28,3 +28,5 @@ dist-ssr
 
 # Modèles 3D sources (lourds) — les versions compressées vivent dans public/models
 3D/
+.vercel
+.env*
