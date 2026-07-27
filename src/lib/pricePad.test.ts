@@ -6,6 +6,7 @@ import {
   PRICING_ANIMALS,
   padToParams,
   paramsToPad,
+  stepParams,
 } from './pricePad'
 
 describe('padToParams', () => {
@@ -136,5 +137,58 @@ describe('paramsToPad', () => {
       expect(y).toBeGreaterThanOrEqual(0)
       expect(y).toBeLessThanOrEqual(1)
     }
+  })
+})
+
+describe('stepParams', () => {
+  it('ne déplace que l axe visé', () => {
+    const start = { price: 29, customers: 500 }
+
+    expect(stepParams(start, 'price', 1).customers).toBe(500)
+    expect(stepParams(start, 'customers', 1).price).toBe(29)
+  })
+
+  it('monte et descend dans le bon sens', () => {
+    const start = { price: 29, customers: 500 }
+
+    expect(stepParams(start, 'price', 1).price).toBeGreaterThan(29)
+    expect(stepParams(start, 'price', -1).price).toBeLessThan(29)
+    expect(stepParams(start, 'customers', 1).customers).toBeGreaterThan(500)
+    expect(stepParams(start, 'customers', -1).customers).toBeLessThan(500)
+  })
+
+  it('bouge toujours en bas d échelle, où l arrondi mangerait le pas', () => {
+    // 1 € majoré d'un cran fait encore 1 € une fois arrondi : sans
+    // élargissement du pas, le bouton « + » resterait sans effet.
+    for (const axis of ['price', 'customers'] as const) {
+      const start = { price: 1, customers: 1 }
+      expect(stepParams(start, axis, 1)[axis], axis).toBeGreaterThan(1)
+    }
+  })
+
+  it('reste dans les bornes du pad', () => {
+    const high = { price: PAD_BOUNDS.price.max, customers: PAD_BOUNDS.customers.max }
+    const low = { price: PAD_BOUNDS.price.min, customers: PAD_BOUNDS.customers.min }
+
+    expect(stepParams(high, 'price', 1).price).toBeLessThanOrEqual(PAD_BOUNDS.price.max)
+    expect(stepParams(high, 'customers', 1).customers).toBeLessThanOrEqual(
+      PAD_BOUNDS.customers.max,
+    )
+    expect(stepParams(low, 'price', -1).price).toBeGreaterThanOrEqual(PAD_BOUNDS.price.min)
+    expect(stepParams(low, 'customers', -1).customers).toBeGreaterThanOrEqual(
+      PAD_BOUNDS.customers.min,
+    )
+  })
+
+  it('rend les paramètres inchangés quand la borne est déjà atteinte', () => {
+    const top = { price: PAD_BOUNDS.price.max, customers: 500 }
+    expect(stepParams(top, 'price', 1)).toEqual(top)
+  })
+
+  it('revient à son point de départ en montant puis redescendant', () => {
+    const start = { price: 29, customers: 500 }
+    const round = stepParams(stepParams(start, 'price', 1), 'price', -1)
+    // Tolérance d'un pas d'arrondi entier.
+    expect(Math.abs(round.price - start.price)).toBeLessThanOrEqual(1)
   })
 })

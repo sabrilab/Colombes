@@ -51,6 +51,43 @@ export function paramsToPad({ price, customers }: PadParams): PadPosition {
   }
 }
 
+/** Pas d'un cran sur le pad : 2,5 % de l'étendue, comme une flèche du clavier. */
+export const PAD_STEP = 0.025
+
+/**
+ * Déplace un seul axe d'un cran, pour les flèches comme pour les boutons — le
+ * pad doit se régler sans glissement, sans quoi il reste hors de portée d'un
+ * doigt malhabile comme d'un clavier seul.
+ *
+ * Les axes étant logarithmiques et les valeurs arrondies à l'entier, un cran
+ * peut retomber sur la valeur courante : en bas d'échelle, 1 € majoré de 17 %
+ * fait encore 1 €. On élargit alors le pas jusqu'à ce que la valeur bouge,
+ * faute de quoi la commande semblerait morte. Aux bornes, rien ne bouge et on
+ * rend les paramètres inchangés — c'est au sommet de décider quoi en faire.
+ */
+export function stepParams(
+  params: PadParams,
+  axis: keyof PadParams,
+  direction: 1 | -1,
+): PadParams {
+  const position = paramsToPad(params)
+
+  for (let multiple = 1; multiple <= 8; multiple++) {
+    const delta = PAD_STEP * multiple * direction
+    // L'axe écran descend quand le prix monte : on inverse pour le prix.
+    const next = padToParams(
+      axis === 'customers'
+        ? { x: position.x + delta, y: position.y }
+        : { x: position.x, y: position.y - delta },
+    )
+    // On ne recompose que l'axe visé : l'autre garde sa valeur exacte, sans
+    // subir l'aller-retour par les coordonnées du pad.
+    if (next[axis] !== params[axis]) return { ...params, [axis]: next[axis] }
+  }
+
+  return params
+}
+
 export interface PricingAnimal {
   name: string
   /** Prix mensuel minimum du palier, inclus. */

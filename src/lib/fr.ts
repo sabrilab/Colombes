@@ -39,6 +39,8 @@ export const FR: Record<string, string> = {
   '/mo': '/mois',
   'Lock {label}': 'Verrouiller {label}',
   'Unlock {label}': 'Déverrouiller {label}',
+  'Increase {label}': 'Augmenter {label}',
+  'Decrease {label}': 'Diminuer {label}',
   'Previous tier': 'Palier précédent',
   'Next tier': 'Palier suivant',
   'Pricing tiers': 'Paliers de prix',

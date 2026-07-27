@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import { Lock, LockOpen } from 'lucide-react'
+import { Lock, LockOpen, Minus, Plus } from 'lucide-react'
 import { DoveLogo } from '@/components/DoveLogo'
 import { formatCompactCurrency, formatCurrency } from '@/lib/format'
 import { useT } from '@/store/simulator'
@@ -8,9 +8,11 @@ import {
   animalFor,
   isoRevenueSegment,
   PAD_BOUNDS,
+  PAD_STEP,
   PRICING_ANIMALS,
   padToParams,
   paramsToPad,
+  stepParams,
   type PadParams,
 } from '@/lib/pricePad'
 
@@ -43,9 +45,6 @@ const PRICE_TICKS = [1, 10, 100, 500].map((value) => ({
   y: paramsToPad({ price: value, customers: 1 }).y,
 }))
 
-/** Pas clavier : 2,5 % du pad par flèche, 10 % avec Maj. */
-const STEP = 0.025
-
 /**
  * Suite de Halton (bases 2 et 3) : une répartition quasi aléatoire mais
  * déterministe, pour que l'essaim de clients ne saute pas d'un rendu à l'autre.
@@ -70,46 +69,77 @@ interface LockState {
   customers: boolean
 }
 
+/**
+ * Les commandes du pad, doigt compris : 44 px de cible tactile, et un pas par
+ * appui identique à celui des flèches du clavier. Sans elles, régler le pad
+ * demanderait un glissement — hors de portée d'une bonne partie des usages.
+ */
+const CONTROL =
+  'inline-flex size-11 items-center justify-center rounded-lg border border-border/70 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:opacity-30 sm:size-9'
+
 function Readout({
   label,
   value,
   unit,
   locked,
   onToggleLock,
+  onStep,
 }: {
   label: string
   value: string
   unit?: string
   locked: boolean
   onToggleLock: () => void
+  onStep: (direction: 1 | -1) => void
 }) {
   const LockIcon = locked ? Lock : LockOpen
   const t = useT()
 
   return (
-    <div className="flex items-start gap-2">
-      <div>
-        <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{t(label)}</p>
-        <p
-          className={`font-mono text-2xl font-semibold tabular-nums transition-colors lg:text-3xl ${
-            locked ? 'text-lume' : ''
-          }`}
-        >
-          {value}
-          {unit && <span className="text-sm font-normal text-muted-foreground">{t(unit)}</span>}
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onToggleLock}
-        aria-pressed={locked}
-        aria-label={t(locked ? 'Unlock {label}' : 'Lock {label}', { label: t(label) })}
-        className={`mt-4 rounded-md p-1 transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
-          locked ? 'text-lume' : 'text-muted-foreground/50 hover:text-foreground'
+    <div className="min-w-0">
+      <p className="text-[11px] uppercase tracking-[0.16em] text-muted-foreground">{t(label)}</p>
+      <p
+        className={`font-mono text-2xl font-semibold tabular-nums transition-colors lg:text-3xl ${
+          locked ? 'text-lume' : ''
         }`}
       >
-        <LockIcon className="size-3.5" aria-hidden />
-      </button>
+        {value}
+        {unit && <span className="text-sm font-normal text-muted-foreground">{t(unit)}</span>}
+      </p>
+
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => onStep(-1)}
+          disabled={locked}
+          aria-label={t('Decrease {label}', { label: t(label) })}
+          className={`${CONTROL} text-muted-foreground hover:text-foreground`}
+        >
+          <Minus className="size-4" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={() => onStep(1)}
+          disabled={locked}
+          aria-label={t('Increase {label}', { label: t(label) })}
+          className={`${CONTROL} text-muted-foreground hover:text-foreground`}
+        >
+          <Plus className="size-4" aria-hidden />
+        </button>
+        <button
+          type="button"
+          onClick={onToggleLock}
+          aria-pressed={locked}
+          aria-label={t(locked ? 'Unlock {label}' : 'Lock {label}', { label: t(label) })}
+          className={`${CONTROL} ${
+            locked
+              ? 'border-lume/40 bg-lume/10 text-lume'
+              : 'text-muted-foreground/60 hover:text-foreground'
+          }`}
+        >
+          <LockIcon className="size-4" aria-hidden />
+        </button>
+      </div>
     </div>
   )
 }
@@ -161,8 +191,9 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
     [commit],
   )
 
+  /** Les flèches valent un cran, Maj quatre — même pas que les boutons. */
   function handleKeyDown(event: React.KeyboardEvent) {
-    const step = event.shiftKey ? STEP * 4 : STEP
+    const step = event.shiftKey ? PAD_STEP * 4 : PAD_STEP
     const moves: Record<string, [number, number]> = {
       ArrowLeft: [-step, 0],
       ArrowRight: [step, 0],
@@ -175,23 +206,34 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
     commit(padToParams({ x: position.x + move[0], y: position.y + move[1] }))
   }
 
+  /** Un appui de bouton vaut un appui de flèche — voir stepParams. */
+  const nudge = useCallback(
+    (axis: keyof PadParams, direction: 1 | -1) => {
+      setTouched(true)
+      commit(stepParams(params, axis, direction))
+    },
+    [commit, params],
+  )
+
   const bothLocked = locked.price && locked.customers
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-start gap-x-10 gap-y-3">
+      <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
         <Readout
           label="Price"
           value={formatCurrency(params.price)}
           unit="/mo"
           locked={locked.price}
           onToggleLock={() => setLocked((state) => ({ ...state, price: !state.price }))}
+          onStep={(direction) => nudge('price', direction)}
         />
         <Readout
           label="Customers"
           value={params.customers.toLocaleString('en-US')}
           locked={locked.customers}
           onToggleLock={() => setLocked((state) => ({ ...state, customers: !state.customers }))}
+          onStep={(direction) => nudge('customers', direction)}
         />
       </div>
 
@@ -227,7 +269,11 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
           draggingRef.current = false
           setDragging(false)
         }}
-        className={`pad-surface relative aspect-[4/3] w-full touch-none select-none overflow-hidden rounded-xl border border-border/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lume/60 sm:aspect-[16/9] ${
+        /* `touch-pan-y` plutôt que `touch-none` : au doigt, un balayage
+           vertical fait défiler la page au lieu de rester prisonnier du pad.
+           Poser le doigt place toujours la colombe, et la colombe elle-même
+           reste une poignée qui, elle, capte les deux axes. */
+        className={`pad-surface relative aspect-[4/3] w-full touch-pan-y select-none overflow-hidden rounded-xl border border-border/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lume/60 sm:aspect-[16/9] ${
           bothLocked ? 'cursor-not-allowed' : 'cursor-none'
         }`}
       >
@@ -365,7 +411,13 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
           {!touched && (
             <span className="orb-invite absolute inset-0 rounded-full border border-lume/70" />
           )}
-          <span className="dove-orb flex size-11 items-center justify-center rounded-full">
+          {/* La poignée : 44 px, et le seul endroit qui neutralise le
+              défilement, pour qu'un glissement y porte sur les deux axes. */}
+          <span
+            className={`dove-orb flex size-11 items-center justify-center rounded-full ${
+              bothLocked ? '' : 'pointer-events-auto touch-none'
+            }`}
+          >
             <DoveLogo className="h-4 w-5 text-lume drop-shadow-[0_0_6px_var(--lume)]" />
           </span>
         </span>

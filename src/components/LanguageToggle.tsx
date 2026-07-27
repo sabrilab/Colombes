@@ -19,7 +19,9 @@ export function LanguageToggle() {
           type="button"
           onClick={() => setLanguage(code)}
           aria-pressed={language === code}
-          className={`rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+          /* Au doigt, deux crans de 11 px seraient intouchables : on garde la
+             pastille compacte sur grand écran, jamais sous 32 px sur mobile. */
+          className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded-full px-2 py-0.5 text-[11px] font-medium uppercase tracking-wider transition-colors sm:min-h-0 sm:min-w-0 ${
             language === code
               ? 'bg-foreground text-background'
               : 'text-muted-foreground hover:text-foreground'
