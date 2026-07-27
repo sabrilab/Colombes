@@ -55,7 +55,7 @@ function MiniSimulator() {
 
       {showTiers ? (
         <div className="mx-auto max-w-xl py-2">
-          <TierCarousel current={animalFor(params.price)} />
+          <TierCarousel current={animalFor(params.price)} variant="expanded" />
         </div>
       ) : (
       <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">

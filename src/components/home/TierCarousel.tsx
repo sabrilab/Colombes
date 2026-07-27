@@ -14,7 +14,16 @@ const ANGLE_STEP = (40 * Math.PI) / 180
 /** Rayon du cercle, en pourcentage de la largeur de la scène. */
 const RADIUS = 54
 
-function placeOnCircle(offset: number) {
+/**
+ * Effacement des voisins. Dans la carte d'accueil ils ne sont qu'une
+ * présence — on devine qu'il y a une ronde, sans que rien ne dispute la
+ * bête du centre. La vue « Tiers », elle, est faite pour les comparer.
+ */
+const NEIGHBOUR_FADE = { compact: 0.9, expanded: 0.5 } as const
+
+export type CarouselVariant = keyof typeof NEIGHBOUR_FADE
+
+function placeOnCircle(offset: number, variant: CarouselVariant) {
   const theta = offset * ANGLE_STEP
   // 0 au premier plan, croissant à mesure qu'on s'éloigne derrière.
   const depth = 1 - Math.cos(theta)
@@ -22,8 +31,8 @@ function placeOnCircle(offset: number) {
   return {
     x: RADIUS * Math.sin(theta),
     scale: 1 / (1 + depth * 1.9),
-    opacity: Math.max(0, 1 - Math.abs(offset) * 0.58),
-    blur: Math.abs(offset) * 1.6,
+    opacity: Math.max(0, 1 - Math.abs(offset) * NEIGHBOUR_FADE[variant]),
+    blur: Math.abs(offset) * (variant === 'compact' ? 2.4 : 1.6),
     layer: 10 - Math.abs(offset),
   }
 }
@@ -31,6 +40,8 @@ function placeOnCircle(offset: number) {
 interface TierCarouselProps {
   /** Palier de la simulation en cours : le carrousel s'y recentre. */
   current: PricingAnimal
+  /** `compact` dans la carte d'accueil, `expanded` dans la vue « Tiers ». */
+  variant?: CarouselVariant
 }
 
 /**
@@ -38,7 +49,7 @@ interface TierCarouselProps {
  * s'effacent sur les côtés. On fait défiler pour comprendre ce que chaque
  * espèce impose, sans quitter la carte.
  */
-export function TierCarousel({ current }: TierCarouselProps) {
+export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps) {
   const currentIndex = PRICING_ANIMALS.findIndex((animal) => animal.name === current.name)
   const [index, setIndex] = useState(Math.max(currentIndex, 0))
   const dragStart = useRef<number | null>(null)
@@ -75,7 +86,7 @@ export function TierCarousel({ current }: TierCarouselProps) {
           const offset = position - index
           if (Math.abs(offset) > 2) return null
 
-          const place = placeOnCircle(offset)
+          const place = placeOnCircle(offset, variant)
 
           return (
             <div

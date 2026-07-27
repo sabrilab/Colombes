@@ -33,6 +33,15 @@ const THREE_QUARTER_YAW = Math.PI / 7
 const SPIN_SPEED = (2 * Math.PI) / 14
 
 /**
+ * Correction de gabarit. Le cadrage se fait sur la sphère englobante, et
+ * une longue queue la gonfle sans rien ajouter au corps : la souris paraît
+ * alors deux fois plus petite que les autres. On la remonte à la main.
+ */
+const SIZE_TWEAK: Record<string, number> = {
+  Mice: 1.35,
+}
+
+/**
  * Quart de tour qui couche la bête sur l'axe X, tête à gauche. Aucune
  * heuristique ne devine où est la tête — les bois d'un cerf élargissent sa
  * boîte autant que son corps l'allonge —, la valeur est donc constatée à
@@ -184,7 +193,7 @@ export default function AnimalStage3D({ animal }: { animal: string }) {
       // occupent exactement le même cadre.
       const box = framingBox(group)
       const sphere = box.getBoundingSphere(new THREE.Sphere())
-      const scale = 1 / (sphere.radius || 1)
+      const scale = (SIZE_TWEAK[animal] ?? 1) / (sphere.radius || 1)
       group.scale.setScalar(scale)
 
       // Recentré, à peine posé bas : le sujet remplit le cadre.
