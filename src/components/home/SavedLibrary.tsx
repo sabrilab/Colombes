@@ -40,7 +40,7 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
               if (event.key === 'Enter') commitRename()
               if (event.key === 'Escape') setEditing(false)
             }}
-            className="h-7 text-sm"
+            className="h-10 text-sm sm:h-7"
             aria-label={t('Rename {name}', { name: sim.name })}
           />
         ) : (
@@ -53,7 +53,9 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
             )}
           </div>
         )}
-        <div className="flex shrink-0 gap-0.5">
+        {/* Supprimer jouxte dupliquer : au doigt, il faut de la place entre
+            les deux, faute de quoi l'irréversible se déclenche par méprise. */}
+        <div className="flex shrink-0 gap-1 sm:gap-0.5">
           <button
             type="button"
             onClick={() => {
@@ -61,25 +63,25 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
               setEditing(true)
             }}
             aria-label={t('Rename {name}', { name: sim.name })}
-            className="rounded p-1 text-muted-foreground/60 hover:text-foreground"
+            className="inline-flex size-10 items-center justify-center rounded-md text-muted-foreground/60 hover:text-foreground sm:size-auto sm:rounded sm:p-1"
           >
-            <Pencil className="size-3.5" aria-hidden />
+            <Pencil className="size-4 sm:size-3.5" aria-hidden />
           </button>
           <button
             type="button"
             onClick={() => duplicateSimulation(sim.id)}
             aria-label={t('Duplicate {name}', { name: sim.name })}
-            className="rounded p-1 text-muted-foreground/60 hover:text-foreground"
+            className="inline-flex size-10 items-center justify-center rounded-md text-muted-foreground/60 hover:text-foreground sm:size-auto sm:rounded sm:p-1"
           >
-            <Copy className="size-3.5" aria-hidden />
+            <Copy className="size-4 sm:size-3.5" aria-hidden />
           </button>
           <button
             type="button"
             onClick={() => deleteSimulation(sim.id)}
             aria-label={t('Delete {name}', { name: sim.name })}
-            className="rounded p-1 text-muted-foreground/60 hover:text-red-500"
+            className="inline-flex size-10 items-center justify-center rounded-md text-muted-foreground/60 hover:text-red-500 sm:size-auto sm:rounded sm:p-1"
           >
-            <Trash2 className="size-3.5" aria-hidden />
+            <Trash2 className="size-4 sm:size-3.5" aria-hidden />
           </button>
         </div>
       </div>

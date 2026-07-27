@@ -115,7 +115,7 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
           onClick={() => go(-1)}
           disabled={index === 0}
           aria-label={t('Previous tier')}
-          className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25"
+          className="absolute left-0 top-1/2 z-20 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25 sm:size-auto sm:p-1.5"
         >
           <ChevronLeft className="size-4" aria-hidden />
         </button>
@@ -124,7 +124,7 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
           onClick={() => go(1)}
           disabled={index === PRICING_ANIMALS.length - 1}
           aria-label={t('Next tier')}
-          className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-full p-1.5 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25"
+          className="absolute right-0 top-1/2 z-20 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25 sm:size-auto sm:p-1.5"
         >
           <ChevronRight className="size-4" aria-hidden />
         </button>
@@ -159,10 +159,19 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
             aria-selected={position === index}
             aria-label={t(animal.name)}
             onClick={() => setIndex(position)}
-            className={`h-1 flex-1 rounded-full transition-colors ${
-              position === index ? 'bg-lume' : 'bg-foreground/15 hover:bg-foreground/30'
-            }`}
-          />
+            /* Le trait reste fin — c'est un repère, pas un bouton — mais sa
+               zone sensible fait 28 px : 4 px ne se visent avec rien. */
+            className="group/tab flex-1 py-3 sm:py-2"
+          >
+            <span
+              aria-hidden
+              className={`block h-1 rounded-full transition-colors ${
+                position === index
+                  ? 'bg-lume'
+                  : 'bg-foreground/15 group-hover/tab:bg-foreground/30'
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>

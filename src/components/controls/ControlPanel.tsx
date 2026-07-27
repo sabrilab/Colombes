@@ -44,7 +44,7 @@ function LevelToggle({
         aria-label={label}
       >
         {(Object.keys(LEVEL_LABELS) as Level[]).map((level) => (
-          <ToggleGroupItem key={level} value={level} className="flex-1 text-xs">
+          <ToggleGroupItem key={level} value={level} className="h-11 flex-1 text-xs sm:h-9">
             {t(LEVEL_LABELS[level])}
           </ToggleGroupItem>
         ))}
@@ -85,10 +85,10 @@ export function ControlPanel() {
         className="w-full"
         aria-label={t('Level of detail')}
       >
-        <ToggleGroupItem value="simple" className="flex-1 text-xs">
+        <ToggleGroupItem value="simple" className="h-11 flex-1 text-xs sm:h-9">
           {t('Simple')}
         </ToggleGroupItem>
-        <ToggleGroupItem value="expert" className="flex-1 text-xs">
+        <ToggleGroupItem value="expert" className="h-11 flex-1 text-xs sm:h-9">
           {t('Expert')}
         </ToggleGroupItem>
       </ToggleGroup>
@@ -111,7 +111,7 @@ export function ControlPanel() {
               <Button
                 variant="outline"
                 size="sm"
-                className="mt-2 w-full"
+                className="mt-2 h-11 w-full sm:h-8"
                 onClick={addTier}
               >
                 <Plus className="size-3.5" aria-hidden />

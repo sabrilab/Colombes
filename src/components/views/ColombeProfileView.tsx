@@ -62,10 +62,12 @@ export function ColombeProfileView({ id }: { id: string }) {
         <button
           type="button"
           onClick={() => navigate('#/')}
-          className="reveal flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          /* Le lien de retour est la sortie de secours de la page : il lui
+             faut un corps qu'un pouce attrape, pas une ligne de 20 px. */
+          className="reveal -ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-0 sm:ml-0 sm:px-0"
           style={{ '--reveal-order': 0 } as React.CSSProperties}
         >
-          <ArrowLeft className="size-3.5" aria-hidden />
+          <ArrowLeft className="size-4 sm:size-3.5" aria-hidden />
           {t('The aviary')}
         </button>
 

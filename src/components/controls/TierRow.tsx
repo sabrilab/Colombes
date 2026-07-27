@@ -25,9 +25,11 @@ export function TierRow({ tier, index, onChange, onRemove, canRemove }: TierRowP
             type="button"
             aria-label={t('Remove plan {name}', { name: t(tier.name) })}
             onClick={() => onRemove(index)}
-            className="-m-1 rounded-full p-1 text-muted-foreground/60 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+            /* Supprimer un plan se vise, sans se déclencher par mégarde :
+               44 px au doigt, la discrétion d'une icône au pointeur. */
+            className="-mr-2 inline-flex size-11 items-center justify-center rounded-full text-muted-foreground/60 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring sm:-m-1 sm:size-auto sm:p-1"
           >
-            <X className="size-3.5" aria-hidden />
+            <X className="size-4 sm:size-3.5" aria-hidden />
           </button>
         )}
       </div>

@@ -15,7 +15,12 @@ function Slider({ className, thumbLabel, thumbValueText, ...props }: SliderProps
   return (
     <SliderPrimitive.Root
       data-slot="slider"
-      className={cn('relative flex w-full touch-none select-none items-center py-1', className)}
+      /* La rangée est la zone de saisie : 1 px de marge suffisait à la souris,
+         il en faut dix fois plus pour qu'un doigt attrape la poignée. */
+      className={cn(
+        'relative flex w-full touch-none select-none items-center py-2.5 sm:py-1',
+        className,
+      )}
       {...props}
     >
       <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]">
@@ -24,7 +29,9 @@ function Slider({ className, thumbLabel, thumbValueText, ...props }: SliderProps
       <SliderPrimitive.Thumb
         aria-label={thumbLabel}
         aria-valuetext={thumbValueText}
-        className="block size-4 shrink-0 rounded-full border-2 border-background bg-foreground shadow-md transition-[transform,box-shadow] hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-lume/40 disabled:pointer-events-none disabled:opacity-50"
+        /* 16 px se visent à la souris, pas au doigt : la poignée passe à 24 px
+           sous le point de rupture, et retrouve sa finesse au-delà. */
+        className="block size-6 shrink-0 rounded-full border-2 border-background bg-foreground shadow-md transition-[transform,box-shadow] hover:scale-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-lume/40 disabled:pointer-events-none disabled:opacity-50 sm:size-4"
       />
     </SliderPrimitive.Root>
   )

@@ -37,8 +37,10 @@ function ValuationTicker() {
 function Results() {
   return (
     <div className="space-y-3">
-      {/* Collante : sans elle en vue, le lien entre le geste et sa conséquence disparaît. */}
-      <div className="sticky top-4 z-10 lg:top-6">
+      {/* Collante : sans elle en vue, le lien entre le geste et sa conséquence
+          disparaît. Elle se cale sous l'en-tête, lui-même collant — à 4 px du
+          haut, elle passait derrière lui et se donnait à moitié à lire. */}
+      <div className="sticky top-[4.5rem] z-10">
         <ValuationCard />
       </div>
       <SaveBar />
@@ -80,7 +82,7 @@ export function SimulatorView() {
 
       <div className="mx-auto flex max-w-[1600px] gap-6 p-4 lg:p-6">
         <aside className="hidden w-[360px] shrink-0 lg:block">
-          <div className="sticky top-6 max-h-[calc(100svh-3rem)] overflow-y-auto pr-2">
+          <div className="sticky top-[4.5rem] max-h-[calc(100svh-6rem)] overflow-y-auto pr-2">
             <ControlPanel />
           </div>
         </aside>

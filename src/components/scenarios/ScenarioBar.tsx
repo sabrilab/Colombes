@@ -70,7 +70,7 @@ export function ScenarioBar() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 px-1 text-xs"
+                    className="-mr-1 h-9 px-2 text-xs sm:mr-0 sm:h-6 sm:px-1"
                     onClick={() => removeScenario(scenario.id)}
                     aria-label={t('Remove scenario {name}', { name: scenario.name })}
                   >

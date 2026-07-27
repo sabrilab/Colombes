@@ -73,7 +73,7 @@ export function GaugeRow({
 
   return (
     <div className="space-y-2 py-2">
-      <div className="flex items-baseline justify-between gap-2">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-sm">{label}</span>
         {editing ? (
           <Input
@@ -85,15 +85,18 @@ export function GaugeRow({
               if (event.key === 'Enter') commitEditing()
               if (event.key === 'Escape') setEditing(false)
             }}
-            className="h-7 w-24 text-right font-mono text-sm tabular-nums"
+            className="h-10 w-24 text-right font-mono text-sm tabular-nums sm:h-7"
             aria-label={`${label} — direct input`}
+            inputMode="decimal"
           />
         ) : (
           <button
             type="button"
             onClick={startEditing}
             onFocus={startEditing}
-            className="rounded-sm px-1 font-mono text-sm tabular-nums hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            /* C'est la porte d'entrée vers la saisie exacte : au doigt, une
+               ligne de texte de 20 px se rate, on lui donne du corps. */
+            className="inline-flex min-h-9 items-center rounded-md px-2 font-mono text-sm tabular-nums hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:min-h-0 sm:rounded-sm sm:px-1"
             aria-label={`${label}: ${format(value)}. Activate to type an exact value.`}
           >
             {format(value)}
