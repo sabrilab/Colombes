@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { PAD_BOUNDS, padToParams, paramsToPad } from './pricePad'
+import {
+  animalFor,
+  isoRevenueSegment,
+  PAD_BOUNDS,
+  PRICING_ANIMALS,
+  padToParams,
+  paramsToPad,
+} from './pricePad'
 
 describe('padToParams', () => {
   it('place le coin bas-gauche sur le minimum des deux axes', () => {
@@ -35,6 +42,67 @@ describe('padToParams', () => {
     // Milieu géométrique, non arithmétique : très en dessous de max/2.
     expect(middle.customers).toBeLessThan(PAD_BOUNDS.customers.max / 4)
     expect(middle.price).toBeLessThan(PAD_BOUNDS.price.max / 4)
+  })
+})
+
+describe('PRICING_ANIMALS', () => {
+  it('couvre la plage de prix du pad sans trou ni chevauchement', () => {
+    expect(PRICING_ANIMALS[0].minPrice).toBe(PAD_BOUNDS.price.min)
+    for (let i = 1; i < PRICING_ANIMALS.length; i++) {
+      expect(PRICING_ANIMALS[i].minPrice, PRICING_ANIMALS[i].name).toBe(
+        PRICING_ANIMALS[i - 1].maxPrice,
+      )
+    }
+    expect(PRICING_ANIMALS.at(-1)!.maxPrice).toBeGreaterThanOrEqual(PAD_BOUNDS.price.max)
+  })
+
+  it('monte en ordre de grandeur, du moins cher au plus cher', () => {
+    const prices = PRICING_ANIMALS.map((animal) => animal.minPrice)
+    expect([...prices].sort((a, b) => a - b)).toEqual(prices)
+  })
+})
+
+describe('animalFor', () => {
+  it('classe un prix dans son palier', () => {
+    // Repères de Janz, ramenés au mois : lapin ≈ 100 $/an, cerf ≈ 1 000 $/an.
+    expect(animalFor(9).name).toBe('Rabbits')
+    expect(animalFor(83).name).toBe('Deer')
+  })
+
+  it('classe tout prix, même hors bornes', () => {
+    expect(animalFor(0).name).toBe(PRICING_ANIMALS[0].name)
+    expect(animalFor(99_999).name).toBe(PRICING_ANIMALS.at(-1)!.name)
+  })
+})
+
+describe('isoRevenueSegment', () => {
+  it('rend un segment dont les deux bouts portent le MRR visé', () => {
+    const segment = isoRevenueSegment(10_000)
+    expect(segment).not.toBeNull()
+    for (const end of [segment!.from, segment!.to]) {
+      const { price, customers } = padToParams(end)
+      expect(price * customers).toBeGreaterThan(10_000 * 0.97)
+      expect(price * customers).toBeLessThan(10_000 * 1.03)
+    }
+  })
+
+  it('garde ses extrémités dans le pad', () => {
+    for (const mrr of [100, 10_000, 1_000_000]) {
+      const segment = isoRevenueSegment(mrr)
+      expect(segment, `mrr ${mrr}`).not.toBeNull()
+      for (const end of [segment!.from, segment!.to]) {
+        expect(end.x).toBeGreaterThanOrEqual(0)
+        expect(end.x).toBeLessThanOrEqual(1)
+        expect(end.y).toBeGreaterThanOrEqual(0)
+        expect(end.y).toBeLessThanOrEqual(1)
+      }
+    }
+  })
+
+  it('rend null quand la courbe ne traverse pas le pad', () => {
+    // Au-delà de prix max × clients max, aucun point du pad n'atteint ce MRR.
+    expect(isoRevenueSegment(PAD_BOUNDS.price.max * PAD_BOUNDS.customers.max * 2)).toBeNull()
+    expect(isoRevenueSegment(0)).toBeNull()
   })
 })
 

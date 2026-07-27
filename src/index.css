@@ -182,17 +182,64 @@
       0 12px 32px -18px oklch(0 0 0 / 0.5);
   }
 
-  /* Le pad de pricing : plaque sombre, grille gravée, vignette aux bords. */
+  /* Le pad de pricing : plaque sombre et nue. Pas de quadrillage — les
+     repères d'axes suffisent à situer, sans strier la surface. */
   .pad-surface {
-    background-image:
-      radial-gradient(120% 110% at 8% 6%, color-mix(in oklab, var(--foreground) 5%, transparent), transparent 55%),
-      linear-gradient(to right, color-mix(in oklab, var(--foreground) 7%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 7%, transparent) 1px, transparent 1px);
-    background-size: 100% 100%, 12.5% 100%, 100% 16.667%;
+    background-image: radial-gradient(
+      120% 110% at 8% 6%,
+      color-mix(in oklab, var(--foreground) 5%, transparent),
+      transparent 55%
+    );
     background-color: color-mix(in oklab, var(--card) 88%, var(--background));
     box-shadow:
       inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 8%, transparent),
       inset 0 0 60px -10px oklch(0 0 0 / 0.55);
+  }
+
+  /* La sphère qui porte la colombe : verre bombé, halo citron. */
+  .dove-orb {
+    background:
+      radial-gradient(circle at 32% 26%, oklch(1 0 0 / 0.28), transparent 52%),
+      radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--lume) 55%, transparent), color-mix(in oklab, var(--lume) 12%, transparent) 70%);
+    box-shadow:
+      inset 0 1px 1px oklch(1 0 0 / 0.5),
+      inset 0 -6px 12px -6px oklch(0 0 0 / 0.5),
+      0 0 22px -4px var(--lume),
+      0 6px 16px -8px oklch(0 0 0 / 0.6);
+  }
+
+  /* Invite au geste : un anneau qui respire, tant qu'on n'a pas touché. */
+  @keyframes orb-invite {
+    0% {
+      transform: scale(1);
+      opacity: 0.55;
+    }
+    70% {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.9);
+      opacity: 0;
+    }
+  }
+  .orb-invite {
+    animation: orb-invite 2.4s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .orb-invite {
+      animation: none;
+      opacity: 0.35;
+    }
+  }
+
+  /* Cartes scindées : bandeau d'identité plus sourd, socle de chiffres plus
+     clair. Le contraste des deux zones tient dans les deux thèmes. */
+  .card-band {
+    background: color-mix(in oklab, var(--foreground) 5%, var(--card));
+  }
+  .dark .card-band {
+    background: color-mix(in oklab, var(--background) 65%, var(--card));
   }
 
   /* Barre translucide, effet vitre. */

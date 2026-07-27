@@ -14,6 +14,17 @@ export interface Scenario {
 
 export const MAX_SCENARIOS = 3
 
+/** Une simulation gardée par l'utilisateur, au-delà de la session. */
+export interface SavedSimulation {
+  id: string
+  name: string
+  inputs: SimulatorInputs
+  /** Identifiant de la colombe dont elle est partie, s'il y en a une. */
+  basedOn: string | null
+}
+
+export const MAX_SAVED_SIMULATIONS = 12
+
 export type PanelMode = 'simple' | 'expert'
 
 interface SimulatorState {
@@ -25,8 +36,16 @@ interface SimulatorState {
   setTier: (index: number, patch: Partial<Tier>) => void
   addTier: () => void
   removeTier: (index: number) => void
-  loadInputs: (inputs: SimulatorInputs) => void
+  loadInputs: (inputs: SimulatorInputs, basedOn?: string | null) => void
   resetInputs: () => void
+  savedSims: SavedSimulation[]
+  /** Origine de l'état courant, pour l'attribuer si on l'enregistre. */
+  currentBasedOn: string | null
+  saveSimulation: (name: string) => void
+  renameSimulation: (id: string, name: string) => void
+  duplicateSimulation: (id: string) => void
+  deleteSimulation: (id: string) => void
+  openSimulation: (id: string) => void
   pinScenario: (name: string) => void
   removeScenario: (id: string) => void
   setTheme: (theme: 'light' | 'dark') => void
@@ -64,9 +83,56 @@ export const useSimulator = create<SimulatorState>()(
           inputs: { ...state.inputs, tiers: removeTierAt(state.inputs.tiers, index) },
         })),
 
-      loadInputs: (inputs) => set({ inputs }),
+      loadInputs: (inputs, basedOn = null) => set({ inputs, currentBasedOn: basedOn }),
 
-      resetInputs: () => set({ inputs: DEFAULT_INPUTS }),
+      resetInputs: () => set({ inputs: DEFAULT_INPUTS, currentBasedOn: null }),
+
+      savedSims: [],
+      currentBasedOn: null,
+
+      saveSimulation: (name) =>
+        set((state) => {
+          if (state.savedSims.length >= MAX_SAVED_SIMULATIONS) return state
+          const entry: SavedSimulation = {
+            id: crypto.randomUUID(),
+            name: name.trim() || `Simulation ${state.savedSims.length + 1}`,
+            inputs: state.inputs,
+            basedOn: state.currentBasedOn,
+          }
+          // La dernière enregistrée arrive en tête : c'est celle qu'on rouvre.
+          return { savedSims: [entry, ...state.savedSims] }
+        }),
+
+      renameSimulation: (id, name) =>
+        set((state) => ({
+          savedSims: state.savedSims.map((sim) =>
+            sim.id === id ? { ...sim, name: name.trim() || sim.name } : sim,
+          ),
+        })),
+
+      duplicateSimulation: (id) =>
+        set((state) => {
+          const source = state.savedSims.find((sim) => sim.id === id)
+          if (!source || state.savedSims.length >= MAX_SAVED_SIMULATIONS) return state
+          const copy: SavedSimulation = {
+            ...source,
+            id: crypto.randomUUID(),
+            name: `${source.name} (copy)`,
+          }
+          const index = state.savedSims.indexOf(source)
+          const savedSims = [...state.savedSims]
+          savedSims.splice(index + 1, 0, copy)
+          return { savedSims }
+        }),
+
+      deleteSimulation: (id) =>
+        set((state) => ({ savedSims: state.savedSims.filter((sim) => sim.id !== id) })),
+
+      openSimulation: (id) =>
+        set((state) => {
+          const sim = state.savedSims.find((entry) => entry.id === id)
+          return sim ? { inputs: sim.inputs, currentBasedOn: sim.basedOn } : state
+        }),
 
       pinScenario: (name) =>
         set((state) => {
@@ -93,6 +159,7 @@ export const useSimulator = create<SimulatorState>()(
         scenarios: state.scenarios,
         theme: state.theme,
         panelMode: state.panelMode,
+        savedSims: state.savedSims,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) document.documentElement.classList.toggle('dark', state.theme === 'dark')

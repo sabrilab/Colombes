@@ -8,6 +8,7 @@ import { KpiGrid } from '@/components/results/KpiGrid'
 import { ProjectionChart } from '@/components/results/ProjectionChart'
 import { MultipleBreakdown } from '@/components/results/MultipleBreakdown'
 import { ScenarioBar } from '@/components/scenarios/ScenarioBar'
+import { SaveBar } from '@/components/scenarios/SaveBar'
 import { useResults } from '@/store/simulator'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
 import { formatCurrency, formatMultiple } from '@/lib/format'
@@ -38,6 +39,7 @@ function Results() {
       <div className="sticky top-4 z-10 lg:top-6">
         <ValuationCard />
       </div>
+      <SaveBar />
       <ScenarioBar />
       <KpiGrid />
       <ProjectionChart />

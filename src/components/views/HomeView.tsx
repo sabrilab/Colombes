@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Activity, Dumbbell, HardHat, PenLine, Users, UtensilsCrossed } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 import { AppHeader } from '@/components/AppHeader'
+import { BrandMark } from '@/components/BrandMark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { AnimalStage } from '@/components/home/AnimalStage'
 import { PricePad } from '@/components/home/PricePad'
+import { SavedLibrary } from '@/components/home/SavedLibrary'
+import { animalFor } from '@/lib/pricePad'
 import { AVIARY, type Colombe } from '@/lib/aviary'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
 import { compute } from '@/lib/engine'
@@ -13,15 +15,6 @@ import { quickInputs } from '@/lib/quickSim'
 import { navigate } from '@/lib/router'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
 import { useSimulator } from '@/store/simulator'
-
-const DOVE_ICONS: Record<string, LucideIcon> = {
-  turquoise: Activity,
-  biset: UtensilsCrossed,
-  diamant: Dumbbell,
-  colombine: PenLine,
-  ramier: HardHat,
-  tourterelle: Users,
-}
 
 /** Le simulateur « à la louche » : deux curseurs, la valo en direct.
     Tout le reste vient d'hypothèses médianes (quickSim.ts), affichées. */
@@ -52,7 +45,10 @@ function MiniSimulator() {
           </p>
         </div>
         <div className="flex flex-col justify-center lg:border-l lg:border-border/60 lg:pl-6">
-          <p className="text-sm text-muted-foreground" id="mini-simulateur-valo">
+          {/* Le palier de Janz, incarné, juste au-dessus du chiffre. */}
+          <AnimalStage animal={animalFor(params.price)} />
+
+          <p className="mt-3 text-sm text-muted-foreground" id="mini-simulateur-valo">
             Estimated valuation
           </p>
           <p
@@ -82,19 +78,8 @@ function MiniSimulator() {
   )
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <dt className="text-[11px] text-muted-foreground">{label}</dt>
-      <dd className="font-mono text-sm tabular-nums">{value}</dd>
-    </div>
-  )
-}
-
 function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
   const results = useMemo(() => compute(colombe.inputs), [colombe])
-  const Icon = DOVE_ICONS[colombe.id] ?? Activity
-  const accent = `oklch(0.82 0.09 ${colombe.hue})`
 
   return (
     <button
@@ -104,35 +89,33 @@ function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
       style={{ '--reveal-order': order } as React.CSSProperties}
       aria-label={`View ${colombe.name}'s profile`}
     >
-      <Card className="relative h-full gap-2.5 overflow-hidden p-4 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-foreground/25 group-focus-visible:border-foreground/40">
-        {/* Halo d'accent, révélé au survol. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-16 right-0 h-40 w-40 rounded-full opacity-[0.07] blur-2xl transition-opacity duration-300 group-hover:opacity-20"
-          style={{ background: accent }}
-        />
-        <div className="flex items-center gap-3">
-          <span
-            className="flex size-9 shrink-0 items-center justify-center rounded-xl border"
-            style={{
-              background: `linear-gradient(150deg, oklch(0.5 0.07 ${colombe.hue} / 0.28), oklch(0.35 0.05 ${colombe.hue} / 0.10))`,
-              borderColor: `oklch(0.7 0.08 ${colombe.hue} / 0.35)`,
-              color: accent,
-            }}
-          >
-            <Icon className="size-4" aria-hidden />
-          </span>
+      <Card className="h-full gap-0 overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-foreground/25 group-focus-visible:border-foreground/40">
+        {/* Bandeau d'identité : la marque et son secteur, rien d'autre. */}
+        <div className="card-band flex items-center gap-3 border-b border-border/50 p-4">
+          <BrandMark
+            id={colombe.id}
+            className="size-10 shrink-0 rounded-full ring-1 ring-foreground/10"
+          />
           <div className="min-w-0">
-            <p className="font-display text-base font-semibold">{colombe.name}</p>
+            <p className="font-display text-base font-semibold leading-tight">{colombe.name}</p>
             <p className="truncate text-xs text-muted-foreground">{colombe.sector}</p>
           </div>
         </div>
-        <p className="line-clamp-2 text-sm text-muted-foreground">{colombe.pitch}</p>
-        <dl className="mt-auto flex gap-5 border-t border-border/60 pt-2.5">
-          <Stat label="Valuation" value={formatCompactCurrency(results.valuation.value)} />
-          <Stat label="MRR" value={formatCompactCurrency(results.revenue.mrr)} />
-          <Stat label="Multiple" value={formatMultiple(results.valuation.multiple)} />
-        </dl>
+
+        {/* Socle : un seul chiffre qui compte, et son multiple. */}
+        <div className="flex items-end justify-between gap-3 p-4">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+              Valuation
+            </p>
+            <p className="font-mono text-2xl font-semibold tabular-nums">
+              {formatCompactCurrency(results.valuation.value)}
+            </p>
+          </div>
+          <p className="font-mono text-sm text-muted-foreground tabular-nums">
+            {formatMultiple(results.valuation.multiple)}
+          </p>
+        </div>
       </Card>
     </button>
   )
@@ -167,6 +150,8 @@ export function HomeView() {
           </div>
           <MiniSimulator />
         </section>
+
+        <SavedLibrary />
 
         <section className="mt-12 lg:mt-16" aria-label="The aviary">
           <h2

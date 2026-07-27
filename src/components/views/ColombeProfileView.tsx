@@ -44,7 +44,7 @@ export function ColombeProfileView({ id }: { id: string }) {
     .slice(0, 3)
 
   const openInSimulator = () => {
-    loadInputs(colombe.inputs)
+    loadInputs(colombe.inputs, colombe.id)
     navigate('#/simulateur')
   }
 
