@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 import { AppHeader } from '@/components/AppHeader'
 import { TierBadge } from '@/components/AnimalGlyph'
 import { BrandMark } from '@/components/BrandMark'
@@ -147,14 +148,35 @@ function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
   )
 }
 
+function announceAccounts() {
+  toast('Accounts are coming soon', {
+    description: 'Until then, your saved simulations live in this browser.',
+  })
+}
+
 export function HomeView() {
   return (
     <>
       <AppHeader
         actions={
-          <Button size="sm" variant="outline" onClick={() => navigate('#/simulateur')}>
-            Full simulator
-          </Button>
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              className="hidden sm:inline-flex"
+              onClick={() => navigate('#/simulateur')}
+            >
+              Full simulator
+            </Button>
+            {/* Les comptes n'existent pas encore : plutôt qu'un bouton mort ou
+                un faux formulaire, on dit où vivent les données aujourd'hui. */}
+            <Button size="sm" variant="ghost" onClick={announceAccounts}>
+              Sign in
+            </Button>
+            <Button size="sm" className="lume-pill rounded-full px-4" onClick={announceAccounts}>
+              Sign up
+            </Button>
+          </>
         }
       />
       <main className="mx-auto max-w-5xl px-4 py-10 lg:px-6 lg:py-14">
