@@ -8,7 +8,7 @@ import { animalFor } from '@/lib/pricePad'
 import { formatCompactCurrency, formatMultiple } from '@/lib/format'
 import { navigate } from '@/lib/router'
 import { colombeById } from '@/lib/aviary'
-import { useSimulator, type SavedSimulation } from '@/store/simulator'
+import { useSimulator, useT, type SavedSimulation } from '@/store/simulator'
 
 function SavedCard({ sim }: { sim: SavedSimulation }) {
   const openSimulation = useSimulator((state) => state.openSimulation)
@@ -17,6 +17,7 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
   const deleteSimulation = useSimulator((state) => state.deleteSimulation)
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(sim.name)
+  const t = useT()
 
   const { valuation, revenue } = compute(sim.inputs)
   const origin = sim.basedOn ? colombeById(sim.basedOn) : null
@@ -40,14 +41,14 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
               if (event.key === 'Escape') setEditing(false)
             }}
             className="h-7 text-sm"
-            aria-label={`Rename ${sim.name}`}
+            aria-label={t('Rename {name}', { name: sim.name })}
           />
         ) : (
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{sim.name}</p>
             {origin && (
               <p className="truncate text-[11px] text-muted-foreground">
-                based on {origin.name}
+                {t('based on {name}', { name: origin.name })}
               </p>
             )}
           </div>
@@ -59,7 +60,7 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
               setDraft(sim.name)
               setEditing(true)
             }}
-            aria-label={`Rename ${sim.name}`}
+            aria-label={t('Rename {name}', { name: sim.name })}
             className="rounded p-1 text-muted-foreground/60 hover:text-foreground"
           >
             <Pencil className="size-3.5" aria-hidden />
@@ -67,7 +68,7 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
           <button
             type="button"
             onClick={() => duplicateSimulation(sim.id)}
-            aria-label={`Duplicate ${sim.name}`}
+            aria-label={t('Duplicate {name}', { name: sim.name })}
             className="rounded p-1 text-muted-foreground/60 hover:text-foreground"
           >
             <Copy className="size-3.5" aria-hidden />
@@ -75,7 +76,7 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
           <button
             type="button"
             onClick={() => deleteSimulation(sim.id)}
-            aria-label={`Delete ${sim.name}`}
+            aria-label={t('Delete {name}', { name: sim.name })}
             className="rounded p-1 text-muted-foreground/60 hover:text-red-500"
           >
             <Trash2 className="size-3.5" aria-hidden />
@@ -90,10 +91,10 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
           navigate('#/simulateur')
         }}
         className="flex items-end justify-between gap-3 p-3 text-left transition-colors hover:bg-foreground/[0.03]"
-        aria-label={`Open ${sim.name} in the simulator`}
+        aria-label={t('Open {name} in the simulator', { name: sim.name })}
       >
         <div>
-          <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">Valuation</p>
+          <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">{t('Valuation')}</p>
           <p className="font-mono text-xl font-semibold tabular-nums">
             {formatCompactCurrency(valuation.value)}
           </p>
@@ -111,12 +112,13 @@ function SavedCard({ sim }: { sim: SavedSimulation }) {
 
 export function SavedLibrary() {
   const savedSims = useSimulator((state) => state.savedSims)
+  const t = useT()
   if (savedSims.length === 0) return null
 
   return (
-    <section className="mt-12 lg:mt-16" aria-label="Your simulations">
+    <section className="mt-12 lg:mt-16" aria-label={t('Your simulations')}>
       <h2 className="font-display text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-        Your simulations
+        {t('Your simulations')}
       </h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {savedSims.map((sim) => (

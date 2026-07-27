@@ -35,7 +35,7 @@ export function quickInputs({ price, customers }: QuickParams): SimulatorInputs 
 
   return {
     ...DEFAULT_INPUTS,
-    tiers: [{ name: 'Abonnement', price, mix: 1 }],
+    tiers: [{ name: 'Subscription', price, mix: 1 }],
     customers: clampTo(INPUT_BOUNDS.customers, customers),
     newCustomersPerMonth,
     cac,

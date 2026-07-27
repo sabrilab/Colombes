@@ -168,4 +168,90 @@ export const FR: Record<string, string> = {
   'E-commerce platform': 'Plateforme e-commerce',
   'CRM & marketing': 'CRM et marketing',
   'Enterprise CRM': 'CRM grand compte',
+  // — Lecture en direct —
+  'You are losing {loss} a month: gross margin ({margin}) does not cover acquisition ({acquisition}) plus fixed costs ({fixed}) — so a profit-based valuation collapses.':
+    'Vous perdez {loss} par mois : la marge brute ({margin}) ne couvre pas l’acquisition ({acquisition}) plus les charges fixes ({fixed}) — une valorisation sur le profit s’effondre donc.',
+  'Churn is the biggest drag: €100 of today’s revenue melts to {left} within a year (NRR {nrr}). Fixing retention beats any acquisition push.':
+    'Le churn est le premier frein : 100 € de revenu d’aujourd’hui fondent à {left} en un an (NRR {nrr}). Réparer la rétention vaut mieux que pousser l’acquisition.',
+  'MRR sits above its {ceiling} ceiling: at this churn and acquisition pace, revenue shrinks back toward it month after month.':
+    'Le MRR est au-dessus de son plafond de {ceiling} : à ce rythme de churn et d’acquisition, le revenu y redescend mois après mois.',
+  'You have already reached {share} of your {ceiling} MRR ceiling: growth flattens out soon unless churn drops or acquisition rises.':
+    'Vous avez déjà atteint {share} de votre plafond de MRR de {ceiling} : la croissance s’aplatit bientôt, sauf à baisser le churn ou monter l’acquisition.',
+  'Each new customer takes {months} months to pay back their CAC — growth burns cash long before it returns any.':
+    'Chaque nouveau client met {months} mois à rembourser son CAC — la croissance brûle de la trésorerie bien avant d’en rendre.',
+  'CAC payback runs {months} months: acquisition works, but it ties up cash for over a year.':
+    'Le payback du CAC est de {months} mois : l’acquisition fonctionne, mais elle immobilise de la trésorerie plus d’un an.',
+  'Your existing base compounds on its own: expansion outpaces churn (NRR {nrr}) — revenue grows even with zero new customers.':
+    'Votre base existante compose toute seule : l’expansion dépasse le churn (NRR {nrr}) — le revenu croît même sans un seul nouveau client.',
+  'Acquisition is a profitable machine: every euro of CAC returns {ratio}€ of lifetime margin, repaid in {months} months.':
+    'L’acquisition est une machine rentable : chaque euro de CAC rapporte {ratio} € de marge sur la durée de vie, remboursé en {months} mois.',
+  'Rule of 40 at {score}: neither growth nor profitability carries the scenario right now.':
+    'Rule of 40 à {score} : ni la croissance ni la rentabilité ne portent le scénario pour l’instant.',
+  'Rule of 40 at {score}: the growth-profit balance sits in the healthy zone buyers look for.':
+    'Rule of 40 à {score} : l’équilibre croissance-profit est dans la zone saine que cherchent les acheteurs.',
+  'A balanced scenario: {multiple} on {profit} of annual profit. Retention and margin are the levers that move the needle most.':
+    'Un scénario équilibré : {multiple} sur {profit} de profit annuel. La rétention et la marge sont les leviers qui pèsent le plus.',
+
+  // — Grille de KPI —
+  'What is {label}?': 'Qu’est-ce que {label} ?',
+  good: 'bon',
+  watch: 'à surveiller',
+  critical: 'critique',
+  'organic acquisition': 'acquisition organique',
+  'no ceiling: expansion outpaces churn': 'sans plafond : l’expansion dépasse le churn',
+  'MRR ceiling': 'Plafond de MRR',
+  'NRR (12-mo)': 'NRR (12 mois)',
+  Payback: 'Payback',
+  'Rule of 40': 'Rule of 40',
+
+  // — Construction du multiple —
+  Base: 'Base',
+  '(custom)': '(personnalisée)',
+  '(market curve)': '(barème)',
+  'Adjustments clamped at {sum}': 'Cumul écrêté à {sum}',
+  capped: 'ajusté',
+  'Capped at the curve maximum': 'Plafonné au maximum du barème',
+
+  // — Projection —
+  'Month {n}': 'Mois {n}',
+  'Ceiling {value}': 'Plafond {value}',
+  'At constant churn and acquisition, MRR converges to {ceiling}. Raising that ceiling takes less churn or more acquisition.':
+    'À churn et acquisition constants, le MRR converge vers {ceiling}. Relever ce plafond passe par moins de churn ou plus d’acquisition.',
+  'No ceiling: expansion outpaces churn, the base compounds on its own.':
+    'Pas de plafond : l’expansion dépasse le churn, la base compose toute seule.',
+  'Assumption: constant acquisition pace over the whole period.':
+    'Hypothèse : rythme d’acquisition constant sur toute la période.',
+
+  // — Scénarios et bibliothèque —
+  'Scenario {n}': 'Scénario {n}',
+  'Name of the scenario to pin': 'Nom du scénario à épingler',
+  'Up to {max} scenarios — remove one to pin another.':
+    'Jusqu’à {max} scénarios — retirez-en un pour en épingler un autre.',
+  'Remove scenario {name}': 'Retirer le scénario {name}',
+  'vs current:': 'écart avec l’état courant :',
+  'Title for this simulation': 'Titre de cette simulation',
+  'Library full ({max}) — delete one to save another.':
+    'Bibliothèque pleine ({max}) — supprimez-en une pour en enregistrer une autre.',
+  'By default, the market curve gives {multiple} at this MRR level.':
+    'Par défaut, le barème donne {multiple} à ce niveau de MRR.',
+  Subscription: 'Abonnement',
+  revenue: 'de revenu',
+  customers: 'clients',
+  // — Panneau de contrôle —
+  'Blended ARPU {arpu} · {zone} zone, typical churn {min} to {max}':
+    'ARPU pondéré {arpu} · zone {zone}, churn typique {min} à {max}',
+  'Plan shares add up to {total}: they are normalized back to 100% for the math, each plan keeping its relative weight.':
+    'Les parts totalisent {total} : elles sont ramenées à 100 % pour le calcul, chaque plan gardant son poids relatif.',
+  'Optimistic churn for an ARPU of {arpu}: the {zone} zone typically runs around {min}.':
+    'Hypothèse de churn optimiste pour un ARPU de {arpu} : la zone {zone} tourne plutôt autour de {min}.',
+  'Marker {value} — 12-month payback': 'Repère {value} — payback de 12 mois',
+  '3%/mo marker — B2B median': 'Repère 3 %/mois — médiane B2B',
+  'Marker {value} — NRR at 100%': 'Repère {value} — NRR à 100 %',
+  '80% marker': 'Repère 80 %',
+  'Applied assumptions: {list}. Switch to Expert to adjust them.':
+    'Hypothèses appliquées : {list}. Passez en Expert pour les régler.',
+  'B2C / prosumer': 'B2C / prosumer',
+  'Prosumer / micro-SMB': 'Prosumer / TPE',
+  'SMB / B2B': 'PME / B2B',
+  'B2B mid-market': 'B2B mid-market',
 }

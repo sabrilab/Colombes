@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { GaugeRow } from './GaugeRow'
 import { TierRow } from './TierRow'
-import { useResults, useSimulator, type PanelMode } from '@/store/simulator'
+import { useResults, useSimulator, useT, type PanelMode } from '@/store/simulator'
 import { priceZoneFor } from '@/lib/engine'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
 import { formatCurrency, formatMonths, formatPercent } from '@/lib/format'
@@ -31,6 +31,8 @@ function LevelToggle({
   value: Level
   onChange: (value: Level) => void
 }) {
+  const t = useT()
+
   return (
     <div className="space-y-2 py-2">
       <span className="text-sm">{label}</span>
@@ -43,7 +45,7 @@ function LevelToggle({
       >
         {(Object.keys(LEVEL_LABELS) as Level[]).map((level) => (
           <ToggleGroupItem key={level} value={level} className="flex-1 text-xs">
-            {LEVEL_LABELS[level]}
+            {t(LEVEL_LABELS[level])}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
@@ -60,6 +62,7 @@ export function ControlPanel() {
   const panelMode = useSimulator((state) => state.panelMode)
   const setPanelMode = useSimulator((state) => state.setPanelMode)
   const { revenue } = useResults()
+  const t = useT()
 
   const expert = panelMode === 'expert'
   const zone = priceZoneFor(revenue.arpu)
@@ -80,19 +83,19 @@ export function ControlPanel() {
         value={panelMode}
         onValueChange={(next) => next && setPanelMode(next as PanelMode)}
         className="w-full"
-        aria-label="Level of detail"
+        aria-label={t('Level of detail')}
       >
         <ToggleGroupItem value="simple" className="flex-1 text-xs">
-          Simple
+          {t('Simple')}
         </ToggleGroupItem>
         <ToggleGroupItem value="expert" className="flex-1 text-xs">
-          Expert
+          {t('Expert')}
         </ToggleGroupItem>
       </ToggleGroup>
 
       <Accordion type="multiple" defaultValue={['pricing', 'clients', 'retention', 'economy']}>
         <AccordionItem value="pricing">
-          <AccordionTrigger>Pricing</AccordionTrigger>
+          <AccordionTrigger>{t('Pricing')}</AccordionTrigger>
           <AccordionContent>
             {inputs.tiers.map((tier, index) => (
               <TierRow
@@ -112,27 +115,33 @@ export function ControlPanel() {
                 onClick={addTier}
               >
                 <Plus className="size-3.5" aria-hidden />
-                Add a plan
+                {t('Add a plan')}
               </Button>
             )}
             {mixIsOff && (
               <p role="status" className="pt-2 text-xs text-amber-600 dark:text-amber-500">
-                Plan shares add up to {formatPercent(mixTotal, 0)}: they are normalized back to 100%
-                for the math, each plan keeping its relative weight.
+                {t(
+                  'Plan shares add up to {total}: they are normalized back to 100% for the math, each plan keeping its relative weight.',
+                  { total: formatPercent(mixTotal, 0) },
+                )}
               </p>
             )}
             <p className="pt-2 text-xs text-muted-foreground">
-              Blended ARPU {formatCurrency(revenue.arpu)} · {zone.label} zone, typical churn{' '}
-              {formatPercent(zone.churnMin, 0)} to {formatPercent(zone.churnMax, 0)}
+              {t('Blended ARPU {arpu} · {zone} zone, typical churn {min} to {max}', {
+                arpu: formatCurrency(revenue.arpu),
+                zone: t(zone.label),
+                min: formatPercent(zone.churnMin, 0),
+                max: formatPercent(zone.churnMax, 0),
+              })}
             </p>
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="clients">
-          <AccordionTrigger>Customers & acquisition</AccordionTrigger>
+          <AccordionTrigger>{t('Customers & acquisition')}</AccordionTrigger>
           <AccordionContent>
             <GaugeRow
-              label="Customers"
+              label={t('Customers')}
               value={inputs.customers}
               onChange={(value) => setInput('customers', value)}
               max={INPUT_BOUNDS.customers.max}
@@ -140,7 +149,7 @@ export function ControlPanel() {
               format={(value) => value.toLocaleString('en-US')}
             />
             <GaugeRow
-              label="New customers / mo"
+              label={t('New customers / mo')}
               value={inputs.newCustomersPerMonth}
               onChange={(value) => setInput('newCustomersPerMonth', value)}
               max={INPUT_BOUNDS.newCustomersPerMonth.max}
@@ -155,17 +164,17 @@ export function ControlPanel() {
                 max={INPUT_BOUNDS.cac.max}
                 format={formatCurrency}
                 marker={cacMarker}
-                markerLabel={`Marker ${formatCurrency(cacMarker)} — 12-month payback`}
+                markerLabel={t('Marker {value} — 12-month payback', { value: formatCurrency(cacMarker) })}
               />
             )}
           </AccordionContent>
         </AccordionItem>
 
         <AccordionItem value="retention">
-          <AccordionTrigger>Retention</AccordionTrigger>
+          <AccordionTrigger>{t('Retention')}</AccordionTrigger>
           <AccordionContent>
             <GaugeRow
-              label="Revenue churn / mo"
+              label={t('Revenue churn / mo')}
               value={inputs.revenueChurn}
               onChange={(value) => setInput('revenueChurn', value)}
               max={INPUT_BOUNDS.revenueChurn.max}
@@ -173,11 +182,11 @@ export function ControlPanel() {
               format={(value) => formatPercent(value)}
               inputScale={100}
               marker={0.03}
-              markerLabel="3%/mo marker — B2B median"
+              markerLabel={t('3%/mo marker — B2B median')}
             />
             {expert && (
               <GaugeRow
-                label="Expansion / mo"
+                label={t('Expansion / mo')}
                 value={inputs.expansion}
                 onChange={(value) => setInput('expansion', value)}
                 max={INPUT_BOUNDS.expansion.max}
@@ -185,13 +194,16 @@ export function ControlPanel() {
                 format={(value) => formatPercent(value)}
                 inputScale={100}
                 marker={inputs.revenueChurn}
-                markerLabel={`Marker ${formatPercent(inputs.revenueChurn)} — NRR at 100%`}
+                markerLabel={t('Marker {value} — NRR at 100%', { value: formatPercent(inputs.revenueChurn) })}
               />
             )}
             {churnLooksOptimistic && (
               <p role="status" className="pt-2 text-xs text-amber-600 dark:text-amber-500">
-                Optimistic churn for an ARPU of {formatCurrency(revenue.arpu)}: the{' '}
-                {zone.label} zone typically runs around {formatPercent(zone.churnMin, 0)}.
+                {t('Optimistic churn for an ARPU of {arpu}: the {zone} zone typically runs around {min}.', {
+                  arpu: formatCurrency(revenue.arpu),
+                  zone: t(zone.label),
+                  min: formatPercent(zone.churnMin, 0),
+                })}
               </p>
             )}
           </AccordionContent>
@@ -199,10 +211,10 @@ export function ControlPanel() {
 
         {expert && (
           <AccordionItem value="economy">
-            <AccordionTrigger>Economics</AccordionTrigger>
+            <AccordionTrigger>{t('Economics')}</AccordionTrigger>
             <AccordionContent>
               <GaugeRow
-                label="Gross margin"
+                label={t('Gross margin')}
                 value={inputs.grossMargin}
                 onChange={(value) => setInput('grossMargin', value)}
                 min={INPUT_BOUNDS.grossMargin.min}
@@ -211,10 +223,10 @@ export function ControlPanel() {
                 format={(value) => formatPercent(value, 0)}
                 inputScale={100}
                 marker={0.8}
-                markerLabel="80% marker"
+                markerLabel={t('80% marker')}
               />
               <GaugeRow
-                label="Fixed costs / mo"
+                label={t('Fixed costs / mo')}
                 value={inputs.fixedCosts}
                 onChange={(value) => setInput('fixedCosts', value)}
                 max={INPUT_BOUNDS.fixedCosts.max}
@@ -227,20 +239,20 @@ export function ControlPanel() {
 
         {expert && (
           <AccordionItem value="quality">
-            <AccordionTrigger>Asset quality</AccordionTrigger>
+            <AccordionTrigger>{t('Asset quality')}</AccordionTrigger>
             <AccordionContent>
               <LevelToggle
-                label="Founder dependency"
+                label={t('Founder dependency')}
                 value={inputs.founderDependency}
                 onChange={(value) => setInput('founderDependency', value)}
               />
               <LevelToggle
-                label="Tech transferability"
+                label={t('Tech transferability')}
                 value={inputs.techTransferability}
                 onChange={(value) => setInput('techTransferability', value)}
               />
               <GaugeRow
-                label="Top client share"
+                label={t('Top client share')}
                 value={inputs.topClientShare}
                 onChange={(value) => setInput('topClientShare', value)}
                 max={INPUT_BOUNDS.topClientShare.max}
@@ -249,7 +261,7 @@ export function ControlPanel() {
                 inputScale={100}
               />
               <GaugeRow
-                label="Age"
+                label={t('Age')}
                 value={inputs.ageMonths}
                 onChange={(value) => setInput('ageMonths', value)}
                 max={INPUT_BOUNDS.ageMonths.max}
@@ -262,8 +274,9 @@ export function ControlPanel() {
 
       {!expert && (
         <p className="pt-3 text-xs text-muted-foreground">
-          Applied assumptions: {describeHiddenAssumptions(inputs)}. Switch to Expert to
-          adjust them.
+          {t('Applied assumptions: {list}. Switch to Expert to adjust them.', {
+            list: describeHiddenAssumptions(inputs, t),
+          })}
         </p>
       )}
     </div>

@@ -9,7 +9,7 @@ import { diagnose, type InsightTone } from '@/lib/diagnose'
 import { animalFor } from '@/lib/pricePad'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
 import { formatCompactCurrency, formatCurrency, formatMultiple } from '@/lib/format'
-import { useResults, useSimulator } from '@/store/simulator'
+import { useResults, useSimulator, useT } from '@/store/simulator'
 import type { ProfileLabel } from '@/lib/engine/types'
 
 const PROFILE_LABELS: Record<ProfileLabel, string> = {
@@ -31,6 +31,7 @@ export function ValuationCard() {
   const setInput = useSimulator((state) => state.setInput)
   const animated = useAnimatedNumber(valuation.value)
   const insights = diagnose(results)
+  const t = useT()
 
   const basis =
     valuation.arrWeight === 0
@@ -40,10 +41,10 @@ export function ValuationCard() {
         : 'blended profit / revenue'
 
   return (
-    <Card className="glass-bar p-5">
+    <Card className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-sm text-muted-foreground">Estimated valuation</p>
+          <p className="text-sm text-muted-foreground">{t('Estimated valuation')}</p>
           <p className="metal-number font-mono text-4xl font-semibold tabular-nums" aria-live="polite">
             {formatCurrency(animated)}
           </p>
@@ -51,12 +52,12 @@ export function ValuationCard() {
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm">
-              Curve
+              {t('Curve')}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-72 space-y-3">
             <div className="space-y-1">
-              <Label htmlFor="base-multiple">Base multiple</Label>
+              <Label htmlFor="base-multiple">{t('Base multiple')}</Label>
               <Input
                 id="base-multiple"
                 type="number"
@@ -70,8 +71,9 @@ export function ValuationCard() {
                 }}
               />
               <p className="text-xs text-muted-foreground">
-                By default, the market curve gives {formatMultiple(valuation.baseMultiple)} at
-                this MRR level.
+                {t('By default, the market curve gives {multiple} at this MRR level.', {
+                  multiple: formatMultiple(valuation.baseMultiple),
+                })}
               </p>
             </div>
             {valuation.isOverridden && (
@@ -80,7 +82,7 @@ export function ValuationCard() {
                 size="sm"
                 onClick={() => setInput('baseMultipleOverride', null)}
               >
-                Back to the curve
+                {t('Back to the curve')}
               </Button>
             )}
           </PopoverContent>
@@ -110,20 +112,20 @@ export function ValuationCard() {
         <span className="text-sm text-muted-foreground">
           {formatCurrency(valuation.low)} — {formatCurrency(valuation.high)}
         </span>
-        <Badge variant="outline">{PROFILE_LABELS[valuation.profileLabel]}</Badge>
-        {valuation.isOverridden && <Badge variant="outline">Custom curve</Badge>}
+        <Badge variant="outline">{t(PROFILE_LABELS[valuation.profileLabel])}</Badge>
+        {valuation.isOverridden && <Badge variant="outline">{t('Custom curve')}</Badge>}
         <TierBadge animal={animalFor(results.revenue.arpu).name} />
       </div>
 
       {/* La lecture en direct : pourquoi ce scénario marche — ou pas. */}
-      <ul className="mt-3 space-y-1.5 border-t border-border/60 pt-3" aria-label="Live read">
+      <ul className="mt-3 space-y-1.5 border-t border-border/60 pt-3" aria-label={t('Live read')}>
         {insights.map((insight) => (
           <li key={insight.text} className="flex items-start gap-2 text-xs leading-relaxed">
             <span
               aria-hidden
               className={`mt-1 size-1.5 shrink-0 rounded-full ${TONE_DOTS[insight.tone]}`}
             />
-            <span className="text-muted-foreground">{insight.text}</span>
+            <span className="text-muted-foreground">{t(insight.text, insight.vars)}</span>
           </li>
         ))}
       </ul>

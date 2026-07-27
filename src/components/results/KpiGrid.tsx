@@ -11,7 +11,7 @@ import {
 import { compute, healthOf, type HealthMetric } from '@/lib/engine'
 import { GLOSSARY, type GlossaryKey } from '@/lib/glossary'
 import { formatCompactCurrency, formatCurrency, formatMonths, formatNullable, formatPercent } from '@/lib/format'
-import { useSimulator } from '@/store/simulator'
+import { useSimulator, useT } from '@/store/simulator'
 import type { Health, SimulatorInputs } from '@/lib/engine/types'
 
 const HEALTH_STYLES: Record<Health, string> = {
@@ -38,28 +38,29 @@ interface TileProps {
 function Tile({ label, value, glossaryKey, metric, raw = null, note }: TileProps) {
   const health = metric ? healthOf(metric, raw) : null
   const entry = GLOSSARY[glossaryKey]
+  const t = useT()
 
   return (
     <Card className="gap-1 p-3">
       <div className="flex items-start justify-between gap-1">
-        <p className="text-xs text-muted-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{t(label)}</p>
         <Popover>
           <PopoverTrigger asChild>
             <button
               type="button"
-              aria-label={`What is ${label}?`}
+              aria-label={t('What is {label}?', { label: t(label) })}
               className="-m-1 rounded-full p-1 text-muted-foreground/60 transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
             >
               <CircleHelp className="size-3.5" aria-hidden />
             </button>
           </PopoverTrigger>
           <PopoverContent className="w-80 space-y-1.5" collisionPadding={12}>
-            <PopoverTitle>{entry.title}</PopoverTitle>
+            <PopoverTitle>{t(entry.title)}</PopoverTitle>
             <PopoverDescription className="text-sm leading-relaxed">
-              {entry.definition}
+              {t(entry.definition)}
             </PopoverDescription>
             {entry.threshold && (
-              <p className="text-xs text-muted-foreground/80">{entry.threshold}</p>
+              <p className="text-xs text-muted-foreground/80">{t(entry.threshold)}</p>
             )}
           </PopoverContent>
         </Popover>
@@ -68,9 +69,9 @@ function Tile({ label, value, glossaryKey, metric, raw = null, note }: TileProps
         {value}
       </p>
       {health && (
-        <p className="text-[11px] text-muted-foreground">{HEALTH_WORDS[health]}</p>
+        <p className="text-[11px] text-muted-foreground">{t(HEALTH_WORDS[health])}</p>
       )}
-      {note && <p className="text-[11px] text-muted-foreground">{note}</p>}
+      {note && <p className="text-[11px] text-muted-foreground">{t(note)}</p>}
     </Card>
   )
 }

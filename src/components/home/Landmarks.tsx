@@ -9,6 +9,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { LANDMARKS, landmarkAcv, landmarkTier, type Landmark } from '@/lib/landmarks'
+import { useT } from '@/store/simulator'
 
 const compactUsd = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -20,6 +21,7 @@ const compactUsd = new Intl.NumberFormat('en-US', {
 function LandmarkCard({ company }: { company: Landmark }) {
   const acv = landmarkAcv(company)
   const tier = landmarkTier(company)
+  const t = useT()
 
   return (
     <Popover>
@@ -34,14 +36,14 @@ function LandmarkCard({ company }: { company: Landmark }) {
                 <p className="font-display text-base font-semibold leading-tight">
                   {company.name}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">{company.sector}</p>
+                <p className="truncate text-xs text-muted-foreground">{t(company.sector)}</p>
               </div>
             </div>
 
             <div className="flex items-end justify-between gap-3 p-4">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                  Per customer / year
+                  {t('Per customer / year')}
                 </p>
                 <p className="font-mono text-2xl font-semibold tabular-nums">
                   {acv >= 1000 ? compactUsd.format(acv) : `$${acv.toFixed(0)}`}
@@ -58,22 +60,22 @@ function LandmarkCard({ company }: { company: Landmark }) {
           {company.name} · {company.period}
         </PopoverTitle>
         <PopoverDescription className="text-sm leading-relaxed">
-          {company.lesson}
+          {t(company.lesson)}
         </PopoverDescription>
         <div className="space-y-1 border-t border-border/60 pt-2">
           <p className="text-xs text-muted-foreground">
             <span className="text-foreground">
               {compactUsd.format(company.annualRevenue)}
             </span>{' '}
-            revenue ·{' '}
+            {t('revenue')} ·{' '}
             <span className="text-foreground">
               {new Intl.NumberFormat('en-US', { notation: 'compact' }).format(company.customers)}
             </span>{' '}
-            customers
+            {t('customers')}
           </p>
-          <p className="text-xs text-muted-foreground/80">{company.basis}</p>
+          <p className="text-xs text-muted-foreground/80">{t(company.basis)}</p>
           <p className="text-xs text-muted-foreground/60">
-            Order-of-magnitude estimate from public reporting, not a company-supplied figure.
+            {t('Order-of-magnitude estimate from public reporting, not a company-supplied figure.')}
           </p>
         </div>
       </PopoverContent>
@@ -87,17 +89,29 @@ function LandmarkCard({ company }: { company: Landmark }) {
  * ces ordres de grandeur, et prétendre le contraire serait inventer.
  */
 export function Landmarks() {
+  const t = useT()
+
   return (
-    <section className="mt-12 lg:mt-16" aria-label="Companies you know">
+    <section className="mt-12 lg:mt-16" aria-label={t('Companies you know')}>
       <h2 className="font-display text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-        Companies you know
+        {t('Companies you know')}
       </h2>
       <p className="mt-2 max-w-2xl text-xs text-muted-foreground">
-        Where the giants sit on the same scale. Approximate figures from public reports —
-        revenue and customer counts, nothing more. They are deliberately{' '}
-        <strong className="font-medium text-foreground">not valued</strong> by the simulator:
-        its market curve is built for bootstrapped SaaS, and stretching it to billions would
-        invent a number. Tap a card for the detail.
+        {t(
+          'Where the giants sit on the same scale. Approximate figures from public reports — revenue and customer counts, nothing more. They are deliberately {notValued} by the simulator: its market curve is built for bootstrapped SaaS, and stretching it to billions would invent a number. Tap a card for the detail.',
+          { notValued: '\u0000' },
+        )
+          .split('\u0000')
+          .flatMap((part, index) =>
+            index === 0
+              ? [part]
+              : [
+                  <strong key="nv" className="font-medium text-foreground">
+                    {t('not valued')}
+                  </strong>,
+                  part,
+                ],
+          )}
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {LANDMARKS.map((company) => (

@@ -10,15 +10,16 @@ import {
 } from 'recharts'
 import { Card } from '@/components/ui/card'
 import { formatCompactCurrency, formatCurrency } from '@/lib/format'
-import { useResults } from '@/store/simulator'
+import { useResults, useT } from '@/store/simulator'
 
 export function ProjectionChart() {
   const { projection, growth } = useResults()
   const data = projection.map((mrr, month) => ({ month, mrr }))
+  const t = useT()
 
   return (
     <Card className="p-5">
-      <p className="text-sm font-medium">36-month projection</p>
+      <p className="text-sm font-medium">{t('36-month projection')}</p>
 
       <div className="mt-4 h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -43,7 +44,7 @@ export function ProjectionChart() {
             />
             <Tooltip
               formatter={(value) => [formatCurrency(Number(value)), 'MRR']}
-              labelFormatter={(month) => `Month ${month}`}
+              labelFormatter={(month) => t('Month {n}', { n: String(month) })}
               contentStyle={{
                 background: 'var(--popover)',
                 border: '1px solid var(--border)',
@@ -58,7 +59,7 @@ export function ProjectionChart() {
                 stroke="var(--muted-foreground)"
                 strokeDasharray="4 4"
                 label={{
-                  value: `Ceiling ${formatCurrency(growth.mrrCeiling)}`,
+                  value: t('Ceiling {value}', { value: formatCurrency(growth.mrrCeiling) }),
                   position: 'insideTopLeft',
                   fill: 'var(--muted-foreground)',
                   fontSize: 11,
@@ -79,11 +80,14 @@ export function ProjectionChart() {
 
       <p className="mt-3 text-xs text-muted-foreground">
         {growth.mrrCeiling !== null
-          ? `At constant churn and acquisition, MRR converges to ${formatCurrency(growth.mrrCeiling)}. Raising that ceiling takes less churn or more acquisition.`
-          : 'No ceiling: expansion outpaces churn, the base compounds on its own.'}
+          ? t(
+              'At constant churn and acquisition, MRR converges to {ceiling}. Raising that ceiling takes less churn or more acquisition.',
+              { ceiling: formatCurrency(growth.mrrCeiling) },
+            )
+          : t('No ceiling: expansion outpaces churn, the base compounds on its own.')}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Assumption: constant acquisition pace over the whole period.
+        {t('Assumption: constant acquisition pace over the whole period.')}
       </p>
     </Card>
   )

@@ -9,7 +9,7 @@ import { ProjectionChart } from '@/components/results/ProjectionChart'
 import { MultipleBreakdown } from '@/components/results/MultipleBreakdown'
 import { ScenarioBar } from '@/components/scenarios/ScenarioBar'
 import { SaveBar } from '@/components/scenarios/SaveBar'
-import { useResults } from '@/store/simulator'
+import { useResults, useT } from '@/store/simulator'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
 import { formatCurrency, formatMultiple } from '@/lib/format'
 
@@ -18,10 +18,11 @@ import { formatCurrency, formatMultiple } from '@/lib/format'
 function ValuationTicker() {
   const { valuation } = useResults()
   const value = useAnimatedNumber(valuation.value)
+  const t = useT()
 
   return (
     <p className="flex items-baseline gap-2 text-sm" aria-live="polite">
-      <span className="text-muted-foreground">Valuation</span>
+      <span className="text-muted-foreground">{t('Valuation')}</span>
       <span className="font-mono text-base font-semibold tabular-nums">
         {formatCurrency(value)}
       </span>
@@ -50,6 +51,7 @@ function Results() {
 
 export function SimulatorView() {
   const [sheetOpen, setSheetOpen] = useState(false)
+  const t = useT()
 
   return (
     <>
@@ -58,14 +60,14 @@ export function SimulatorView() {
           actions={
             <SheetTrigger asChild>
               <Button variant="outline" size="sm" className="lg:hidden">
-                Settings
+                {t('Settings')}
               </Button>
             </SheetTrigger>
           }
         />
         <SheetContent side="bottom" className="max-h-[85svh] overflow-y-auto">
           <SheetHeader className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-            <SheetTitle>Control panel</SheetTitle>
+            <SheetTitle>{t('Control panel')}</SheetTitle>
             <ValuationTicker />
           </SheetHeader>
           <div className="px-4 pb-8">

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { compute } from '@/lib/engine'
 import { buildShareUrl } from '@/lib/urlState'
 import { formatCompactCurrency, formatMultiple } from '@/lib/format'
-import { MAX_SCENARIOS, useResults, useSimulator } from '@/store/simulator'
+import { MAX_SCENARIOS, useResults, useSimulator, useT } from '@/store/simulator'
 
 export function ScenarioBar() {
   const scenarios = useSimulator((state) => state.scenarios)
@@ -15,16 +15,17 @@ export function ScenarioBar() {
   const removeScenario = useSimulator((state) => state.removeScenario)
   const { valuation } = useResults()
   const [name, setName] = useState('')
+  const t = useT()
 
   function handlePin() {
-    const label = name.trim() || `Scenario ${scenarios.length + 1}`
+    const label = name.trim() || t('Scenario {n}', { n: scenarios.length + 1 })
     pinScenario(label)
     setName('')
   }
 
   async function handleShare() {
     await navigator.clipboard.writeText(buildShareUrl(inputs))
-    toast('Link copied to clipboard')
+    toast(t('Link copied to clipboard'))
   }
 
   return (
@@ -33,9 +34,9 @@ export function ScenarioBar() {
         <Input
           value={name}
           onChange={(event) => setName(event.target.value)}
-          placeholder="Scenario name"
+          placeholder={t('Scenario name')}
           className="h-9 w-44"
-          aria-label="Name of the scenario to pin"
+          aria-label={t('Name of the scenario to pin')}
         />
         <Button
           variant="outline"
@@ -43,14 +44,14 @@ export function ScenarioBar() {
           onClick={handlePin}
           disabled={scenarios.length >= MAX_SCENARIOS}
         >
-          Pin this scenario
+          {t('Pin this scenario')}
         </Button>
         <Button variant="ghost" size="sm" onClick={handleShare}>
-          Copy link
+          {t('Copy link')}
         </Button>
         {scenarios.length >= MAX_SCENARIOS && (
           <span className="text-xs text-muted-foreground">
-            Up to {MAX_SCENARIOS} scenarios — remove one to pin another.
+            {t('Up to {max} scenarios — remove one to pin another.', { max: MAX_SCENARIOS })}
           </span>
         )}
       </div>
@@ -71,9 +72,9 @@ export function ScenarioBar() {
                     size="sm"
                     className="h-6 px-1 text-xs"
                     onClick={() => removeScenario(scenario.id)}
-                    aria-label={`Remove scenario ${scenario.name}`}
+                    aria-label={t('Remove scenario {name}', { name: scenario.name })}
                   >
-                    Remove
+                    {t('Remove')}
                   </Button>
                 </div>
                 <p className="font-mono text-lg tabular-nums">
@@ -90,7 +91,7 @@ export function ScenarioBar() {
                       : 'text-red-600 dark:text-red-500'
                   }`}
                 >
-                  vs current: {delta >= 0 ? '+' : ''}
+                  {t('vs current:')} {delta >= 0 ? '+' : ''}
                   {formatCompactCurrency(delta)} ({(relative * 100).toFixed(0)}%)
                 </p>
               </div>

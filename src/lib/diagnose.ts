@@ -5,7 +5,9 @@ export type InsightTone = 'bad' | 'warn' | 'good'
 
 export interface Insight {
   tone: InsightTone
+  /** Gabarit à jetons `{nom}` : c'est lui qui est traduit à l'affichage. */
   text: string
+  vars?: Record<string, string | number>
 }
 
 interface Weighted extends Insight {
@@ -30,7 +32,13 @@ export function diagnose(results: SimulatorResults): Insight[] {
     candidates.push({
       tone: 'bad',
       weight: 100,
-      text: `You are losing ${formatCurrency(Math.abs(revenue.sdeMonthly))} a month: gross margin (${formatCompactCurrency(grossMarginAmount)}) does not cover acquisition (${formatCompactCurrency(revenue.acquisitionCost)}) plus fixed costs (${formatCompactCurrency(fixedCosts)}) — so a profit-based valuation collapses.`,
+      text: 'You are losing {loss} a month: gross margin ({margin}) does not cover acquisition ({acquisition}) plus fixed costs ({fixed}) — so a profit-based valuation collapses.',
+      vars: {
+        loss: formatCurrency(Math.abs(revenue.sdeMonthly)),
+        margin: formatCompactCurrency(grossMarginAmount),
+        acquisition: formatCompactCurrency(revenue.acquisitionCost),
+        fixed: formatCompactCurrency(fixedCosts),
+      },
     })
   }
 
@@ -38,7 +46,8 @@ export function diagnose(results: SimulatorResults): Insight[] {
     candidates.push({
       tone: 'bad',
       weight: 90,
-      text: `Churn is the biggest drag: €100 of today's revenue melts to ${formatCurrency(economics.nrr * 100)} within a year (NRR ${formatPercent(economics.nrr, 0)}). Fixing retention beats any acquisition push.`,
+      text: 'Churn is the biggest drag: €100 of today’s revenue melts to {left} within a year (NRR {nrr}). Fixing retention beats any acquisition push.',
+      vars: { left: formatCurrency(economics.nrr * 100), nrr: formatPercent(economics.nrr, 0) },
     })
   }
 
@@ -48,13 +57,15 @@ export function diagnose(results: SimulatorResults): Insight[] {
       candidates.push({
         tone: 'bad',
         weight: 85,
-        text: `MRR sits above its ${formatCompactCurrency(growth.mrrCeiling)} ceiling: at this churn and acquisition pace, revenue shrinks back toward it month after month.`,
+        text: 'MRR sits above its {ceiling} ceiling: at this churn and acquisition pace, revenue shrinks back toward it month after month.',
+        vars: { ceiling: formatCompactCurrency(growth.mrrCeiling) },
       })
     } else if (ratio >= 0.6) {
       candidates.push({
         tone: 'warn',
         weight: 70,
-        text: `You have already reached ${formatPercent(ratio, 0)} of your ${formatCompactCurrency(growth.mrrCeiling)} MRR ceiling: growth flattens out soon unless churn drops or acquisition rises.`,
+        text: 'You have already reached {share} of your {ceiling} MRR ceiling: growth flattens out soon unless churn drops or acquisition rises.',
+        vars: { share: formatPercent(ratio, 0), ceiling: formatCompactCurrency(growth.mrrCeiling) },
       })
     }
   }
@@ -64,13 +75,15 @@ export function diagnose(results: SimulatorResults): Insight[] {
       candidates.push({
         tone: 'bad',
         weight: 65,
-        text: `Each new customer takes ${Math.round(economics.paybackMonths)} months to pay back their CAC — growth burns cash long before it returns any.`,
+        text: 'Each new customer takes {months} months to pay back their CAC — growth burns cash long before it returns any.',
+        vars: { months: Math.round(economics.paybackMonths) },
       })
     } else if (economics.paybackMonths > 12) {
       candidates.push({
         tone: 'warn',
         weight: 50,
-        text: `CAC payback runs ${Math.round(economics.paybackMonths)} months: acquisition works, but it ties up cash for over a year.`,
+        text: 'CAC payback runs {months} months: acquisition works, but it ties up cash for over a year.',
+        vars: { months: Math.round(economics.paybackMonths) },
       })
     }
   }
@@ -79,7 +92,8 @@ export function diagnose(results: SimulatorResults): Insight[] {
     candidates.push({
       tone: 'good',
       weight: 60,
-      text: `Your existing base compounds on its own: expansion outpaces churn (NRR ${formatPercent(economics.nrr, 0)}) — revenue grows even with zero new customers.`,
+      text: 'Your existing base compounds on its own: expansion outpaces churn (NRR {nrr}) — revenue grows even with zero new customers.',
+      vars: { nrr: formatPercent(economics.nrr, 0) },
     })
   }
 
@@ -92,7 +106,8 @@ export function diagnose(results: SimulatorResults): Insight[] {
     candidates.push({
       tone: 'good',
       weight: 40,
-      text: `Acquisition is a profitable machine: every euro of CAC returns ${economics.ltvCacRatio.toFixed(1)}€ of lifetime margin, repaid in ${Math.round(economics.paybackMonths)} months.`,
+      text: 'Acquisition is a profitable machine: every euro of CAC returns {ratio}€ of lifetime margin, repaid in {months} months.',
+      vars: { ratio: economics.ltvCacRatio.toFixed(1), months: Math.round(economics.paybackMonths) },
     })
   }
 
@@ -100,13 +115,15 @@ export function diagnose(results: SimulatorResults): Insight[] {
     candidates.push({
       tone: 'warn',
       weight: 45,
-      text: `Rule of 40 at ${growth.ruleOf40.toFixed(0)}: neither growth nor profitability carries the scenario right now.`,
+      text: 'Rule of 40 at {score}: neither growth nor profitability carries the scenario right now.',
+      vars: { score: growth.ruleOf40.toFixed(0) },
     })
   } else if (growth.ruleOf40 >= 40 && !valuation.isLossMaking) {
     candidates.push({
       tone: 'good',
       weight: 30,
-      text: `Rule of 40 at ${growth.ruleOf40.toFixed(0)}: the growth-profit balance sits in the healthy zone buyers look for.`,
+      text: 'Rule of 40 at {score}: the growth-profit balance sits in the healthy zone buyers look for.',
+      vars: { score: growth.ruleOf40.toFixed(0) },
     })
   }
 
@@ -114,12 +131,13 @@ export function diagnose(results: SimulatorResults): Insight[] {
     candidates.push({
       tone: 'good',
       weight: 10,
-      text: `A balanced scenario: ${formatMultiple(valuation.multiple)} on ${formatCompactCurrency(revenue.sdeAnnual)} of annual profit. Retention and margin are the levers that move the needle most.`,
+      text: 'A balanced scenario: {multiple} on {profit} of annual profit. Retention and margin are the levers that move the needle most.',
+      vars: { multiple: formatMultiple(valuation.multiple), profit: formatCompactCurrency(revenue.sdeAnnual) },
     })
   }
 
   return candidates
     .sort((a, b) => b.weight - a.weight)
     .slice(0, 3)
-    .map(({ tone, text }) => ({ tone, text }))
+    .map(({ tone, text, vars }) => ({ tone, text, vars }))
 }
