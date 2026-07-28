@@ -273,7 +273,7 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
            vertical fait défiler la page au lieu de rester prisonnier du pad.
            Poser le doigt place toujours la colombe, et la colombe elle-même
            reste une poignée qui, elle, capte les deux axes. */
-        className={`pad-surface relative aspect-[4/3] w-full touch-pan-y select-none overflow-hidden rounded-xl border border-border/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lume/60 sm:aspect-[16/9] ${
+        className={`pad-surface relative aspect-[3/2] w-full touch-pan-y select-none overflow-hidden rounded-xl border border-border/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lume/60 sm:aspect-[16/9] ${
           bothLocked ? 'cursor-not-allowed' : 'cursor-none'
         }`}
       >

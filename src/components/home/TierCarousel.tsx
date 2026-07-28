@@ -24,6 +24,15 @@ const NEIGHBOUR_FADE = { compact: 0.9, expanded: 0.5 } as const
 
 export type CarouselVariant = keyof typeof NEIGHBOUR_FADE
 
+/**
+ * Flèches de la ronde : 44 px au doigt, discrètes au pointeur. La classe
+ * d'affichage est laissée à l'appelant — deux cibles de 44 px dans la colonne
+ * de 120 px de la carte d'accueil recouvriraient l'animal, or les onglets et
+ * le balayage suffisent à parcourir la ronde.
+ */
+const ARROW =
+  'top-1/2 z-20 size-11 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25 sm:size-auto sm:p-1.5'
+
 function placeOnCircle(offset: number, variant: CarouselVariant) {
   const theta = offset * ANGLE_STEP
   // 0 au premier plan, croissant à mesure qu'on s'éloigne derrière.
@@ -66,11 +75,17 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
 
   const shown = PRICING_ANIMALS[index]
   const isYours = index === currentIndex
+  const compact = variant === 'compact'
 
   return (
     <div>
       <div
-        className="relative h-40 touch-pan-y select-none overflow-hidden sm:h-44 [mask-image:linear-gradient(to_right,transparent,#000_16%,#000_84%,transparent)]"
+        /* En carte d'accueil sur mobile, la ronde tient dans une colonne
+           étroite à côté du chiffre : elle se réduit d'autant, et retrouve sa
+           taille quand la hauteur cesse d'être comptée. */
+        className={`relative touch-pan-y select-none overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_16%,#000_84%,transparent)] ${
+          compact ? 'h-20 sm:h-28 lg:h-44' : 'h-40 sm:h-44'
+        }`}
         onPointerDown={(event) => {
           dragStart.current = event.clientX
         }}
@@ -115,7 +130,7 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
           onClick={() => go(-1)}
           disabled={index === 0}
           aria-label={t('Previous tier')}
-          className="absolute left-0 top-1/2 z-20 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25 sm:size-auto sm:p-1.5"
+          className={`absolute left-0 ${ARROW} ${compact ? 'hidden lg:inline-flex' : 'inline-flex'}`}
         >
           <ChevronLeft className="size-4" aria-hidden />
         </button>
@@ -124,28 +139,37 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
           onClick={() => go(1)}
           disabled={index === PRICING_ANIMALS.length - 1}
           aria-label={t('Next tier')}
-          className="absolute right-0 top-1/2 z-20 inline-flex size-11 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground disabled:opacity-25 sm:size-auto sm:p-1.5"
+          className={`absolute right-0 ${ARROW} ${compact ? 'hidden lg:inline-flex' : 'inline-flex'}`}
         >
           <ChevronRight className="size-4" aria-hidden />
         </button>
       </div>
 
+      {/* Dans la colonne étroite de la carte d'accueil, seul le nom du palier
+          tient : le qualificatif et la description reviennent dès qu'il y a de
+          la largeur pour les lire. */}
       <div aria-live="polite">
         <div className="flex flex-wrap items-baseline gap-x-2">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-lume">
             {t(shown.name)}
           </p>
-          {isYours ? (
-            <span className="rounded-full border border-lume/40 px-1.5 text-[10px] uppercase tracking-wider text-lume">
-              {t('your tier')}
-            </span>
-          ) : (
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-              {t('${acv}/yr per customer', { acv: shown.annualAcv.toLocaleString('en-US') })}
-            </span>
-          )}
+          <span className={compact ? 'hidden sm:inline' : undefined}>
+            {isYours ? (
+              <span className="rounded-full border border-lume/40 px-1.5 text-[10px] uppercase tracking-wider text-lume">
+                {t('your tier')}
+              </span>
+            ) : (
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                {t('${acv}/yr per customer', { acv: shown.annualAcv.toLocaleString('en-US') })}
+              </span>
+            )}
+          </span>
         </div>
-        <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+        <p
+          className={`mt-1 text-[11px] leading-relaxed text-muted-foreground ${
+            compact ? 'hidden lg:block' : ''
+          }`}
+        >
           {t(shown.whatItMeans)}
         </p>
       </div>
