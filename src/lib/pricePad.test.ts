@@ -6,6 +6,7 @@ import {
   PRICING_ANIMALS,
   padToParams,
   paramsToPad,
+  reachableOnPad,
   stepParams,
 } from './pricePad'
 
@@ -190,5 +191,27 @@ describe('stepParams', () => {
     const round = stepParams(stepParams(start, 'price', 1), 'price', -1)
     // Tolérance d'un pas d'arrondi entier.
     expect(Math.abs(round.price - start.price)).toBeLessThanOrEqual(1)
+  })
+})
+
+describe('reachableOnPad', () => {
+  it('accepte tous les paliers que le pad couvre', () => {
+    for (const name of ['Mice', 'Rabbits', 'Deer', 'Elephants']) {
+      const animal = PRICING_ANIMALS.find((candidate) => candidate.name === name)!
+      expect(reachableOnPad(animal), name).toBe(true)
+    }
+  })
+
+  it('écarte les baleines, dont le plancher dépasse le sommet du pad', () => {
+    const whales = PRICING_ANIMALS.find((animal) => animal.name === 'Whales')!
+    expect(whales.minPrice).toBeGreaterThan(PAD_BOUNDS.price.max)
+    expect(reachableOnPad(whales)).toBe(false)
+  })
+
+  it('ne laisse aucun palier atteignable hors des bornes du pad', () => {
+    for (const animal of PRICING_ANIMALS.filter(reachableOnPad)) {
+      const top = padToParams({ x: 1, y: 0 })
+      expect(animal.minPrice, animal.name).toBeLessThanOrEqual(top.price)
+    }
   })
 })

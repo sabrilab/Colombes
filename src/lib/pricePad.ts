@@ -156,6 +156,16 @@ export const PRICING_ANIMALS: PricingAnimal[] = [
   },
 ]
 
+/**
+ * Un palier dont le prix plancher dépasse le sommet du pad est hors d'atteinte,
+ * ici comme dans le simulateur : les deux plafonnent au même prix par plan.
+ * C'est assumé — l'outil est calibré pour des SaaS entre 1 K€ et 100 K€ de MRR,
+ * pas pour l'entreprise — mais il faut le dire, sinon on cherche en vain.
+ */
+export function reachableOnPad(animal: PricingAnimal): boolean {
+  return animal.minPrice <= PAD_BOUNDS.price.max
+}
+
 export function animalFor(price: number): PricingAnimal {
   return (
     PRICING_ANIMALS.find((animal) => price >= animal.minPrice && price < animal.maxPrice) ??

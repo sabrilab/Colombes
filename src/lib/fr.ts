@@ -45,6 +45,7 @@ export const FR: Record<string, string> = {
   'Next tier': 'Palier suivant',
   'Pricing tiers': 'Paliers de prix',
   'your tier': 'votre palier',
+  'beyond this simulator': 'hors du simulateur',
   'Both axes are locked — unlock one to keep exploring.':
     'Les deux axes sont verrouillés — déverrouillez-en un pour continuer.',
   'Price locked at {price}: drag to see how many customers you need.':

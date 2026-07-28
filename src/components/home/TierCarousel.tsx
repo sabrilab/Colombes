@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { PRICING_ANIMALS, type PricingAnimal } from '@/lib/pricePad'
+import { PRICING_ANIMALS, reachableOnPad, type PricingAnimal } from '@/lib/pricePad'
 import { useT } from '@/store/simulator'
 
 const AnimalStage3D = lazy(() => import('./AnimalStage3D'))
@@ -153,17 +153,25 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
           <p className="font-display text-sm font-semibold uppercase tracking-[0.16em] text-lume">
             {t(shown.name)}
           </p>
-          <span className={compact ? 'hidden sm:inline' : undefined}>
-            {isYours ? (
-              <span className="rounded-full border border-lume/40 px-1.5 text-[10px] uppercase tracking-wider text-lume">
-                {t('your tier')}
-              </span>
-            ) : (
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                {t('${acv}/yr per customer', { acv: shown.annualAcv.toLocaleString('en-US') })}
-              </span>
-            )}
-          </span>
+          {/* Les baleines sont hors du cadran : le dire ici évite qu'on
+              cherche en vain à les atteindre en poussant le prix. */}
+          {!reachableOnPad(shown) ? (
+            <span className="rounded-full border border-border px-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+              {t('beyond this simulator')}
+            </span>
+          ) : (
+            <span className={compact ? 'hidden sm:inline' : undefined}>
+              {isYours ? (
+                <span className="rounded-full border border-lume/40 px-1.5 text-[10px] uppercase tracking-wider text-lume">
+                  {t('your tier')}
+                </span>
+              ) : (
+                <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60">
+                  {t('${acv}/yr per customer', { acv: shown.annualAcv.toLocaleString('en-US') })}
+                </span>
+              )}
+            </span>
+          )}
         </div>
         <p
           className={`mt-1 text-[11px] leading-relaxed text-muted-foreground ${
