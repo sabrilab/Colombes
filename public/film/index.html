@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Colombes — la présentation en 40 secondes</title>
+    <meta name="theme-color" content="#14150f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="robots" content="noindex" />
+
+    <meta property="og:type" content="video.other" />
+    <meta property="og:title" content="Colombes — 40 secondes" />
+    <meta property="og:description" content="Ce que vaut une app vendue par abonnement, en quarante secondes." />
+    <meta property="og:video" content="https://colombes-three.vercel.app/film/colombes-40s.mp4" />
+
+    <style>
+      :root {
+        --bg: oklch(0.125 0.006 110);
+        --ink: oklch(0.98 0.005 110);
+        --dim: oklch(0.72 0 0);
+        --lume: oklch(0.92 0.145 112);
+        --line: oklch(0.26 0 0);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+        padding: 2rem 1rem 3rem;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+
+      /* Les halos de la marque, comme dans l'app. */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background:
+          radial-gradient(55rem 36rem at 14% -12%, oklch(0.72 0.11 112 / 0.16), transparent 62%),
+          radial-gradient(48rem 30rem at 96% 112%, oklch(0.68 0.06 235 / 0.10), transparent 60%);
+      }
+
+      header { text-align: center; }
+
+      .eyebrow {
+        margin: 0;
+        font-size: 0.7rem;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      h1 {
+        margin: 0.6rem 0 0;
+        font-size: clamp(1.4rem, 5vw, 2rem);
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: -0.01em;
+      }
+
+      video {
+        width: min(100%, 380px);
+        aspect-ratio: 9 / 16;
+        border-radius: 22px;
+        border: 1px solid var(--line);
+        background: #000;
+        box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
+        display: block;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 1.25rem;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      a.primary {
+        background: linear-gradient(180deg, oklch(0.93 0.135 110), oklch(0.875 0.13 110));
+        color: oklch(0.2 0.03 112);
+        box-shadow: inset 0 1px 0 0 oklch(1 0 0 / 0.6);
+      }
+
+      a.ghost {
+        border: 1px solid var(--line);
+        color: var(--dim);
+      }
+
+      footer {
+        max-width: 34rem;
+        text-align: center;
+        font-size: 0.75rem;
+        line-height: 1.6;
+        color: var(--dim);
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <p class="eyebrow">Colombes</p>
+      <h1>40 secondes</h1>
+    </header>
+
+    <video src="/film/colombes-40s.mp4" controls playsinline preload="metadata" poster=""></video>
+
+    <div class="actions">
+      <a class="primary" href="/film/colombes-40s.mp4" download>Télécharger le MP4</a>
+      <a class="ghost" href="/">Ouvrir l'app</a>
+    </div>
+
+    <footer>
+      1080 × 1920, 30 images par seconde, 2,6 Mo. Rendue par le code depuis le design system de
+      l'app : tous les chiffres affichés sortent du même moteur de calcul que le simulateur.
+    </footer>
+  </body>
+</html>

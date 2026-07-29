@@ -1,0 +1,11 @@
+/* Les composants de l'app dimensionnent leurs SVG par Tailwind, absent ici :
+   on leur donne la règle qui manque, et c'est le conteneur qui décide. */
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+body {
+  margin: 0;
+}
