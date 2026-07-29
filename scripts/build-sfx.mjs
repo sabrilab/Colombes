@@ -80,6 +80,25 @@ function click(duration = 0.035) {
   return out
 }
 
+/**
+ * Le grésillement d'un cran qui passe : plus court et plus haut qu'un clic de
+ * molette, et bien plus discret.
+ *
+ * C'est le son des trains de crans — vingt-quatre d'affilée sous une barre qui
+ * monte. À ce débit, un clic de molette deviendrait une mitraillette : il faut
+ * quelque chose qu'on perçoive comme une matière, pas comme une suite d'événements.
+ */
+function tick(duration = 0.018) {
+  const n = seconds(duration)
+  const out = new Float64Array(n)
+  for (let i = 0; i < n; i++) {
+    const t = i / n
+    const decay = (1 - t) ** 14
+    out[i] = ((Math.random() * 2 - 1) * 0.35 + Math.sin(2 * Math.PI * 3_400 * (i / RATE)) * 0.65) * decay * 0.34
+  }
+  return out
+}
+
 /** L'impact d'un chiffre qui tombe : une sinusoïde grave qui descend. */
 function thud(duration = 0.3) {
   const n = seconds(duration)
@@ -140,6 +159,7 @@ mkdirSync(DIRECTORY, { recursive: true })
 const FX = {
   'whoosh.wav': whoosh(),
   'click.wav': click(),
+  'tick.wav': tick(),
   'thud.wav': thud(),
   'riser.wav': riser(),
   'boom.wav': boom(),

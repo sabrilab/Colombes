@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Colombes — les films</title>
+    <meta name="description" content="Trois films rendus par le code depuis le design system de l'app." />
     <meta name="theme-color" content="#14150f" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="robots" content="noindex" />
@@ -107,6 +108,38 @@
         color: var(--dim);
       }
 
+      section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        width: min(100%, 380px);
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--line);
+      }
+
+      section:first-of-type {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-align: center;
+      }
+
+      .note {
+        margin: 0;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        color: var(--dim);
+        text-align: center;
+      }
+
       footer {
         max-width: 34rem;
         text-align: center;
@@ -120,44 +153,65 @@
   <body>
     <header>
       <p class="eyebrow">Colombes</p>
-      <h1>1 min 10 · anglais</h1>
+      <h1>Trois films</h1>
     </header>
 
-    <video src="/film/colombes-70s.mp4" controls playsinline preload="metadata">
-      <track
-        kind="subtitles"
-        srclang="en"
-        label="English"
-        src="/film/colombes-70s.en.srt"
-        default
-      />
-    </video>
+    <section>
+      <h2>1 min 10 · anglais · voix off</h2>
+      <p class="note">
+        Le récit complet : d'où vient un chiffre, et pourquoi celui-là. Sous-titré.
+      </p>
+      <video src="/film/colombes-70s.mp4" controls playsinline preload="metadata">
+        <track kind="subtitles" srclang="en" label="English" src="/film/colombes-70s.en.srt" default />
+      </video>
+      <div class="actions">
+        <a class="primary" href="/film/colombes-70s.mp4" download>Télécharger</a>
+        <a class="ghost" href="/film/colombes-70s.en.srt" download>Sous-titres .srt</a>
+      </div>
+    </section>
 
-    <div class="actions">
-      <a class="primary" href="/film/colombes-70s.mp4" download>Télécharger le MP4</a>
-      <a class="ghost" href="/film/colombes-70s.en.srt" download>Sous-titres .srt</a>
-    </div>
+    <section>
+      <h2>35 s · l'échelle des prix</h2>
+      <p class="note">
+        Un escalier en volume : la marche monte en prix et se resserre en clientèle, et
+        toutes valent le même revenu. Sans voix — la molette et les marches font le
+        rythme, chaque cran avec son bruit.
+      </p>
+      <video src="/film/colombes-ladder.mp4" controls playsinline preload="metadata"></video>
+      <div class="actions">
+        <a class="primary" href="/film/colombes-ladder.mp4" download>Télécharger</a>
+      </div>
+    </section>
 
-    <hr style="width: min(100%, 380px); border: none; border-top: 1px solid var(--line); margin: 0.5rem 0" />
+    <section>
+      <h2>35 s · ce qui reste vraiment</h2>
+      <p class="note">
+        Une colonne dont on retire les prélèvements un par un, puis les neuf lignes du
+        multiple en relief. Les parts retombent exactement sur le revenu : le schéma est
+        calculé, pas dessiné.
+      </p>
+      <video src="/film/colombes-remains.mp4" controls playsinline preload="metadata"></video>
+      <div class="actions">
+        <a class="primary" href="/film/colombes-remains.mp4" download>Télécharger</a>
+      </div>
+    </section>
 
-    <header>
-      <p class="eyebrow">Première version</p>
-      <h1 style="font-size: 1.2rem">40 secondes · français</h1>
-    </header>
-
-    <video src="/film/colombes-40s.mp4" controls playsinline preload="metadata"></video>
-
-    <div class="actions">
-      <a class="ghost" href="/film/colombes-40s.mp4" download>Télécharger le MP4</a>
-      <a class="ghost" href="/">Ouvrir l'app</a>
-    </div>
+    <section>
+      <h2>Première version · 40 s · français</h2>
+      <video src="/film/colombes-40s.mp4" controls playsinline preload="metadata"></video>
+      <div class="actions">
+        <a class="ghost" href="/film/colombes-40s.mp4" download>Télécharger</a>
+        <a class="ghost" href="/">Ouvrir l'app</a>
+      </div>
+    </section>
 
     <footer>
-      1080 × 1920 en 9/16, 30 images par seconde. Rendues par le code depuis le design system de
-      l'app : tous les chiffres affichés sortent du même moteur de calcul que le simulateur, et les
-      animaux sont les vrais modèles 3D, rendus image par image. Les sous-titres sont incrustés à
-      l'image et fournis à part en .srt, calés sur la voix off mesurée dans l'onde. Voix, musique et
-      bruitage sont mixés en un seul fichier avant le rendu.
+      1080 × 1920 en 9/16, 30 images par seconde. Rendues par le code depuis le design
+      system de l'app : les chiffres affichés sortent du même moteur de calcul que le
+      simulateur, les animaux sont les vrais modèles 3D, et les schémas en volume sont
+      de la géométrie, pas des images. Le son de chaque film est mixé en un seul fichier
+      avant le rendu — voix, musique et bruitage — et les crans des molettes et des
+      barres sont calculés par la même fonction que le mouvement à l'image.
     </footer>
   </body>
 </html>

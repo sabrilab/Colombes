@@ -8,35 +8,69 @@ modèles 3D. Ce que le spectateur voit est reproductible dans le simulateur.
 ## Rendre
 
 ```bash
-pnpm video:audio           # le son : bruitage, sous-titres calés, mixage
-pnpm video:render:70       # → public/film/colombes-70s.mp4  (1 min 10, anglais)
-pnpm video:render          # → public/film/colombes-40s.mp4  (40 s, français)
-pnpm video:studio          # l'aperçu interactif, pour régler le montage
+pnpm video:audio             # le son des trois films : bruitage, sous-titres, mixages
+pnpm video:render:70         # → colombes-70s.mp4      (1 min 10, anglais, voix off)
+pnpm video:render:ladder     # → colombes-ladder.mp4   (35 s, l'échelle des prix)
+pnpm video:render:remains    # → colombes-remains.mp4  (35 s, ce qui reste)
+pnpm video:render            # → colombes-40s.mp4      (40 s, français, la première)
+pnpm video:studio            # l'aperçu interactif, pour régler un montage
 ```
 
-`video:audio` est à relancer dès qu'on touche au montage : il replace le
+`video:audio` est à relancer dès qu'on touche à un montage : il replace le
 bruitage sur les nouvelles coupes.
+
+## Trois films, une langue
+
+`kit.tsx` porte le vocabulaire commun — pigments, titres qui s'écrivent lettre à
+lettre, molette de coffre, barres de réglage, chute. `tokens.ts` les jetons,
+`three.ts` les matières et la projection, `Scene3D.tsx` le rendu des volumes.
+Sans ce partage, chaque film redéfinirait une molette légèrement différente et
+les trois cesseraient d'avoir l'air du même produit — le contraire de ce qu'ils
+démontrent.
 
 ## Le montage
 
-`cut.mjs` porte les durées de plan et le bruit de chaque coupe, et rien d'autre
-ne les redit : `Colombes70.tsx` y associe un composant par identifiant,
-`scripts/build-mix.mjs` y pose les effets sonores. Rallonger un plan déplace donc
-son bruit avec lui. Le fichier refuse de se charger si le total ne fait pas
-exactement 2 100 images — un montage qui ne tombe pas juste laisse du noir ou
-coupe la chute.
+Un fichier par film dans `cuts/`. Il porte les durées de plan, le bruit de chaque
+coupe et les rampes crantées, et rien d'autre ne les redit : la composition y
+associe un composant par identifiant, `scripts/build-mix.mjs` y pose les sons.
+Rallonger un plan déplace donc son bruit avec lui.
+
+`timeline()` refuse de construire si le total ne tombe pas juste — un montage
+faux laisse du noir en fin de film ou coupe la chute, et rien dans le rendu ne le
+signale. `Film` refuse de son côté un plan sans composant.
+
+Ces fichiers sont chargés par Node pour construire le son : ils restent donc du
+JavaScript pur, sans import de `src/`. Quand un compte doit suivre une donnée de
+l'app — cinq paliers, neuf lignes — c'est la composition qui vérifie la
+concordance.
+
+## Les sons qui s'enchaînent
+
+`motion.mjs` décrit une rampe crantée une fois pour les deux côtés :
+`stepsPassed` dit à l'image combien de crans sont franchis, `stepFrames` dit au
+mixage à quelles images ils tombent. Les deux dérivent de la même formule, donc
+un clic ne peut pas rater son cran. C'est ce qui permet dix-huit clics de molette
+qui ralentissent avec elle, ou vingt-quatre grésillements sous une barre qui
+monte.
+
+Poser ces sons à la main marche pour trois crans et se décale dès qu'on change
+l'accélération — et l'erreur ne s'entend qu'après le rendu.
 
 ## Le son
 
-Une seule piste, `public/film/mix-70s.mp3`, construite avant le rendu par
+Une piste par film, `public/film/mix-*.mp3`, construite avant le rendu par
 `scripts/build-mix.mjs` depuis `video/audio/` :
 
-- la voix off est compressée puis calée à −17 dBFS. La synthèse la rend à −25,
-  ce que personne n'entend sur un téléphone ;
-- la musique s'écarte de 9 dB quand la voix parle et remonte dans les silences ;
+- la voix off, quand il y en a une, est compressée puis calée à −17 dBFS. La
+  synthèse la rend à −25, ce que personne n'entend sur un téléphone ;
+- la musique s'écarte de 9 dB quand la voix parle et remonte dans les silences.
+  Les films sans voix la montent de huit décibels, et chacun entre à un endroit
+  différent de la piste — sinon les trois ouvriraient sur les mêmes mesures ;
 - le bruitage, synthétisé par `scripts/build-sfx.mjs`, tombe quatre images avant
   chaque coupe — un souffle qui commence à l'image exacte arrive en retard à
-  l'oreille.
+  l'oreille. Les crans, eux, tombent pile : ils accompagnent un mouvement visible ;
+- les trois films sortent au même niveau, sinon on touche au volume entre deux
+  vidéos.
 
 Remotion sait empiler plusieurs `<Audio>`, mais pas les faire s'écouter entre
 elles : la musique passerait au même volume sous la voix que dans les silences,
@@ -54,6 +88,22 @@ plateformes.
 
 La version datée à la main qui l'a précédé oubliait deux phrases et dérivait de
 plus d'une seconde : ne pas y revenir.
+
+## Les schémas en volume
+
+Deux plans du film de l'échelle et deux de celui de la cascade sont de la vraie
+géométrie, parce que la démonstration EST géométrique : un escalier dont la
+marche monte en prix et se resserre en clientèle, deux blocs de même contenance
+aux proportions opposées, une colonne dont on retire des tranches, neuf barres en
+relief. À plat, il faudrait les expliquer.
+
+Les étiquettes restent du HTML, positionnées par `project()` — la même
+description de caméra que la scène. Collées sur une texture, elles tourneraient
+avec le volume et deviendraient floues ; là elles restent nettes et de face.
+
+Les proportions sont vérifiées à la construction : les deux blocs doivent
+contenir la même chose, et les tranches de la colonne retomber sur le revenu. Un
+schéma dont les parts ne s'additionnent pas est un mensonge, même joli.
 
 ## Trois pièges vérifiés
 

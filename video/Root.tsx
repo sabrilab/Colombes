@@ -2,7 +2,11 @@ import React from 'react'
 import { Composition } from 'remotion'
 import { Colombes40 } from './Colombes40'
 import { Colombes70 } from './Colombes70'
-import { FPS, TOTAL_FRAMES } from './cut.mjs'
+import { Ladder35 } from './Ladder35'
+import { Remains35 } from './Remains35'
+import { FPS, TOTAL_FRAMES } from './cuts/film70.mjs'
+import { TOTAL_FRAMES as LADDER_FRAMES } from './cuts/ladder.mjs'
+import { TOTAL_FRAMES as REMAINS_FRAMES } from './cuts/remains.mjs'
 import './assets/fonts.css'
 import './assets/base.css'
 
@@ -27,12 +31,33 @@ export function RemotionRoot() {
           Le son est un seul fichier, `public/film/mix-70s.mp3`, construit par
           `scripts/build-mix.mjs` : la voix off y est déjà compressée et mise au
           niveau, la musique s'écarte quand elle parle, et le bruitage tombe sur
-          les coupes de `cut.mjs`. Empiler trois pistes ici les laisserait se
+          les coupes du montage. Empiler trois pistes ici les laisserait se
           masquer entre elles, et il faudrait rendre le film pour l'entendre. */}
       <Composition
         id="Colombes70"
         component={Colombes70}
         durationInFrames={TOTAL_FRAMES}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{ sound: true }}
+      />
+      {/* Deux films courts sans voix off, portés par le rythme et le bruitage. Le
+          son de leurs commandes est cranté sur le mouvement : voir video/motion.mjs. */}
+      <Composition
+        id="Ladder35"
+        component={Ladder35}
+        durationInFrames={LADDER_FRAMES}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{ sound: true }}
+      />
+
+      <Composition
+        id="Remains35"
+        component={Remains35}
+        durationInFrames={REMAINS_FRAMES}
         fps={FPS}
         width={1080}
         height={1920}

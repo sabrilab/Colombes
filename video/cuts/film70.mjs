@@ -1,17 +1,20 @@
 /**
- * Le montage, en un seul endroit.
+ * Le montage du film d'une minute dix, en un seul endroit.
  *
- * L'image et le son se lisent ici tous les deux : `Colombes70.tsx` associe un
+ * L'image et le son s'y lisent tous les deux : `Colombes70.tsx` associe un
  * composant à chaque `id`, `scripts/build-mix.mjs` place les effets sonores sur
  * les mêmes coupes. Tant que ce fichier reste l'unique source, un plan rallongé
  * déplace le bruit de coupe avec lui — l'erreur classique du montage à la main,
  * où le son reste sur l'ancienne image, devient impossible.
  *
- * Les durées sont en images, jamais en secondes : à 30 images par seconde une
- * coupe à 2,37 s n'existe pas, et arrondir deux fois fait dériver la fin.
+ * Ce film-ci est porté par une voix off : les durées de plan sont donc calées sur
+ * ses phrases, mesurées par `scripts/align-captions.mjs`. Les deux autres films
+ * n'ont pas de voix et se règlent au rythme seul.
  */
 
-export const FPS = 30
+import { FPS, timeline } from './shared.mjs'
+
+export { FPS }
 export const TOTAL_FRAMES = 2100
 
 /**
@@ -70,17 +73,4 @@ export const SHOTS = [
   { id: 'closing', len: 229, sfx: 'riser' },
 ]
 
-/** Le plan avec son image de départ, pour ne l'additionner qu'une fois. */
-export const TIMELINE = SHOTS.reduce((list, shot) => {
-  const previous = list[list.length - 1]
-  list.push({ ...shot, at: previous ? previous.at + previous.len : 0 })
-  return list
-}, [])
-
-const measured = TIMELINE[TIMELINE.length - 1]
-const end = measured.at + measured.len
-if (end !== TOTAL_FRAMES) {
-  // Un montage qui ne tombe pas juste laisse du noir ou coupe la chute : mieux
-  // vaut refuser de construire que livrer une fin tronquée.
-  throw new Error(`Le montage fait ${end} images au lieu de ${TOTAL_FRAMES}.`)
-}
+export const TIMELINE = timeline(SHOTS, TOTAL_FRAMES)

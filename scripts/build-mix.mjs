@@ -1,17 +1,19 @@
 /**
- * Le mixage du film, fabriqué avant le rendu.
+ * Le mixage des films, fabriqué avant le rendu.
  *
  * Remotion sait empiler plusieurs pistes, mais pas les faire s'écouter entre
- * elles : la musique passerait au même volume sous la voix que dans les
- * silences, et un plan raté ne se verrait qu'après dix minutes de rendu. Ici le
- * mixage est un fichier — on le mesure, on l'écoute, et le montage n'a plus
+ * elles : la musique passerait au même volume sous la voix que dans les silences,
+ * et un réglage raté ne se découvrirait qu'après dix minutes de rendu. Ici le
+ * mixage est un fichier — on le mesure en trois secondes, et le montage n'a plus
  * qu'une seule piste à monter.
  *
- * Trois choses s'y jouent :
- *  — la voix est compressée puis calée au niveau, parce que la synthèse rend
- *    une piste à −25 dBFS que personne n'entend sur un téléphone ;
+ * Quatre choses s'y jouent :
+ *  — la voix, quand il y en a une, est compressée puis calée au niveau, parce que
+ *    la synthèse rend une piste à −25 dBFS que personne n'entend sur un téléphone ;
  *  — la musique s'écarte quand la voix parle, et remonte dans les silences ;
- *  — les bruits de coupe sont posés sur les coupes de `video/cut.mjs`.
+ *  — les bruits de coupe sont posés sur les coupes du montage ;
+ *  — les rampes crantées — molettes, barres — sont sonorisées cran par cran, aux
+ *    images que `video/motion.mjs` calcule pour l'image elle-même.
  *
  *     node scripts/build-mix.mjs
  */
@@ -19,18 +21,61 @@ import { execFileSync } from 'node:child_process'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { FPS, TIMELINE, TOTAL_FRAMES } from '../video/cut.mjs'
+import { stepFrames } from '../video/motion.mjs'
 
 const RATE = 48_000
-const LENGTH = Math.round((TOTAL_FRAMES / FPS) * RATE)
-const OUTPUT = 'public/film/mix-70s.mp3'
 
 /** Cibles de niveau, en dBFS. La voix commande, le reste se règle sous elle. */
 const VOICE_RMS = -17
-const MUSIC_RMS = -25.5
 const MUSIC_DUCK = -9 // ce que la musique perd quand la voix parle
 const SFX_PEAK = -14
+/** Les crans passent nettement plus bas : il y en a jusqu'à vingt-quatre d'affilée. */
+const TICK_PEAK = -19
 const CEILING = -1.2
+
+/**
+ * Les trois films.
+ *
+ * `musicFrom` décale l'entrée dans la piste : sans ça les trois films ouvriraient
+ * sur les mêmes quatre mesures et s'entendraient comme trois montages du même
+ * rush. Les films sans voix montent la musique de huit décibels — elle n'a plus
+ * rien à laisser passer, et les trois doivent sortir au même niveau, sinon le
+ * spectateur touche au volume entre deux vidéos.
+ */
+const FILMS = [
+  {
+    label: '1 min 10, anglais',
+    output: 'public/film/mix-70s.mp3',
+    cut: '../video/cuts/film70.mjs',
+    voice: 'video/audio/voice-en.wav',
+    musicRms: -25.5,
+    musicFrom: 0,
+    // L'accroche et la chute n'ont pas de voix : la musique y monte, sinon
+    // l'ouverture paraît vide et la fin s'éteint trop tôt.
+    swells: [
+      [0, 3.2, 3],
+      [64.6, Infinity, 3],
+    ],
+  },
+  {
+    label: "l'échelle, 35 s",
+    output: 'public/film/mix-ladder.mp3',
+    cut: '../video/cuts/ladder.mjs',
+    voice: null,
+    musicRms: -17.5,
+    musicFrom: 47,
+    swells: [],
+  },
+  {
+    label: 'la cascade, 35 s',
+    output: 'public/film/mix-remains.mp3',
+    cut: '../video/cuts/remains.mjs',
+    voice: null,
+    musicRms: -17.5,
+    musicFrom: 103,
+    swells: [],
+  },
+]
 
 const dbToGain = (db) => 10 ** (db / 20)
 const gainToDb = (gain) => 20 * Math.log10(Math.max(gain, 1e-9))
@@ -69,9 +114,8 @@ function readWavMono(path) {
 }
 
 /**
- * Rééchantillonnage linéaire. Suffisant ici : on ne fait que monter en
- * fréquence, et l'erreur d'interpolation se place au-delà de ce que la voix
- * contient.
+ * Rééchantillonnage linéaire. Suffisant ici : on ne fait que monter en fréquence,
+ * et l'erreur d'interpolation se place au-delà de ce que la voix contient.
  */
 function resample({ samples, rate }, target = RATE) {
   if (rate === target) return samples
@@ -120,9 +164,9 @@ function rms(samples, from = 0, to = samples.length) {
 }
 
 /**
- * Compression de la voix. Une synthèse arrive avec vingt décibels d'écart entre
- * un mot appuyé et une fin de phrase : sans compression, monter le niveau moyen
- * fait saturer les attaques, et le baisser rend les fins inaudibles.
+ * Compression de la voix. Une synthèse arrive avec vingt décibels d'écart entre un
+ * mot appuyé et une fin de phrase : sans compression, monter le niveau moyen fait
+ * saturer les attaques, et le baisser rend les fins inaudibles.
  */
 function compress(samples, { threshold = -26, ratio = 3.4 } = {}) {
   const level = envelope(samples, 6, 140)
@@ -154,109 +198,14 @@ function speechRms(samples) {
   return { value: Math.sqrt(sum / Math.max(1, count)), share: count / samples.length }
 }
 
-// ── La voix ─────────────────────────────────────────────────────────────────
-const voice = resample(readWavMono('video/audio/voice-en.wav'))
-const compressed = compress(voice)
-const measured = speechRms(compressed)
-const voiceGain = dbToGain(VOICE_RMS) / measured.value
-for (let i = 0; i < compressed.length; i++) compressed[i] *= voiceGain
-
-// ── La musique ──────────────────────────────────────────────────────────────
-const scratch = join(tmpdir(), 'colombes-mix')
-mkdirSync(scratch, { recursive: true })
-const musicWav = join(scratch, 'music.wav')
-
-// Le décodage passe par le ffmpeg fourni avec Remotion : décoder un MP3 à la
-// main n'apporterait rien, et cette version est déjà celle qui rendra la vidéo.
-execFileSync(
-  'npx',
-  ['remotion', 'ffmpeg', '-y', '-i', 'video/audio/music.mp3', '-ac', '1', '-ar', String(RATE), '-f', 'wav', musicWav],
-  { stdio: 'pipe' },
-)
-const musicSource = readWavMono(musicWav).samples
-
-/**
- * La musique est bouclée si elle est trop courte, avec un fondu croisé d'une
- * seconde : une reprise sèche s'entend immédiatement.
- */
-const music = new Float32Array(LENGTH)
-const crossfade = RATE
-for (let i = 0; i < LENGTH; i++) {
-  const position = i % Math.max(1, musicSource.length - crossfade)
-  let value = musicSource[position] ?? 0
-  if (i >= musicSource.length - crossfade && position < crossfade) {
-    const mix = position / crossfade
-    value = value * mix + (musicSource[musicSource.length - crossfade + position] ?? 0) * (1 - mix)
-  }
-  music[i] = value
-}
-const musicGain = dbToGain(MUSIC_RMS) / Math.max(rms(music), 1e-6)
-for (let i = 0; i < LENGTH; i++) music[i] *= musicGain
-
-/**
- * L'évitement. L'enveloppe de la voix commande la baisse, avec un retour lent :
- * la musique ne doit pas remonter entre deux mots, seulement entre deux phrases.
- */
-const duckSource = envelope(compressed, 12, 320)
-const duckGate = dbToGain(VOICE_RMS - 16)
-for (let i = 0; i < LENGTH; i++) {
-  const active = Math.min(1, (duckSource[i] ?? 0) / duckGate)
-  music[i] *= dbToGain(MUSIC_DUCK * active)
-}
-
-// L'accroche et la chute n'ont pas de voix : la musique y monte de trois
-// décibels, sinon l'ouverture paraît vide et la fin s'éteint trop tôt.
-const swell = (from, to, db) => {
-  for (let i = from; i < Math.min(to, LENGTH); i++) music[i] *= dbToGain(db)
-}
-swell(0, Math.round(3.2 * RATE), 3)
-swell(Math.round(64.6 * RATE), LENGTH, 3)
-
-// Fondu de sortie sur les deux dernières secondes.
-const fadeOut = Math.round(2 * RATE)
-for (let i = 0; i < fadeOut; i++) {
-  music[LENGTH - fadeOut + i] *= 1 - i / fadeOut
-}
-
-// ── Les bruits de coupe ─────────────────────────────────────────────────────
-const sfxCache = new Map()
-function sfx(name) {
-  if (!sfxCache.has(name)) {
-    const samples = readWavMono(`video/audio/sfx/${name}.wav`).samples
-    const gain = dbToGain(SFX_PEAK) / Math.max(peakOf(samples), 1e-6)
-    const scaled = new Float32Array(samples.length)
-    for (let i = 0; i < samples.length; i++) scaled[i] = samples[i] * gain
-    sfxCache.set(name, scaled)
-  }
-  return sfxCache.get(name)
-}
-
-const effects = new Float32Array(LENGTH)
-let placed = 0
-for (const shot of TIMELINE) {
-  if (!shot.sfx) continue
-  const samples = sfx(shot.sfx)
-  // Le bruit part quatre images avant la coupe : un souffle qui commence à
-  // l'image exacte arrive en retard à l'oreille.
-  const start = Math.max(0, Math.round(((shot.at - 4) / FPS) * RATE))
-  for (let i = 0; i < samples.length && start + i < LENGTH; i++) effects[start + i] += samples[i]
-  placed++
-}
-
-// ── Somme et limiteur ───────────────────────────────────────────────────────
-const mix = new Float32Array(LENGTH)
-for (let i = 0; i < LENGTH; i++) {
-  mix[i] = (compressed[i] ?? 0) + music[i] + effects[i]
-}
-
 /**
  * Limiteur à anticipation.
  *
- * Un suiveur d'enveloppe classique ne convient pas : quelle que soit son
- * attaque, il monte *après* la crête, donc il réduit trop tard et l'échantillon
- * écrête quand même. Ici on prend le maximum des deux millisecondes à venir —
- * une borne supérieure, jamais en retard — puis on ne lisse que le retour, pour
- * que le gain ne remonte pas entre deux crêtes rapprochées.
+ * Un suiveur d'enveloppe ne convient pas : quelle que soit son attaque, il monte
+ * *après* la crête, donc il réduit trop tard et l'échantillon écrête quand même.
+ * Ici on prend le maximum des deux millisecondes à venir — une borne supérieure,
+ * jamais en retard — puis on ne lisse que le retour, pour que le gain ne remonte
+ * pas entre deux crêtes rapprochées.
  */
 function lookaheadPeak(samples, lookaheadMs, releaseMs) {
   const window = Math.max(1, Math.round((lookaheadMs / 1000) * RATE))
@@ -286,49 +235,169 @@ function lookaheadPeak(samples, lookaheadMs, releaseMs) {
   return out
 }
 
-const ceiling = dbToGain(CEILING)
-const peakEnvelope = lookaheadPeak(mix, 2, 150)
-let reduced = 0
-for (let i = 0; i < LENGTH; i++) {
-  if (peakEnvelope[i] > ceiling) {
-    mix[i] *= ceiling / peakEnvelope[i]
-    reduced++
+/** Écriture d'un WAV stéréo : voix, musique et bruitage sont tous centrés. */
+function writeStereoWav(path, mono) {
+  const data = Buffer.alloc(mono.length * 4)
+  for (let i = 0; i < mono.length; i++) {
+    const value = Math.round(Math.max(-1, Math.min(1, mono[i])) * 32_767)
+    data.writeInt16LE(value, i * 4)
+    data.writeInt16LE(value, i * 4 + 2)
   }
+
+  const header = Buffer.alloc(44)
+  header.write('RIFF', 0)
+  header.writeUInt32LE(36 + data.length, 4)
+  header.write('WAVE', 8)
+  header.write('fmt ', 12)
+  header.writeUInt32LE(16, 16)
+  header.writeUInt16LE(1, 20)
+  header.writeUInt16LE(2, 22)
+  header.writeUInt32LE(RATE, 24)
+  header.writeUInt32LE(RATE * 4, 28)
+  header.writeUInt16LE(4, 32)
+  header.writeUInt16LE(16, 34)
+  header.write('data', 36)
+  header.writeUInt32LE(data.length, 40)
+
+  writeFileSync(path, Buffer.concat([header, data]))
 }
 
-/** Écriture d'un WAV stéréo : la voix et la musique sont centrées. */
-const data = Buffer.alloc(LENGTH * 4)
-for (let i = 0; i < LENGTH; i++) {
-  const value = Math.round(mix[i] * 32_767)
-  data.writeInt16LE(value, i * 4)
-  data.writeInt16LE(value, i * 4 + 2)
+const scratch = join(tmpdir(), 'colombes-mix')
+mkdirSync(scratch, { recursive: true })
+
+/**
+ * La musique, décodée une fois pour les trois films.
+ *
+ * Le décodage passe par le ffmpeg fourni avec Remotion : décoder un MP3 à la main
+ * n'apporterait rien, et cette version est déjà celle qui rendra les vidéos.
+ */
+function loadMusic() {
+  const wav = join(scratch, 'music.wav')
+  execFileSync(
+    'npx',
+    ['remotion', 'ffmpeg', '-y', '-i', 'video/audio/music.mp3', '-ac', '1', '-ar', String(RATE), '-f', 'wav', wav],
+    { stdio: 'pipe' },
+  )
+  return readWavMono(wav).samples
 }
-const header = Buffer.alloc(44)
-header.write('RIFF', 0)
-header.writeUInt32LE(36 + data.length, 4)
-header.write('WAVE', 8)
-header.write('fmt ', 12)
-header.writeUInt32LE(16, 16)
-header.writeUInt16LE(1, 20)
-header.writeUInt16LE(2, 22)
-header.writeUInt32LE(RATE, 24)
-header.writeUInt32LE(RATE * 4, 28)
-header.writeUInt16LE(4, 32)
-header.writeUInt16LE(16, 34)
-header.write('data', 36)
-header.writeUInt32LE(data.length, 40)
 
-const mixWav = join(scratch, 'mix.wav')
-writeFileSync(mixWav, Buffer.concat([header, data]))
+const MUSIC = loadMusic()
 
-// Le fichier livré est en MP3 : le WAV pèse treize mégaoctets, que le dépôt et
-// le déploiement porteraient pour rien.
-execFileSync('npx', ['remotion', 'ffmpeg', '-y', '-i', mixWav, '-b:a', '176k', OUTPUT], { stdio: 'pipe' })
+const sfxCache = new Map()
+/** Un effet, ramené à la crête voulue. Mis en cache : il sert des dizaines de fois. */
+function sfx(name, peakDb) {
+  const key = `${name}@${peakDb}`
+  if (!sfxCache.has(key)) {
+    const samples = readWavMono(`video/audio/sfx/${name}.wav`).samples
+    const gain = dbToGain(peakDb) / Math.max(peakOf(samples), 1e-6)
+    const scaled = new Float32Array(samples.length)
+    for (let i = 0; i < samples.length; i++) scaled[i] = samples[i] * gain
+    sfxCache.set(key, scaled)
+  }
+  return sfxCache.get(key)
+}
+
+async function buildFilm(film) {
+  const { FPS, TIMELINE, TOTAL_FRAMES } = await import(film.cut)
+  const length = Math.round((TOTAL_FRAMES / FPS) * RATE)
+
+  // ── La voix ───────────────────────────────────────────────────────────────
+  let voice = null
+  let voiceReport = 'aucune'
+  if (film.voice) {
+    voice = compress(resample(readWavMono(film.voice)))
+    const measured = speechRms(voice)
+    const gain = dbToGain(VOICE_RMS) / measured.value
+    for (let i = 0; i < voice.length; i++) voice[i] *= gain
+    voiceReport = `${gainToDb(measured.value).toFixed(1)} dBFS mesurés → ${VOICE_RMS} (gain ${gainToDb(gain).toFixed(1)} dB)`
+  }
+
+  // ── La musique ────────────────────────────────────────────────────────────
+  const music = new Float32Array(length)
+  const start = Math.round(film.musicFrom * RATE)
+  const crossfade = RATE
+  const loopLength = Math.max(1, MUSIC.length - crossfade)
+  for (let i = 0; i < length; i++) {
+    // Bouclée si le film dépasse la piste, avec un fondu croisé d'une seconde :
+    // une reprise sèche s'entend immédiatement.
+    const position = (start + i) % loopLength
+    music[i] = MUSIC[position] ?? 0
+  }
+  const musicGain = dbToGain(film.musicRms) / Math.max(rms(music), 1e-6)
+  for (let i = 0; i < length; i++) music[i] *= musicGain
+
+  if (voice) {
+    // L'évitement. L'enveloppe de la voix commande la baisse, avec un retour lent :
+    // la musique ne doit pas remonter entre deux mots, seulement entre deux phrases.
+    const duck = envelope(voice, 12, 320)
+    const gate = dbToGain(VOICE_RMS - 16)
+    for (let i = 0; i < length; i++) {
+      music[i] *= dbToGain(MUSIC_DUCK * Math.min(1, (duck[i] ?? 0) / gate))
+    }
+  }
+
+  for (const [from, to, db] of film.swells) {
+    const end = to === Infinity ? length : Math.round(to * RATE)
+    for (let i = Math.round(from * RATE); i < Math.min(end, length); i++) music[i] *= dbToGain(db)
+  }
+
+  // Fondu de sortie sur les deux dernières secondes.
+  const fade = Math.round(2 * RATE)
+  for (let i = 0; i < fade; i++) music[length - fade + i] *= 1 - i / fade
+
+  // ── Le bruitage ───────────────────────────────────────────────────────────
+  const effects = new Float32Array(length)
+  const place = (samples, frame) => {
+    const at = Math.max(0, Math.round((frame / FPS) * RATE))
+    for (let i = 0; i < samples.length && at + i < length; i++) effects[at + i] += samples[i]
+  }
+
+  let cuts = 0
+  let ticks = 0
+  for (const shot of TIMELINE) {
+    if (shot.sfx) {
+      // Le bruit de coupe part quatre images avant : un souffle qui commence à
+      // l'image exacte arrive en retard à l'oreille.
+      place(sfx(shot.sfx, SFX_PEAK), shot.at - 4)
+      cuts++
+    }
+    if (shot.ticks) {
+      // Les crans, eux, tombent pile : ils accompagnent un mouvement visible, et
+      // toute avance se lirait comme un décalage.
+      const grain = sfx(shot.ticks.sound, TICK_PEAK)
+      for (const frame of stepFrames(shot.ticks)) {
+        place(grain, shot.at + frame)
+        ticks++
+      }
+    }
+  }
+
+  // ── Somme et limiteur ─────────────────────────────────────────────────────
+  const mix = new Float32Array(length)
+  for (let i = 0; i < length; i++) mix[i] = (voice?.[i] ?? 0) + music[i] + effects[i]
+
+  const ceiling = dbToGain(CEILING)
+  const peaks = lookaheadPeak(mix, 2, 150)
+  let reduced = 0
+  for (let i = 0; i < length; i++) {
+    if (peaks[i] > ceiling) {
+      mix[i] *= ceiling / peaks[i]
+      reduced++
+    }
+  }
+
+  const wav = join(scratch, 'mix.wav')
+  writeStereoWav(wav, mix)
+  // Le fichier livré est en MP3 : le WAV pèse des mégaoctets que le dépôt et le
+  // déploiement porteraient pour rien.
+  execFileSync('npx', ['remotion', 'ffmpeg', '-y', '-i', wav, '-b:a', '176k', film.output], { stdio: 'pipe' })
+
+  console.log(`${film.output}  ${(length / RATE).toFixed(2)} s — ${film.label}`)
+  console.log(`  voix     ${voiceReport}`)
+  console.log(`  musique  ${film.musicRms} dBFS, entrée à ${film.musicFrom} s${voice ? `, évitement ${MUSIC_DUCK} dB` : ''}`)
+  console.log(`  bruitage ${cuts} coupes, ${ticks} crans`)
+  console.log(`  sortie   ${gainToDb(rms(mix)).toFixed(1)} dBFS moyens, crête ${gainToDb(peakOf(mix)).toFixed(1)} dBFS, ${((reduced / length) * 100).toFixed(2)} % limités`)
+}
+
+for (const film of FILMS) await buildFilm(film)
 rmSync(scratch, { recursive: true, force: true })
-
-console.log(`voix     : ${gainToDb(measured.value).toFixed(1)} dBFS mesurés → ${VOICE_RMS} dBFS (gain ${gainToDb(voiceGain).toFixed(1)} dB), parole ${(measured.share * 100).toFixed(0)} %`)
-console.log(`musique  : ${MUSIC_RMS} dBFS, évitement ${MUSIC_DUCK} dB sous la voix`)
-console.log(`bruitage : ${placed} coupes sonorisées`)
-console.log(`limiteur : ${((reduced / LENGTH) * 100).toFixed(2)} % des échantillons réduits`)
-console.log(`mixage   : ${gainToDb(rms(mix)).toFixed(1)} dBFS moyens, crête ${gainToDb(peakOf(mix)).toFixed(1)} dBFS`)
-console.log(`${OUTPUT} — ${(LENGTH / RATE).toFixed(2)} s`)
