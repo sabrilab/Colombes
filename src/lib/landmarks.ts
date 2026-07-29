@@ -126,3 +126,12 @@ export function landmarkTier(
 ): PricingAnimal {
   return animalFor(landmarkAcv(company) / 12)
 }
+
+/**
+ * Les repères d'un palier. C'est le raccourci qui rend l'échelle concrète :
+ * « lapin » ne dit rien, « le palier de Netflix » se comprend tout de suite.
+ * L'ordre suit celui de LANDMARKS, stable d'un rendu à l'autre.
+ */
+export function landmarksForTier(animal: PricingAnimal): Landmark[] {
+  return LANDMARKS.filter((company) => landmarkTier(company).name === animal.name)
+}

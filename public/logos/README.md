@@ -1,39 +1,45 @@
 # Logos des entreprises repères
 
-Dépose ici le logo officiel de chaque repère, au format SVG, nommé d'après
-son `id` dans `src/lib/landmarks.ts` :
+Un fichier SVG par repère, nommé d'après son `id` dans `src/lib/landmarks.ts`.
+L'application les charge automatiquement ; tant qu'un fichier est absent, la
+pastille affiche une lettrine sur la couleur de la marque — rien ne casse.
 
-```
-spotify.svg
-netflix.svg
-canva.svg
-shopify.svg
-hubspot.svg
-salesforce.svg
-```
+## État
 
-L'application les charge automatiquement. Tant qu'un fichier est absent, la
-carte affiche une lettrine sur la couleur de la marque — rien ne casse.
+| Repère | Fichier | Origine |
+| --- | --- | --- |
+| Spotify | `spotify.svg` | Simple Icons |
+| Netflix | `netflix.svg` | Simple Icons |
+| Shopify | `shopify.svg` | Simple Icons |
+| HubSpot | `hubspot.svg` | Simple Icons |
+| Canva | **absent** | retiré de Simple Icons à la demande de la marque |
+| Salesforce | **absent** | retiré de Simple Icons à la demande de la marque |
 
-## Où les récupérer
+Les quatre fichiers présents viennent de [Simple Icons](https://simpleicons.org),
+dont les tracés sont publiés en CC0. Ils sont servis dans la couleur officielle
+de chaque marque, en un seul tracé sur fond transparent.
 
-Ces fichiers ne sont pas versionnés ici : ce sont des marques déposées, et
-leur redistribution est encadrée par chaque propriétaire. Chacun publie un
-kit presse qui autorise l'usage nominatif (citer l'entreprise pour la
-désigner), généralement sous conditions — ne pas déformer, ne pas suggérer
-un partenariat, respecter la zone de protection.
+**Canva et Salesforce ne sont pas déposés, et c'est délibéré** : leurs icônes ont
+été retirées de Simple Icons à la demande des marques elles-mêmes. C'est une
+objection explicite à la redistribution ; on ne la contourne pas en allant
+chercher le fichier ailleurs. Ces deux repères gardent donc leur lettrine, dans
+la même pastille que les autres.
+
+## Si l'on veut compléter
+
+Chaque marque publie un kit presse qui autorise l'usage nominatif — citer
+l'entreprise pour la désigner — généralement sous conditions : ne pas déformer,
+ne pas suggérer un partenariat, respecter la zone de protection.
 
 | Repère | Kit presse |
 | --- | --- |
-| Spotify | newsroom.spotify.com — section Brand / Logos |
-| Netflix | brand.netflix.com |
 | Canva | canva.com/newsroom — Brand assets |
-| Shopify | shopify.com/brand-assets |
-| HubSpot | hubspot.com/style-guide |
 | Salesforce | salesforce.com — Brand & Trademark guidelines |
 
-Vérifie les conditions de chaque marque avant la mise en ligne : l'usage est
-nominatif et éditorial, il ne doit pas laisser croire à une affiliation.
+L'usage fait ici est nominatif et éditorial : on situe des entreprises connues
+sur une échelle de prix pour expliquer cette échelle, sans suggérer d'affiliation.
+Vérifier les conditions de chaque marque avant une mise en ligne commerciale
+reste à la charge de l'exploitant.
 
-Les fichiers sont préférés en version monochrome ou sur fond transparent :
-la pastille les pose sur un rond blanc.
+Les fichiers sont préférés en version monochrome ou sur fond transparent : la
+pastille les pose sur un rond blanc.

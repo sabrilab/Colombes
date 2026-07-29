@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LANDMARKS, landmarkAcv, landmarkTier } from './landmarks'
+import { LANDMARKS, landmarkAcv, landmarkTier, landmarksForTier } from './landmarks'
 import { PRICING_ANIMALS } from './pricePad'
 
 describe('LANDMARKS', () => {
@@ -46,5 +46,34 @@ describe('landmarkTier', () => {
     // 1 200 $/an ⇒ 100 $/mois ⇒ palier des cerfs.
     const tier = landmarkTier({ annualRevenue: 1_200_000, customers: 1_000 } as never)
     expect(tier.name).toBe('Deer')
+  })
+})
+
+describe('landmarksForTier', () => {
+  it('couvre les cinq paliers, sans en laisser un vide', () => {
+    // C'est la promesse pédagogique : chaque animal a une marque qui l'incarne.
+    for (const animal of PRICING_ANIMALS) {
+      expect(landmarksForTier(animal).length, animal.name).toBeGreaterThan(0)
+    }
+  })
+
+  it('range chaque repère dans un palier et un seul', () => {
+    const placed = PRICING_ANIMALS.flatMap(landmarksForTier)
+    expect(placed).toHaveLength(LANDMARKS.length)
+    expect(new Set(placed.map((company) => company.id)).size).toBe(LANDMARKS.length)
+  })
+
+  it('donne un palier cohérent avec landmarkTier', () => {
+    for (const animal of PRICING_ANIMALS) {
+      for (const company of landmarksForTier(animal)) {
+        expect(landmarkTier(company).name, company.id).toBe(animal.name)
+      }
+    }
+  })
+
+  it('incarne les baleines, que le pad ne peut pas atteindre', () => {
+    // Le palier hors cadran est justement celui qu'il faut rendre tangible.
+    const whales = PRICING_ANIMALS.find((animal) => animal.name === 'Whales')!
+    expect(landmarksForTier(whales).map((company) => company.id)).toContain('salesforce')
   })
 })
