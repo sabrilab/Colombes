@@ -1,4 +1,3 @@
-import { SectionShell } from '@/components/SectionShell'
 import { LearnSection } from '@/components/learn/LearnSection'
 
 /**
@@ -7,9 +6,5 @@ import { LearnSection } from '@/components/learn/LearnSection'
  * descendant. Une section leur donne une adresse et une raison d'y aller.
  */
 export function LearnView({ openGrain }: { openGrain?: string }) {
-  return (
-    <SectionShell>
-      <LearnSection openGrain={openGrain} />
-    </SectionShell>
-  )
+  return <LearnSection openGrain={openGrain} />
 }

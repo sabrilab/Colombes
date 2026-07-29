@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { TierBadge } from '@/components/AnimalGlyph'
 import { BrandMark } from '@/components/BrandMark'
 import { Card } from '@/components/ui/card'
-import { SectionShell } from '@/components/SectionShell'
 import { Landmarks } from '@/components/home/Landmarks'
 import { AVIARY, type Colombe } from '@/lib/aviary'
 import { compute } from '@/lib/engine'
@@ -67,7 +66,7 @@ export function AviaryView() {
   const t = useT()
 
   return (
-    <SectionShell>
+    <>
       <header className="max-w-2xl">
         <h1
           className="font-display reveal text-2xl font-bold uppercase tracking-tight sm:text-3xl"
@@ -99,6 +98,6 @@ export function AviaryView() {
       </section>
 
       <Landmarks />
-    </SectionShell>
+    </>
   )
 }

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { SectionShell, useAnnounceAccounts } from '@/components/SectionShell'
+import { useAnnounceAccounts } from '@/components/SectionShell'
 import { SavedLibrary } from '@/components/home/SavedLibrary'
 import { DoveLogo } from '@/components/DoveLogo'
 import { navigate } from '@/lib/router'
@@ -16,7 +16,7 @@ export function SavedView() {
   const t = useT()
 
   return (
-    <SectionShell>
+    <>
       <header className="max-w-2xl">
         <h1
           className="font-display reveal text-2xl font-bold uppercase tracking-tight sm:text-3xl"
@@ -54,6 +54,6 @@ export function SavedView() {
       ) : (
         <SavedLibrary />
       )}
-    </SectionShell>
+    </>
   )
 }

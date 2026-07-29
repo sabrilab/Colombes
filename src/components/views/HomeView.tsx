@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { SectionShell } from '@/components/SectionShell'
 import { PricePad } from '@/components/home/PricePad'
 import { ConceptBento } from '@/components/home/ConceptBento'
 import { TierCarousel } from '@/components/home/TierCarousel'
@@ -126,7 +125,7 @@ export function HomeView() {
   const t = useT()
 
   return (
-    <SectionShell>
+    <>
       {/* Mobile d'abord : le module — chiffre, animal, pad — passe devant le
             texte d'intention pour tenir dans le premier écran d'un téléphone.
             Au-delà du point de rupture la place ne manque plus, et l'ordre de
@@ -164,6 +163,6 @@ export function HomeView() {
 
         <ConceptBento />
 
-      </SectionShell>
+    </>
   )
 }
