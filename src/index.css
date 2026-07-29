@@ -218,27 +218,91 @@
       inset 0 -10px 18px -12px oklch(0.4 0.08 112 / 0.6);
   }
 
-  /* La barre de navigation : verre épais posé sur le sombre. Plus opaque que
-     l'en-tête, parce qu'elle flotte au-dessus du contenu et doit rester
-     lisible quoi qu'il passe dessous. */
+  /* La barre de navigation, en verre épais.
+     Trois couches font l'effet, dans cet ordre : le flou qui prend ce qui
+     passe dessous et le sature, un cerne dégradé qui simule la réfraction sur
+     la tranche — clair en haut où la lumière entre, sombre en bas où elle
+     sort — et des ombres internes qui donnent au bloc son épaisseur. */
   .nav-glass {
-    backdrop-filter: blur(24px) saturate(1.4);
-    background: color-mix(in oklab, var(--background) 82%, transparent);
-    border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+    position: relative;
+    isolation: isolate;
+    backdrop-filter: blur(30px) saturate(1.9) brightness(1.08);
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--foreground) 9%, transparent),
+        color-mix(in oklab, var(--foreground) 2%, transparent) 42%,
+        transparent
+      ),
+      color-mix(in oklab, var(--background) 58%, transparent);
     box-shadow:
-      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 14%, transparent),
-      0 -1px 24px -12px oklch(0 0 0 / 0.8),
-      0 8px 24px -16px oklch(0 0 0 / 0.9);
+      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 26%, transparent),
+      inset 0 -10px 18px -14px oklch(0 0 0 / 0.85),
+      0 12px 32px -14px oklch(0 0 0 / 0.7),
+      0 2px 10px -6px oklch(0 0 0 / 0.55);
   }
 
-  /* La pastille de l'onglet actif : creusée, pas posée. Elle donne
-     l'impression que l'onglet s'enfonce, comme une touche pressée. */
+  /* Le cerne : un contour d'un pixel dont la couleur descend du clair au
+     sombre. Le masque évide le centre pour ne garder que la tranche. */
+  .nav-glass::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 40%, transparent),
+      color-mix(in oklab, var(--foreground) 7%, transparent) 48%,
+      oklch(0 0 0 / 0.5)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+
+  /* Le reflet spéculaire : une bande claire très courte sur l'arête haute,
+     qui s'éteint avant le quart de la hauteur. C'est elle qui fait « verre »
+     plutôt que « panneau translucide ». */
+  .nav-glass::after {
+    content: '';
+    position: absolute;
+    inset: 1px 1px auto;
+    height: 45%;
+    /* Derrière le contenu, devant le fond : à l'endroit, il voilerait la
+       moitié haute des icônes. `isolation` sur la barre contient ce -1. */
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 12%, transparent),
+      transparent
+    );
+  }
+
+  /* L'onglet actif : un galet de verre bombé, posé dans la barre. Même
+     grammaire que les boutons — arête haute qui prend la lumière, base qui
+     retient l'ombre — avec une pointe de citron pour dire à qui il appartient. */
   .nav-focus {
-    background: color-mix(in oklab, var(--lume) 12%, transparent);
-    border: 1px solid color-mix(in oklab, var(--lume) 28%, transparent);
+    background:
+      linear-gradient(
+        to bottom,
+        color-mix(in oklab, var(--foreground) 15%, transparent),
+        color-mix(in oklab, var(--lume) 7%, transparent)
+      );
     box-shadow:
-      inset 0 1px 2px oklch(0 0 0 / 0.35),
-      inset 0 -1px 0 0 color-mix(in oklab, var(--lume) 18%, transparent);
+      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 38%, transparent),
+      inset 0 -1px 0 0 oklch(0 0 0 / 0.4),
+      0 1px 3px -1px oklch(0 0 0 / 0.5),
+      0 0 14px -6px var(--lume);
   }
 
   /* La molette de coffre : un disque de métal brossé, cerclé, creusé au

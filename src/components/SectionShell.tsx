@@ -54,7 +54,7 @@ export function SectionShell({ children }: { children: React.ReactNode }) {
           </>
         }
       />
-      <main className="mx-auto max-w-5xl px-4 pb-28 pt-6 lg:px-6 lg:pb-16 lg:pt-12">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 pb-24 pt-6 lg:px-6 lg:pb-16 lg:pt-12">{children}</main>
       <Suspense fallback={null}>
         <SectionNav variant="bottom" />
       </Suspense>

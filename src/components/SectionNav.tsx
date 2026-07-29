@@ -28,7 +28,7 @@ function useRipple() {
   return (host: HTMLElement | null) => {
     if (!host) return
     const dot = document.createElement('span')
-    dot.className = 'pointer-events-none absolute inset-0 rounded-2xl bg-lume/25'
+    dot.className = 'pointer-events-none absolute inset-0 rounded-[1.1rem] bg-lume/25'
     host.appendChild(dot)
     layer.current = dot
 
@@ -69,7 +69,7 @@ function Tab({
         onSelect()
       }}
       aria-current={active ? 'page' : undefined}
-      className={`relative isolate flex min-h-14 flex-1 flex-col items-center justify-center gap-1 overflow-hidden rounded-2xl px-2 text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lume/60 ${
+      className={`relative isolate flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[1.1rem] px-2 pb-0.5 text-[10px] font-medium leading-none tracking-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lume/60 ${
         active ? 'text-lume' : 'text-muted-foreground hover:text-foreground'
       }`}
     >
@@ -80,11 +80,11 @@ function Tab({
         <motion.span
           layoutId="section-focus"
           aria-hidden
-          className="nav-focus absolute inset-0 -z-10 rounded-2xl"
+          className="nav-focus absolute inset-0 -z-10 rounded-[1.1rem]"
           transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
         />
       )}
-      <Icon className="size-5" aria-hidden />
+      <Icon className="size-[1.15rem]" aria-hidden />
       <span className="leading-none">{t(section.label)}</span>
     </button>
   )
@@ -141,9 +141,9 @@ export function SectionNav({ variant }: { variant: 'bottom' | 'inline' }) {
   return (
     <nav
       aria-label="Sections"
-      className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[max(0.6rem,env(safe-area-inset-bottom))] lg:hidden"
     >
-      <div ref={railRef} className="nav-glass flex items-stretch gap-1 rounded-[1.75rem] p-1.5">
+      <div ref={railRef} className="nav-glass flex items-stretch gap-0.5 rounded-[1.45rem] p-1">
         {tabs}
       </div>
     </nav>
