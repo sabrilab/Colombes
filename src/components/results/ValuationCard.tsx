@@ -15,8 +15,8 @@ import type { ProfileLabel } from '@/lib/engine/types'
 
 const PROFILE_LABELS: Record<ProfileLabel, string> = {
   micro: 'Micro asset',
-  bootstrapped: 'Bootstrapped SaaS',
-  established: 'Established SaaS',
+  bootstrapped: 'Independent app',
+  established: 'Established app',
 }
 
 /** Le palier incarné, comme sur l'accueil. Chargé à la demande. */

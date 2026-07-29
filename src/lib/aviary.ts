@@ -63,7 +63,7 @@ export const AVIARY: Colombe[] = [
   {
     id: 'biset',
     name: 'Biset',
-    sector: 'Vertical SaaS · restaurants',
+    sector: 'Vertical app · restaurants',
     hue: 60,
     pitch:
       'Bookings, payments and loyalty for independent restaurants. Sold over a demo, installed in a day, indispensable from the first dinner service.',

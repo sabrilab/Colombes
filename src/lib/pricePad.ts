@@ -134,7 +134,7 @@ export const PRICING_ANIMALS: PricingAnimal[] = [
     annualAcv: 1_000,
     customersFor100M: '100K',
     whatItMeans:
-      'Small-business SaaS, the sweet spot for a bootstrapped team. Self-serve still works, but onboarding decides whether they stay. One person can support a few hundred customers, and the maths of a solo founder finally close here.',
+      'Apps sold to small businesses, the sweet spot for an independent team. Self-serve still works, but onboarding decides whether they stay. One person can support a few hundred customers, and the maths of a solo founder finally close here.',
   },
   {
     name: 'Elephants',

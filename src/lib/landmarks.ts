@@ -98,7 +98,7 @@ export const LANDMARKS: Landmark[] = [
     period: 'FY2024',
     basis: 'Total revenue divided by total customers reported at year end.',
     lesson:
-      'Around $10,000 a year per customer. At this level there is a salesperson, an onboarding and a renewal conversation — and the cost of that machine is why mid-market SaaS rarely looks profitable early.',
+      'Around $10,000 a year per customer. At this level there is a salesperson, an onboarding and a renewal conversation — and the cost of that machine is why mid-market software rarely looks profitable early.',
   },
   {
     id: 'salesforce',

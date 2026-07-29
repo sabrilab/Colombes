@@ -13,8 +13,8 @@ import { useSimulator, useT } from '@/store/simulator'
 
 const PROFILE_WORDS = {
   micro: 'Micro asset',
-  bootstrapped: 'Bootstrapped SaaS',
-  established: 'Established SaaS',
+  bootstrapped: 'Independent app',
+  established: 'Established app',
 } as const
 
 export function ColombeProfileView({ id }: { id: string }) {

@@ -26,7 +26,7 @@ export const GLOSSARY: Record<GlossaryKey, GlossaryEntry> = {
   mrr: {
     title: 'MRR — monthly recurring revenue',
     definition:
-      'What your subscriptions bring in every month, before costs. It is the pulse of your SaaS: everything else flows from it.',
+      'What your subscriptions bring in every month, before costs. It is the pulse of your app: everything else flows from it.',
   },
   arr: {
     title: 'ARR — annual recurring revenue',
@@ -41,7 +41,7 @@ export const GLOSSARY: Record<GlossaryKey, GlossaryEntry> = {
   grossMargin: {
     title: 'Gross margin',
     definition:
-      'The share of every euro of revenue left after direct costs (servers, APIs, support). In SaaS it is typically very high — that is what makes the model attractive.',
+      'The share of every euro of revenue left after direct costs (servers, APIs, support). For an app sold by subscription it is typically very high — that is what makes the model attractive.',
     threshold: thresholdOf('grossMargin'),
   },
   ltv: {

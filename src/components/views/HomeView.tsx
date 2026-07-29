@@ -46,7 +46,7 @@ function MiniSimulator() {
           panneau qui recouvre tout. */}
       <div className="mb-3 flex items-start justify-between gap-3">
         <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {showTiers ? t('The five tiers') : t('Your SaaS, ballpark')}
+          {showTiers ? t('The five tiers') : t('Your app, ballpark')}
         </p>
         <Button
           variant={showTiers ? 'default' : 'outline'}
@@ -220,14 +220,14 @@ export function HomeView({ openGrain }: { openGrain?: string }) {
               className="font-display reveal order-1 text-2xl font-bold uppercase tracking-tight sm:text-3xl lg:text-4xl"
               style={{ '--reveal-order': 0 } as React.CSSProperties}
             >
-              {t('What your {saas} is really worth', { saas: '\u0000' })
+              {t('What your {app} is really worth', { app: '\u0000' })
                 .split('\u0000')
                 .flatMap((part, index) =>
                   index === 0
                     ? [part]
                     : [
                         <span key="saas" className="text-lume">
-                          {t('bootstrapped SaaS')}
+                          {t('subscription app')}
                         </span>,
                         part,
                       ],

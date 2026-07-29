@@ -98,7 +98,7 @@ export function Landmarks() {
       </h2>
       <p className="mt-2 max-w-2xl text-xs text-muted-foreground">
         {t(
-          'Where the giants sit on the same scale. Approximate figures from public reports — revenue and customer counts, nothing more. They are deliberately {notValued} by the simulator: its market curve is built for bootstrapped SaaS, and stretching it to billions would invent a number. Tap a card for the detail.',
+          'Where the giants sit on the same scale. Approximate figures from public reports — revenue and customer counts, nothing more. They are deliberately {notValued} by the simulator: its market curve is built for independent apps, and stretching it to billions would invent a number. Tap a card for the detail.',
           { notValued: '\u0000' },
         )
           .split('\u0000')

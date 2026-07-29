@@ -23,7 +23,7 @@ const FIXED = { price: 29, customers: 500, newCustomersPerMonth: 25 }
 const PRESETS = [
   { label: 'Solo founder', grossMargin: 0.88, cac: 90, fixedCosts: 1_200 },
   { label: 'Funded machine', grossMargin: 0.78, cac: 900, fixedCosts: 9_000 },
-  { label: 'Agency turned SaaS', grossMargin: 0.55, cac: 250, fixedCosts: 6_000 },
+  { label: 'Agency turned app', grossMargin: 0.55, cac: 250, fixedCosts: 6_000 },
 ]
 
 export function CascadeScene() {
