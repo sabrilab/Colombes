@@ -109,6 +109,12 @@ export const FR: Record<string, string> = {
   'What remains': 'Ce qui reste',
   'No profit, no multiple.': 'Pas de profit, pas de multiple.',
 
+  'Solo founder': 'Fondateur solo',
+  'Funded machine': 'Machine financée',
+  'Agency turned SaaS': 'Agence devenue SaaS',
+  'Solid asset': 'Actif solide',
+  'Leaky asset': 'Actif qui fuit',
+
   'How a multiple is built': 'Comment se construit un multiple',
   'Why three times and not ten?': 'Pourquoi trois fois et pas dix ?',
   'A valuation is just an opinion.': '« Une valorisation, c’est une opinion. »',

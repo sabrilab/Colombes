@@ -11,6 +11,15 @@ import { useT } from '@/store/simulator'
  * On lit ici exactement le calcul de production — aucune ligne n'est inventée
  * pour la démonstration, aucune n'est cachée parce qu'elle dérange.
  */
+/**
+ * Deux situations opposées : c'est en basculant de l'une à l'autre qu'on voit
+ * les neuf lignes changer de camp, bien mieux qu'en poussant un curseur.
+ */
+const PRESETS = [
+  { label: 'Solid asset', revenueChurn: 0.012, topClientShare: 0.05 },
+  { label: 'Leaky asset', revenueChurn: 0.075, topClientShare: 0.45 },
+]
+
 export function BuildupScene() {
   const [levers, setLevers] = useState({ revenueChurn: 0.03, topClientShare: 0.1 })
   const t = useT()
@@ -110,6 +119,35 @@ export function BuildupScene() {
             {formatCurrency(valuation.value)}
           </span>
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {PRESETS.map((preset) => {
+          const active =
+            levers.revenueChurn === preset.revenueChurn &&
+            levers.topClientShare === preset.topClientShare
+
+          return (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() =>
+                setLevers({
+                  revenueChurn: preset.revenueChurn,
+                  topClientShare: preset.topClientShare,
+                })
+              }
+              aria-pressed={active}
+              className={`min-h-9 flex-1 rounded-lg border px-2 py-1.5 font-display text-[11px] uppercase tracking-wider transition-colors ${
+                active
+                  ? 'border-lume/50 bg-lume/10 text-lume'
+                  : 'border-border/70 text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t(preset.label)}
+            </button>
+          )
+        })}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

@@ -48,6 +48,7 @@
     --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
     --font-display: 'Chakra Petch', ui-sans-serif, system-ui, sans-serif;
     --color-lume: var(--lume);
+    --color-haze: var(--haze);
     --radius: 0.75rem;
 }
 
@@ -55,6 +56,9 @@
     --radius: 0.75rem;
     /* Accent « lume » : le citron-chartreuse de la marque. */
     --lume: oklch(0.68 0.13 112);
+    /* « haze » : le mauve froid. Jamais un accent — il ne sert qu'à donner
+       un contre-chant au citron dans les grands dégradés. */
+    --haze: oklch(0.70 0.11 305);
     --background: oklch(0.9900 0 0);
     --foreground: oklch(0 0 0);
     --card: oklch(1 0 0);
@@ -95,6 +99,7 @@
     --background: oklch(0.1250 0.0060 110);
     --foreground: oklch(0.9800 0.0050 110);
     --lume: oklch(0.9200 0.1450 112);
+    --haze: oklch(0.78 0.13 305);
     --card: oklch(0.1700 0.0060 110);
     --card-foreground: oklch(1 0 0);
     --popover: oklch(0.1800 0 0);
@@ -194,6 +199,33 @@
     box-shadow:
       inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 8%, transparent),
       inset 0 0 60px -10px oklch(0 0 0 / 0.55);
+  }
+
+
+  /* Nappe lumineuse : la couleur de la marque étalée en grand, citron d'un
+     bord, mauve de l'autre. Elle passe DERRIÈRE les cartes et déborde du
+     cadre — c'est une ambiance, jamais un fond de carte. */
+  .lume-wash {
+    background:
+      radial-gradient(72% 90% at 10% 0%, color-mix(in oklab, var(--lume) 18%, transparent), transparent 62%),
+      radial-gradient(62% 80% at 96% 100%, color-mix(in oklab, var(--haze) 16%, transparent), transparent 64%);
+  }
+
+  /* Le biseau du bouton citron, porté à l'échelle d'un bandeau : même verre
+     taillé, même arête haute qui prend la lumière, mais teinté vers le mauve
+     en descendant pour que la grande surface ne soit pas un aplat. */
+  .lume-slab {
+    background:
+      linear-gradient(152deg, oklch(1 0 0 / 0.16), transparent 44%),
+      linear-gradient(
+        168deg,
+        color-mix(in oklab, var(--lume) 26%, transparent),
+        color-mix(in oklab, var(--haze) 16%, transparent)
+      );
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 22%, transparent),
+      inset 0 -1px 0 0 oklch(0 0 0 / 0.25),
+      0 12px 36px -26px var(--lume);
   }
 
   /* La scène d'un grain pédagogique : même famille que le pad — plaque

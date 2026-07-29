@@ -15,6 +15,17 @@ import { useT } from '@/store/simulator'
  */
 const FIXED = { price: 29, customers: 500, newCustomersPerMonth: 25 }
 
+/**
+ * Trois profils plutôt que trois curseurs à tâtonner : on comprend plus vite
+ * en comparant des situations nommées qu'en balayant un intervalle. Les
+ * curseurs restent dessous pour qui veut sortir des cases.
+ */
+const PRESETS = [
+  { label: 'Solo founder', grossMargin: 0.88, cac: 90, fixedCosts: 1_200 },
+  { label: 'Funded machine', grossMargin: 0.78, cac: 900, fixedCosts: 9_000 },
+  { label: 'Agency turned SaaS', grossMargin: 0.55, cac: 250, fixedCosts: 6_000 },
+]
+
 export function CascadeScene() {
   const [levers, setLevers] = useState({ grossMargin: 0.85, cac: 180, fixedCosts: 2_000 })
   const t = useT()
@@ -106,6 +117,37 @@ export function CascadeScene() {
             </span>
           )}
         </div>
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {PRESETS.map((preset) => {
+          const active =
+            levers.grossMargin === preset.grossMargin &&
+            levers.cac === preset.cac &&
+            levers.fixedCosts === preset.fixedCosts
+
+          return (
+            <button
+              key={preset.label}
+              type="button"
+              onClick={() =>
+                setLevers({
+                  grossMargin: preset.grossMargin,
+                  cac: preset.cac,
+                  fixedCosts: preset.fixedCosts,
+                })
+              }
+              aria-pressed={active}
+              className={`min-h-9 flex-1 rounded-lg border px-2 py-1.5 font-display text-[11px] uppercase tracking-wider transition-colors ${
+                active
+                  ? 'border-lume/50 bg-lume/10 text-lume'
+                  : 'border-border/70 text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {t(preset.label)}
+            </button>
+          )
+        })}
       </div>
 
       <div className="space-y-3">
