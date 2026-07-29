@@ -1,0 +1,334 @@
+/**
+ * Le mixage du film, fabriqué avant le rendu.
+ *
+ * Remotion sait empiler plusieurs pistes, mais pas les faire s'écouter entre
+ * elles : la musique passerait au même volume sous la voix que dans les
+ * silences, et un plan raté ne se verrait qu'après dix minutes de rendu. Ici le
+ * mixage est un fichier — on le mesure, on l'écoute, et le montage n'a plus
+ * qu'une seule piste à monter.
+ *
+ * Trois choses s'y jouent :
+ *  — la voix est compressée puis calée au niveau, parce que la synthèse rend
+ *    une piste à −25 dBFS que personne n'entend sur un téléphone ;
+ *  — la musique s'écarte quand la voix parle, et remonte dans les silences ;
+ *  — les bruits de coupe sont posés sur les coupes de `video/cut.mjs`.
+ *
+ *     node scripts/build-mix.mjs
+ */
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { FPS, TIMELINE, TOTAL_FRAMES } from '../video/cut.mjs'
+
+const RATE = 48_000
+const LENGTH = Math.round((TOTAL_FRAMES / FPS) * RATE)
+const OUTPUT = 'public/film/mix-70s.mp3'
+
+/** Cibles de niveau, en dBFS. La voix commande, le reste se règle sous elle. */
+const VOICE_RMS = -17
+const MUSIC_RMS = -25.5
+const MUSIC_DUCK = -9 // ce que la musique perd quand la voix parle
+const SFX_PEAK = -14
+const CEILING = -1.2
+
+const dbToGain = (db) => 10 ** (db / 20)
+const gainToDb = (gain) => 20 * Math.log10(Math.max(gain, 1e-9))
+
+/** Décodage d'un WAV PCM 16 bits, ramené en mono flottant. */
+function readWavMono(path) {
+  const buffer = readFileSync(path)
+  let offset = 12
+  let channels = 1
+  let rate = RATE
+  let data = null
+
+  while (offset < buffer.length - 8) {
+    const id = buffer.toString('ascii', offset, offset + 4)
+    const length = buffer.readUInt32LE(offset + 4)
+    if (id === 'fmt ') {
+      channels = buffer.readUInt16LE(offset + 10)
+      rate = buffer.readUInt32LE(offset + 12)
+    }
+    if (id === 'data') {
+      data = { start: offset + 8, length: Math.min(length, buffer.length - offset - 8) }
+      break
+    }
+    offset += 8 + length + (length % 2)
+  }
+  if (!data) throw new Error(`${path} : pas de bloc data`)
+
+  const frames = Math.floor(data.length / 2 / channels)
+  const samples = new Float32Array(frames)
+  for (let i = 0; i < frames; i++) {
+    let sum = 0
+    for (let k = 0; k < channels; k++) sum += buffer.readInt16LE(data.start + (i * channels + k) * 2)
+    samples[i] = sum / channels / 32_768
+  }
+  return { samples, rate }
+}
+
+/**
+ * Rééchantillonnage linéaire. Suffisant ici : on ne fait que monter en
+ * fréquence, et l'erreur d'interpolation se place au-delà de ce que la voix
+ * contient.
+ */
+function resample({ samples, rate }, target = RATE) {
+  if (rate === target) return samples
+  const ratio = rate / target
+  const out = new Float32Array(Math.floor(samples.length / ratio))
+  for (let i = 0; i < out.length; i++) {
+    const position = i * ratio
+    const index = Math.floor(position)
+    const fraction = position - index
+    const a = samples[index] ?? 0
+    const b = samples[index + 1] ?? a
+    out[i] = a + (b - a) * fraction
+  }
+  return out
+}
+
+/** Suiveur d'enveloppe : attaque rapide, retour lent. */
+function envelope(samples, attackMs, releaseMs) {
+  const attack = Math.exp(-1 / ((attackMs / 1000) * RATE))
+  const release = Math.exp(-1 / ((releaseMs / 1000) * RATE))
+  const out = new Float32Array(samples.length)
+  let level = 0
+  for (let i = 0; i < samples.length; i++) {
+    const rectified = Math.abs(samples[i])
+    const coefficient = rectified > level ? attack : release
+    level = rectified + coefficient * (level - rectified)
+    out[i] = level
+  }
+  return out
+}
+
+/** Crête d'un tableau. `Math.max(...tableau)` déborde la pile au-delà de 100 000 valeurs. */
+function peakOf(samples) {
+  let peak = 0
+  for (let i = 0; i < samples.length; i++) {
+    const value = Math.abs(samples[i])
+    if (value > peak) peak = value
+  }
+  return peak
+}
+
+function rms(samples, from = 0, to = samples.length) {
+  let sum = 0
+  for (let i = from; i < to; i++) sum += samples[i] ** 2
+  return Math.sqrt(sum / Math.max(1, to - from))
+}
+
+/**
+ * Compression de la voix. Une synthèse arrive avec vingt décibels d'écart entre
+ * un mot appuyé et une fin de phrase : sans compression, monter le niveau moyen
+ * fait saturer les attaques, et le baisser rend les fins inaudibles.
+ */
+function compress(samples, { threshold = -26, ratio = 3.4 } = {}) {
+  const level = envelope(samples, 6, 140)
+  const limit = dbToGain(threshold)
+  const out = new Float32Array(samples.length)
+  for (let i = 0; i < samples.length; i++) {
+    let gain = 1
+    if (level[i] > limit) {
+      const over = gainToDb(level[i] / limit)
+      gain = dbToGain(-over * (1 - 1 / ratio))
+    }
+    out[i] = samples[i] * gain
+  }
+  return out
+}
+
+/** Niveau moyen mesuré sur la parole seule : les silences fausseraient la mesure. */
+function speechRms(samples) {
+  const level = envelope(samples, 10, 200)
+  const gate = peakOf(level) * 0.06
+  let sum = 0
+  let count = 0
+  for (let i = 0; i < samples.length; i++) {
+    if (level[i] > gate) {
+      sum += samples[i] ** 2
+      count++
+    }
+  }
+  return { value: Math.sqrt(sum / Math.max(1, count)), share: count / samples.length }
+}
+
+// ── La voix ─────────────────────────────────────────────────────────────────
+const voice = resample(readWavMono('video/audio/voice-en.wav'))
+const compressed = compress(voice)
+const measured = speechRms(compressed)
+const voiceGain = dbToGain(VOICE_RMS) / measured.value
+for (let i = 0; i < compressed.length; i++) compressed[i] *= voiceGain
+
+// ── La musique ──────────────────────────────────────────────────────────────
+const scratch = join(tmpdir(), 'colombes-mix')
+mkdirSync(scratch, { recursive: true })
+const musicWav = join(scratch, 'music.wav')
+
+// Le décodage passe par le ffmpeg fourni avec Remotion : décoder un MP3 à la
+// main n'apporterait rien, et cette version est déjà celle qui rendra la vidéo.
+execFileSync(
+  'npx',
+  ['remotion', 'ffmpeg', '-y', '-i', 'video/audio/music.mp3', '-ac', '1', '-ar', String(RATE), '-f', 'wav', musicWav],
+  { stdio: 'pipe' },
+)
+const musicSource = readWavMono(musicWav).samples
+
+/**
+ * La musique est bouclée si elle est trop courte, avec un fondu croisé d'une
+ * seconde : une reprise sèche s'entend immédiatement.
+ */
+const music = new Float32Array(LENGTH)
+const crossfade = RATE
+for (let i = 0; i < LENGTH; i++) {
+  const position = i % Math.max(1, musicSource.length - crossfade)
+  let value = musicSource[position] ?? 0
+  if (i >= musicSource.length - crossfade && position < crossfade) {
+    const mix = position / crossfade
+    value = value * mix + (musicSource[musicSource.length - crossfade + position] ?? 0) * (1 - mix)
+  }
+  music[i] = value
+}
+const musicGain = dbToGain(MUSIC_RMS) / Math.max(rms(music), 1e-6)
+for (let i = 0; i < LENGTH; i++) music[i] *= musicGain
+
+/**
+ * L'évitement. L'enveloppe de la voix commande la baisse, avec un retour lent :
+ * la musique ne doit pas remonter entre deux mots, seulement entre deux phrases.
+ */
+const duckSource = envelope(compressed, 12, 320)
+const duckGate = dbToGain(VOICE_RMS - 16)
+for (let i = 0; i < LENGTH; i++) {
+  const active = Math.min(1, (duckSource[i] ?? 0) / duckGate)
+  music[i] *= dbToGain(MUSIC_DUCK * active)
+}
+
+// L'accroche et la chute n'ont pas de voix : la musique y monte de trois
+// décibels, sinon l'ouverture paraît vide et la fin s'éteint trop tôt.
+const swell = (from, to, db) => {
+  for (let i = from; i < Math.min(to, LENGTH); i++) music[i] *= dbToGain(db)
+}
+swell(0, Math.round(3.2 * RATE), 3)
+swell(Math.round(64.6 * RATE), LENGTH, 3)
+
+// Fondu de sortie sur les deux dernières secondes.
+const fadeOut = Math.round(2 * RATE)
+for (let i = 0; i < fadeOut; i++) {
+  music[LENGTH - fadeOut + i] *= 1 - i / fadeOut
+}
+
+// ── Les bruits de coupe ─────────────────────────────────────────────────────
+const sfxCache = new Map()
+function sfx(name) {
+  if (!sfxCache.has(name)) {
+    const samples = readWavMono(`video/audio/sfx/${name}.wav`).samples
+    const gain = dbToGain(SFX_PEAK) / Math.max(peakOf(samples), 1e-6)
+    const scaled = new Float32Array(samples.length)
+    for (let i = 0; i < samples.length; i++) scaled[i] = samples[i] * gain
+    sfxCache.set(name, scaled)
+  }
+  return sfxCache.get(name)
+}
+
+const effects = new Float32Array(LENGTH)
+let placed = 0
+for (const shot of TIMELINE) {
+  if (!shot.sfx) continue
+  const samples = sfx(shot.sfx)
+  // Le bruit part quatre images avant la coupe : un souffle qui commence à
+  // l'image exacte arrive en retard à l'oreille.
+  const start = Math.max(0, Math.round(((shot.at - 4) / FPS) * RATE))
+  for (let i = 0; i < samples.length && start + i < LENGTH; i++) effects[start + i] += samples[i]
+  placed++
+}
+
+// ── Somme et limiteur ───────────────────────────────────────────────────────
+const mix = new Float32Array(LENGTH)
+for (let i = 0; i < LENGTH; i++) {
+  mix[i] = (compressed[i] ?? 0) + music[i] + effects[i]
+}
+
+/**
+ * Limiteur à anticipation.
+ *
+ * Un suiveur d'enveloppe classique ne convient pas : quelle que soit son
+ * attaque, il monte *après* la crête, donc il réduit trop tard et l'échantillon
+ * écrête quand même. Ici on prend le maximum des deux millisecondes à venir —
+ * une borne supérieure, jamais en retard — puis on ne lisse que le retour, pour
+ * que le gain ne remonte pas entre deux crêtes rapprochées.
+ */
+function lookaheadPeak(samples, lookaheadMs, releaseMs) {
+  const window = Math.max(1, Math.round((lookaheadMs / 1000) * RATE))
+  const release = Math.exp(-1 / ((releaseMs / 1000) * RATE))
+  const out = new Float32Array(samples.length)
+
+  // File monotone décroissante : le maximum glissant en temps constant.
+  const queue = new Int32Array(samples.length)
+  let head = 0
+  let tail = 0
+  for (let i = 0; i < samples.length; i++) {
+    const bound = Math.min(samples.length - 1, i + window - 1)
+    for (let j = i === 0 ? 0 : Math.max(i + window - 1, 1); j <= bound; j++) {
+      const value = Math.abs(samples[j])
+      while (tail > head && Math.abs(samples[queue[tail - 1]]) <= value) tail--
+      queue[tail++] = j
+    }
+    while (head < tail && queue[head] < i) head++
+    out[i] = head < tail ? Math.abs(samples[queue[head]]) : 0
+  }
+
+  let level = 0
+  for (let i = 0; i < out.length; i++) {
+    level = Math.max(out[i], level * release)
+    out[i] = level
+  }
+  return out
+}
+
+const ceiling = dbToGain(CEILING)
+const peakEnvelope = lookaheadPeak(mix, 2, 150)
+let reduced = 0
+for (let i = 0; i < LENGTH; i++) {
+  if (peakEnvelope[i] > ceiling) {
+    mix[i] *= ceiling / peakEnvelope[i]
+    reduced++
+  }
+}
+
+/** Écriture d'un WAV stéréo : la voix et la musique sont centrées. */
+const data = Buffer.alloc(LENGTH * 4)
+for (let i = 0; i < LENGTH; i++) {
+  const value = Math.round(mix[i] * 32_767)
+  data.writeInt16LE(value, i * 4)
+  data.writeInt16LE(value, i * 4 + 2)
+}
+const header = Buffer.alloc(44)
+header.write('RIFF', 0)
+header.writeUInt32LE(36 + data.length, 4)
+header.write('WAVE', 8)
+header.write('fmt ', 12)
+header.writeUInt32LE(16, 16)
+header.writeUInt16LE(1, 20)
+header.writeUInt16LE(2, 22)
+header.writeUInt32LE(RATE, 24)
+header.writeUInt32LE(RATE * 4, 28)
+header.writeUInt16LE(4, 32)
+header.writeUInt16LE(16, 34)
+header.write('data', 36)
+header.writeUInt32LE(data.length, 40)
+
+const mixWav = join(scratch, 'mix.wav')
+writeFileSync(mixWav, Buffer.concat([header, data]))
+
+// Le fichier livré est en MP3 : le WAV pèse treize mégaoctets, que le dépôt et
+// le déploiement porteraient pour rien.
+execFileSync('npx', ['remotion', 'ffmpeg', '-y', '-i', mixWav, '-b:a', '176k', OUTPUT], { stdio: 'pipe' })
+rmSync(scratch, { recursive: true, force: true })
+
+console.log(`voix     : ${gainToDb(measured.value).toFixed(1)} dBFS mesurés → ${VOICE_RMS} dBFS (gain ${gainToDb(voiceGain).toFixed(1)} dB), parole ${(measured.share * 100).toFixed(0)} %`)
+console.log(`musique  : ${MUSIC_RMS} dBFS, évitement ${MUSIC_DUCK} dB sous la voix`)
+console.log(`bruitage : ${placed} coupes sonorisées`)
+console.log(`limiteur : ${((reduced / LENGTH) * 100).toFixed(2)} % des échantillons réduits`)
+console.log(`mixage   : ${gainToDb(rms(mix)).toFixed(1)} dBFS moyens, crête ${gainToDb(peakOf(mix)).toFixed(1)} dBFS`)
+console.log(`${OUTPUT} — ${(LENGTH / RATE).toFixed(2)} s`)

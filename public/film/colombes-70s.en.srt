@@ -1,90 +1,95 @@
 1
-00:00:00,000 --> 00:00:03,000
+00:00:00,033 --> 00:00:01,567
 You built an app.
 
 2
-00:00:03,000 --> 00:00:06,500
+00:00:01,567 --> 00:00:04,767
 Somebody, someday, will ask what it's worth.
 
 3
-00:00:06,500 --> 00:00:11,000
+00:00:04,767 --> 00:00:07,333
 Most calculators hand you a number.
 
 4
-00:00:11,000 --> 00:00:15,000
+00:00:07,333 --> 00:00:09,700
 And keep the reasoning to themselves.
-So here is the reasoning.
 
 5
-00:00:15,000 --> 00:00:18,700
-Your revenue is a surface.
+00:00:09,733 --> 00:00:11,700
+So here is the reasoning.
 
 6
-00:00:18,700 --> 00:00:22,000
-Price on one side, customers on the other.
+00:00:11,700 --> 00:00:12,967
+Your revenue is a surface.
 
 7
-00:00:22,000 --> 00:00:24,700
-Double either one, and you double the area.
+00:00:12,967 --> 00:00:16,800
+Price on one side, customers on the other.
 
 8
-00:00:24,700 --> 00:00:27,000
-But only one of them is free.
+00:00:16,800 --> 00:00:19,700
+Double either one, and you double the area.
 
 9
-00:00:27,000 --> 00:00:30,000
-So where does that put you?
+00:00:19,700 --> 00:00:21,800
+But only one of them is free.
 
 10
-00:00:30,000 --> 00:00:33,300
-On the pricing ladder, Spotify is a mouse:
-€2 a month per user.
+00:00:21,800 --> 00:00:24,133
+So where does that put you?
 
 11
-00:00:33,300 --> 00:00:35,700
-Shopify is a deer, at €75.
+00:00:24,133 --> 00:00:29,100
+On the pricing ladder, Spotify is a mouse: €2 a month per user.
 
 12
-00:00:35,700 --> 00:00:38,000
-Salesforce is a whale.
+00:00:29,100 --> 00:00:31,233
+Shopify is a deer, at €75.
 
 13
-00:00:38,000 --> 00:00:42,000
-Your price per customer decides your trade.
+00:00:31,233 --> 00:00:32,667
+Salesforce is a whale.
 
 14
-00:00:42,000 --> 00:00:45,000
-But growing is not enough.
+00:00:32,667 --> 00:00:35,767
+Your price per customer decides your trade.
 
 15
-00:00:45,000 --> 00:00:48,300
-Direct costs, acquisition, fixed costs.
+00:00:35,767 --> 00:00:40,100
+Who sells, who onboards, how many customers you will ever need.
 
 16
-00:00:48,300 --> 00:00:50,700
-Each one takes its share.
+00:00:40,100 --> 00:00:42,633
+But growing is not enough.
 
 17
-00:00:50,700 --> 00:00:53,000
-No profit, no multiple.
+00:00:42,633 --> 00:00:46,500
+Direct costs, acquisition, fixed costs: each one takes its share.
 
 18
-00:00:53,000 --> 00:00:56,700
-Then nine lines build that multiple.
+00:00:46,500 --> 00:00:49,633
+What a buyer pays for is what remains at the bottom.
 
 19
-00:00:56,700 --> 00:00:59,700
-Churn. Growth. Retention. Client concentration.
+00:00:49,633 --> 00:00:51,133
+No profit, no multiple.
 
 20
-00:00:59,700 --> 00:01:02,000
-And how much of the company walks out
-of the door with you.
+00:00:51,133 --> 00:00:53,467
+Then nine lines build that multiple.
 
 21
-00:01:02,000 --> 00:01:05,000
-Every one of them, named.
+00:00:53,467 --> 00:00:57,167
+Churn. Growth. Retention. Client concentration.
 
 22
-00:01:05,000 --> 00:01:10,000
+00:00:57,167 --> 00:01:00,133
+And how much of the company walks out of the door with you.
+
+23
+00:01:00,133 --> 00:01:02,333
+Every one of them, named.
+
+24
+00:01:02,367 --> 00:01:04,367
 Colombes. Free. No sign-up.

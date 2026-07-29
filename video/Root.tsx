@@ -2,6 +2,7 @@ import React from 'react'
 import { Composition } from 'remotion'
 import { Colombes40 } from './Colombes40'
 import { Colombes70 } from './Colombes70'
+import { FPS, TOTAL_FRAMES } from './cut.mjs'
 import './assets/fonts.css'
 import './assets/base.css'
 
@@ -21,16 +22,21 @@ export function RemotionRoot() {
         height={1920}
       />
 
-      {/* Soixante-dix secondes, en anglais, montées pour le fil. La voix off
-          se branche par `voiceOver` quand public/voice-en.mp3 existe. */}
+      {/* Soixante-dix secondes, en anglais, montées pour le fil.
+
+          Le son est un seul fichier, `public/film/mix-70s.mp3`, construit par
+          `scripts/build-mix.mjs` : la voix off y est déjà compressée et mise au
+          niveau, la musique s'écarte quand elle parle, et le bruitage tombe sur
+          les coupes de `cut.mjs`. Empiler trois pistes ici les laisserait se
+          masquer entre elles, et il faudrait rendre le film pour l'entendre. */}
       <Composition
         id="Colombes70"
         component={Colombes70}
-        durationInFrames={2100}
-        fps={30}
+        durationInFrames={TOTAL_FRAMES}
+        fps={FPS}
         width={1080}
         height={1920}
-        defaultProps={{ voiceOver: false }}
+        defaultProps={{ sound: true }}
       />
     </>
   )
