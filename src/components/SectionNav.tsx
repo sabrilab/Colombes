@@ -25,10 +25,12 @@ const ICONS: Record<Section['id'], typeof Gauge> = {
 function useRipple() {
   const layer = useRef<HTMLSpanElement | null>(null)
 
-  return (host: HTMLElement | null) => {
+  return (host: HTMLElement | null, onYellow = false) => {
     if (!host) return
     const dot = document.createElement('span')
-    dot.className = 'pointer-events-none absolute inset-0 rounded-[1.1rem] bg-lume/25'
+    dot.className = `pointer-events-none absolute inset-0 rounded-[1.1rem] ${
+      onYellow ? 'bg-foreground/20' : 'bg-lume/25'
+    }`
     host.appendChild(dot)
     layer.current = dot
 
@@ -50,10 +52,13 @@ function Tab({
   section,
   active,
   onSelect,
+  onYellow,
 }: {
   section: Section
   active: boolean
   onSelect: () => void
+  /** La barre basse est jaune, l'en-tête est sombre : l'encre s'inverse. */
+  onYellow: boolean
 }) {
   const hostRef = useRef<HTMLButtonElement>(null)
   const Icon = ICONS[section.id]
@@ -65,12 +70,16 @@ function Tab({
       ref={hostRef}
       type="button"
       onClick={() => {
-        ripple(hostRef.current)
+        ripple(hostRef.current, onYellow)
         onSelect()
       }}
       aria-current={active ? 'page' : undefined}
-      className={`relative isolate flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[1.1rem] px-2 pb-0.5 text-[10px] font-medium leading-none tracking-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lume/60 ${
-        active ? 'text-lume' : 'text-muted-foreground hover:text-foreground'
+      className={`relative isolate flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[1.1rem] px-2 pb-0.5 text-[10px] font-semibold leading-none tracking-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
+        onYellow
+          ? `focus-visible:outline-foreground/50 ${active ? 'nav-ink' : 'nav-ink-dim'}`
+          : `focus-visible:outline-lume/60 ${
+              active ? 'text-lume' : 'text-muted-foreground hover:text-foreground'
+            }`
       }`}
     >
       {/* La pastille de focus est un seul élément partagé : Motion l'anime
@@ -80,7 +89,9 @@ function Tab({
         <motion.span
           layoutId="section-focus"
           aria-hidden
-          className="nav-focus absolute inset-0 -z-10 rounded-[1.1rem]"
+          className={`absolute inset-0 -z-10 rounded-[1.1rem] ${
+            onYellow ? 'nav-focus' : 'nav-focus-dark'
+          }`}
           transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
         />
       )}
@@ -124,6 +135,7 @@ export function SectionNav({ variant }: { variant: 'bottom' | 'inline' }) {
           key={section.id}
           section={section}
           active={active === section.id}
+          onYellow={variant === 'bottom'}
           onSelect={() => navigate(section.hash)}
         />
       ))}

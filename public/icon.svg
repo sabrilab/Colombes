@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="lume" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="oklch(0.93 0.135 110)"/>
+      <stop offset="1" stop-color="oklch(0.875 0.13 110)"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#lume)"/>
+  <g transform="translate(225.27999999999997 273.5042288908986) scale(1.1786565814355012)">
+    <path d="M437.8,130.83c-4.24,1.84-7.6,5.16-8.72,9.56l-32.09,125.48-288.89,117.97,44.87-52.06,69.66-77.81L0,140.42.23,0l307.8,156.93,46.18-51.71c3.89-5.3,8.73-9.38,14.52-12.35l41.56-13.58c7.99-2.61,14.57-1.38,21.71,2.45l54.52,29.24-48.71,19.86Z" fill="oklch(0.22 0.04 112)"/>
+  </g>
+</svg>
