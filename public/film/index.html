@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Colombes — la présentation en 40 secondes</title>
+    <title>Colombes — les films</title>
     <meta name="theme-color" content="#14150f" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="robots" content="noindex" />
@@ -120,19 +120,42 @@
   <body>
     <header>
       <p class="eyebrow">Colombes</p>
-      <h1>40 secondes</h1>
+      <h1>1 min 10 · anglais</h1>
     </header>
 
-    <video src="/film/colombes-40s.mp4" controls playsinline preload="metadata" poster=""></video>
+    <video src="/film/colombes-70s.mp4" controls playsinline preload="metadata">
+      <track
+        kind="subtitles"
+        srclang="en"
+        label="English"
+        src="/film/colombes-70s.en.srt"
+        default
+      />
+    </video>
 
     <div class="actions">
-      <a class="primary" href="/film/colombes-40s.mp4" download>Télécharger le MP4</a>
+      <a class="primary" href="/film/colombes-70s.mp4" download>Télécharger le MP4</a>
+      <a class="ghost" href="/film/colombes-70s.en.srt" download>Sous-titres .srt</a>
+    </div>
+
+    <hr style="width: min(100%, 380px); border: none; border-top: 1px solid var(--line); margin: 0.5rem 0" />
+
+    <header>
+      <p class="eyebrow">Première version</p>
+      <h1 style="font-size: 1.2rem">40 secondes · français</h1>
+    </header>
+
+    <video src="/film/colombes-40s.mp4" controls playsinline preload="metadata"></video>
+
+    <div class="actions">
+      <a class="ghost" href="/film/colombes-40s.mp4" download>Télécharger le MP4</a>
       <a class="ghost" href="/">Ouvrir l'app</a>
     </div>
 
     <footer>
-      1080 × 1920, 30 images par seconde, 2,6 Mo. Rendue par le code depuis le design system de
-      l'app : tous les chiffres affichés sortent du même moteur de calcul que le simulateur.
+      1080 × 1920 en 9/16, 30 images par seconde. Rendues par le code depuis le design system de
+      l'app : tous les chiffres affichés sortent du même moteur de calcul que le simulateur. Les
+      sous-titres sont incrustés à l'image et fournis à part en .srt.
     </footer>
   </body>
 </html>

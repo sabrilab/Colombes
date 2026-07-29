@@ -1,0 +1,90 @@
+1
+00:00:00,000 --> 00:00:03,000
+You built an app.
+
+2
+00:00:03,000 --> 00:00:06,500
+Somebody, someday, will ask what it's worth.
+
+3
+00:00:06,500 --> 00:00:11,000
+Most calculators hand you a number.
+
+4
+00:00:11,000 --> 00:00:15,000
+And keep the reasoning to themselves.
+So here is the reasoning.
+
+5
+00:00:15,000 --> 00:00:18,700
+Your revenue is a surface.
+
+6
+00:00:18,700 --> 00:00:22,000
+Price on one side, customers on the other.
+
+7
+00:00:22,000 --> 00:00:24,700
+Double either one, and you double the area.
+
+8
+00:00:24,700 --> 00:00:27,000
+But only one of them is free.
+
+9
+00:00:27,000 --> 00:00:30,000
+So where does that put you?
+
+10
+00:00:30,000 --> 00:00:33,300
+On the pricing ladder, Spotify is a mouse:
+€2 a month per user.
+
+11
+00:00:33,300 --> 00:00:35,700
+Shopify is a deer, at €75.
+
+12
+00:00:35,700 --> 00:00:38,000
+Salesforce is a whale.
+
+13
+00:00:38,000 --> 00:00:42,000
+Your price per customer decides your trade.
+
+14
+00:00:42,000 --> 00:00:45,000
+But growing is not enough.
+
+15
+00:00:45,000 --> 00:00:48,300
+Direct costs, acquisition, fixed costs.
+
+16
+00:00:48,300 --> 00:00:50,700
+Each one takes its share.
+
+17
+00:00:50,700 --> 00:00:53,000
+No profit, no multiple.
+
+18
+00:00:53,000 --> 00:00:56,700
+Then nine lines build that multiple.
+
+19
+00:00:56,700 --> 00:00:59,700
+Churn. Growth. Retention. Client concentration.
+
+20
+00:00:59,700 --> 00:01:02,000
+And how much of the company walks out
+of the door with you.
+
+21
+00:01:02,000 --> 00:01:05,000
+Every one of them, named.
+
+22
+00:01:05,000 --> 00:01:10,000
+Colombes. Free. No sign-up.

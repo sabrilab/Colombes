@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "video:render": "remotion render video/index.ts Colombes40 public/film/colombes-40s.mp4",
-    "video:studio": "remotion studio video/index.ts"
+    "video:studio": "remotion studio video/index.ts",
+    "video:render:70": "remotion render video/index.ts Colombes70 public/film/colombes-70s.mp4"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
