@@ -43,15 +43,14 @@ export function SectionShell({ children }: { children: React.ReactNode }) {
             <SectionNav variant="inline" />
           </Suspense>
         }
+        /* Un seul bouton : sur un téléphone, « se connecter » et « créer un
+           compte » côte à côte poussaient l'en-tête au-delà de sa largeur, pour
+           deux portes qui mènent au même endroit tant que les comptes n'existent
+           pas. */
         actions={
-          <>
-            <Button size="sm" variant="ghost" onClick={announceAccounts}>
-              {t('Sign in')}
-            </Button>
-            <Button size="sm" className="lume-pill px-4" onClick={announceAccounts}>
-              {t('Sign up')}
-            </Button>
-          </>
+          <Button size="sm" className="lume-pill px-4" onClick={announceAccounts}>
+            {t('Account')}
+          </Button>
         }
       />
       <main className="mx-auto max-w-5xl px-4 pb-24 pt-6 lg:px-6 lg:pb-16 lg:pt-12">{children}</main>

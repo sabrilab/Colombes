@@ -7,13 +7,11 @@ export const FR: Record<string, string> = {
   // — Chrome —
   'Colombes — back to home': 'Colombes — retour à l’accueil',
   'Full simulator': 'Simulateur complet',
-  'Sign in': 'Se connecter',
-  'Sign up': 'Créer un compte',
+  Account: 'Identification',
   'Accounts are coming soon': 'Les comptes arrivent bientôt',
   'Until then, your saved simulations live in this browser.':
     'En attendant, vos simulations enregistrées vivent dans ce navigateur.',
-  'Switch to French': 'Passer en français',
-  'Switch to English': 'Passer en anglais',
+  'Language: {current}': 'Langue : {current}',
 
   // — Navigation par sections —
   Simulate: 'Simuler',
