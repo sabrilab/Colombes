@@ -234,6 +234,99 @@ les repères
 module visé et ouvert. Elle ne crée pas de page : elle vise un endroit de l'accueil. Un
 grain est donc partageable, et le lien depuis le simulateur est un lien ordinaire.
 
+## Le design des modules
+
+Un grain n'est pas une carte avec un graphique dedans. **C'est une scène.** Le pad n'est
+pas une carte : c'est une plaque qu'on touche, et c'est pour ça qu'il enseigne. Les
+modules se tiennent à ce niveau-là ou ils ne se font pas.
+
+### Le vocabulaire existant, qu'on ne renégocie pas
+
+Ce langage est déjà écrit dans `index.css`. Un module s'y conforme sans discuter.
+
+| Élément | Ce qui est acté |
+|---|---|
+| **Accent** | `--lume`, citron-chartreuse, **le seul**. Pas de seconde couleur d'accent. |
+| **Sémantique** | Rouge, ambre, émeraude viennent de `diagnose` (`bad`/`warn`/`good`) et de nulle part ailleurs. |
+| **Titres** | Chakra Petch, capitales, interlettrage large. |
+| **Chiffres** | Mono, `tabular-nums`. Les chiffres héros en `.metal-number`. |
+| **Surfaces** | `.card-surface` verre sur métal · `.pad-surface` plaque nue · `.glass-bevel` · `.lume-pill`. |
+| **Ambiance** | Halos radiaux et grain photographique sur `body`. Un module ne pose **jamais** son propre fond coloré : il flotte dans cette ambiance. |
+| **Rayon** | `--radius`, 0.75rem clair / 0.625rem sombre. |
+
+**La règle du lume.** Le citron ne décore pas. Il signifie exactement deux choses : *ceci
+est vivant / ceci répond à ton geste*, et *ceci est toi*. Un module qui teinte en lume
+un élément inerte casse la convention de toute l'application.
+
+### La grammaire du mouvement
+
+Elle est déjà signée, il suffit de la reprendre :
+
+- **La courbe** : `cubic-bezier(0.22, 1, 0.36, 1)`. Départ franc, arrivée longuement
+  amortie. Tout glisse et se pose, rien ne rebondit, rien ne saute.
+- **Les durées** : réponse au geste 0 ms (le pad ne lisse pas pendant qu'on traîne) ·
+  conséquence 150–200 ms · déplacement narratif 700–900 ms · respiration en boucle 2,4 s.
+- **L'entrée** : `.reveal` avec `--reveal-order`, décalage de 90 ms. Les éléments d'un
+  module arrivent en cascade, jamais tous ensemble.
+- **L'invite** : `.orb-invite`, l'anneau qui respire tant qu'on n'a pas touché, puis
+  s'éteint **définitivement** au premier contact. C'est l'idiome « ceci se manipule » de
+  la maison. Tout grain doit le porter, sur ce qu'il faut saisir.
+- **`prefers-reduced-motion`** : traité dans chaque animation, comme les trois existantes.
+  Non négociable, ce n'est pas une finition.
+
+### La règle des couches, héritée du banc d'essai
+
+Le banc d'essai du pad a servi à ça : éteindre les couches une à une et regarder ce qui
+manque. On en a tiré « Paliers ». **Toute couche graphique d'un module doit porter une
+information.** Si on l'éteint et que rien ne se perd, elle dégage. C'est la discipline
+qui a fait un pad épuré ; elle vaut pour les grains.
+
+### Où l'on a le droit d'inventer
+
+L'innovation est attendue, mais bornée : **une nouveauté signature par grain, au plus**,
+et elle doit servir l'idée enseignée — pas l'effet. Le reste du module se fait avec le
+vocabulaire existant. C'est ce qui garantit que quatre modules forment une famille et non
+quatre démos.
+
+### Les quatre scènes du socle
+
+**`prix-clients` — la trace.** Le pad, mais la position de départ reste en fantôme et le
+trajet s'inscrit en traînée de lume qui s'estompe. Deux compteurs d'effort en regard :
+doubler le prix, doubler les clients. On voit sa propre trajectoire, et que les deux
+chemins mènent à la même surface allumée. *Nouveauté : la traînée persistante* — le pad
+vit dans l'instant, ce grain donne une mémoire au geste.
+
+**`palier` — l'échelle habitée.** Les bandes de paliers du pad redressées en échelle
+pleine hauteur. Les repères (`landmarks.ts`) sont des pastilles lettrées qui **volent se
+poser** sur leur barreau à l'entrée du module, en cascade de 90 ms. Ta colombe occupe le
+sien. On pousse le prix, elle grimpe, les repères ne bougent pas : on voit à côté de qui
+on se tient. Spotify sur le barreau des souris fait tout le travail. *Nouveauté : la
+migration des repères à l'entrée.*
+
+**`ce-qui-reste` — la cascade.** Une colonne de lume qui descend et se fait pincer à
+chaque étage : coûts directs, acquisition, charges fixes. Chaque pince se traîne. En bas,
+un bassin se remplit de ce qui reste. Sous zéro, le bassin vire au rouge, se vide, et le
+chiffre de valorisation au-dessus s'effondre dans le même mouvement. *Nouveauté : le
+bassin, seul endroit de l'app à métaphore de volume* — justifié : le grain parle de ce
+qui **reste**, pas d'une position.
+
+**`multiple` — la construction.** La courbe du barème tracée en tirets fins, exactement
+l'idiome des iso-revenus du pad. Un point y glisse quand le MRR change. Puis les neuf
+lignes de `valuation.ts` s'empilent horizontalement, gauche à droite, chacune poussant le
+multiple : lume si elle ajoute, rouge si elle retire, longueur proportionnelle à son
+`deltaMultiple`. *Nouveauté : l'empilement qui s'assemble à l'entrée* — on voit un
+multiple se **construire**, ce qui est précisément la leçon.
+
+### Le format de l'enveloppe
+
+Carte `.card-surface`, comme les profils de la volière — mais **scindée** comme
+`.card-band` : la question en bandeau sourd, la scène sur socle plus clair. La question
+en Chakra Petch capitales, la scène plein cadre sans marge intérieure inutile, le déclic
+en une ligne dessous — jamais un paragraphe.
+
+Sur mobile, la scène passe avant le texte, comme le module d'accueil : on manipule
+d'abord.
+
 ## Architecture technique
 
 Le principe du dépôt vaut ici : **la donnée dans `lib/` et testée, le rendu dans
@@ -245,9 +338,14 @@ Le principe du dépôt vaut ici : **la donnée dans `lib/` et testée, le rendu 
   acyclique ; toute `GlossaryKey` référencée existe ; tout grain est atteignable par au
   moins une ancre — un grain sans porte est un grain mort.
 - `src/components/learn/Learn.tsx` — la pastille.
-- `src/components/learn/GrainCard.tsx` — l'enveloppe : question, zone manipulable, déclic.
-- `src/components/learn/mechanics/` — une mécanique par grain. Chacune consomme
-  `compute()`, jamais de chiffres en dur.
+- `src/components/learn/GrainCard.tsx` — l'enveloppe : question, scène, déclic.
+- `src/components/learn/mechanics/` — une scène par grain. Chacune consomme `compute()`,
+  jamais de chiffres en dur.
+- `index.css` — au plus **une** classe de surface nouvelle, `.grain-stage`, dans la
+  famille de `.pad-surface`. Les scènes se font autrement avec l'existant : au-delà, le
+  langage se dilue.
+- **Pas de bibliothèque d'animation.** Transitions CSS et `@keyframes`, comme
+  `.orb-invite` et `.reveal`. Le bundle est déjà à 843 ko.
 - `router.ts` — `#/apprendre/<id>` → `{ view: 'home', grain: id }`.
 - **Aucune dépendance nouvelle.** Le budget est déjà tendu : 843 ko de bundle principal.
   Les mécaniques se chargent en `lazy()`, comme `AnimalStage3D`.
