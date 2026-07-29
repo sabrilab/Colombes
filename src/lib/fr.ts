@@ -71,6 +71,41 @@ export const FR: Record<string, string> = {
   'Enterprise. A thousand customers is a whole company. Field sales, procurement, months of cycle and custom work: the revenue is enormous per logo, but so is the cost of winning and keeping it. Beyond this simulator’s price range.':
     'Le grand compte. Mille clients, c’est une entreprise entière. Commerciaux terrain, achats, des mois de cycle et du sur-mesure : le revenu par logo est énorme, le coût de conquête aussi. Au-delà de la plage de prix de ce simulateur.',
 
+  // — Bento explicatif de l'accueil —
+  'What this is': 'De quoi il s’agit',
+  'An estimate you can argue with': 'Une estimation qu’on peut discuter',
+  'Most valuation calculators hand you a number and keep the reasoning. Colombes does the opposite: every euro of the estimate is traceable back to a lever you moved, and every rule it applies is written down here rather than buried.':
+    'La plupart des calculateurs vous donnent un chiffre et gardent le raisonnement. Colombes fait l’inverse : chaque euro de l’estimation remonte à un levier que vous avez bougé, et chaque règle appliquée est écrite ici plutôt qu’enfouie.',
+  'What it computes': 'Ce qu’il calcule',
+  'A subscription business is valued on what it keeps, not on what it bills. Colombes takes your recurring revenue, subtracts direct costs, acquisition and fixed costs, and applies a market multiple to what remains — the same arithmetic a buyer runs, made visible step by step.':
+    'Une activité par abonnement se valorise sur ce qu’elle garde, pas sur ce qu’elle facture. Colombes prend votre revenu récurrent, retire les coûts directs, l’acquisition et les charges fixes, et applique un multiple de marché à ce qui reste — le calcul même que fait un acheteur, rendu visible étape par étape.',
+  'That multiple is not a constant. It starts from a curve calibrated on real transactions at your revenue level, then moves with the quality of the asset: how fast customers leave, how concentrated your revenue is, how much of the company walks out of the door with you.':
+    'Ce multiple n’est pas une constante. Il part d’une courbe calibrée sur des transactions réelles à votre niveau de revenu, puis bouge avec la qualité de l’actif : la vitesse à laquelle les clients partent, la concentration de votre revenu, la part de l’entreprise qui sort par la porte avec vous.',
+  'pricing tiers': 'paliers de prix',
+  'From mice to whales, each tier is an order of magnitude of revenue per customer — and a different trade. At €2 a month nobody may ever talk to a human; at €2,000 someone must.':
+    'De la souris à la baleine, chaque palier vaut un ordre de grandeur de revenu par client — et un métier différent. À 2 € par mois, personne ne doit jamais parler à un humain ; à 2 000 €, quelqu’un le doit.',
+  'lines in the multiple': 'lignes dans le multiple',
+  'Churn, growth, NRR, Rule of 40, gross margin, client concentration, age, founder dependency, tech transferability. Each one is shown with its weight, in points of multiple.':
+    'Churn, croissance, NRR, Rule of 40, marge brute, concentration client, ancienneté, dépendance au fondateur, transférabilité technique. Chacune est montrée avec son poids, en points de multiple.',
+  'real benchmarks': 'repères réels',
+  'Spotify, Netflix, Canva, Shopify, HubSpot and Salesforce, placed on the same scale as you from their published figures. They are never valued by the engine — only used to show what the scale means.':
+    'Spotify, Netflix, Canva, Shopify, HubSpot et Salesforce, placés sur la même échelle que vous à partir de leurs chiffres publiés. Ils ne sont jamais valorisés par le moteur — ils servent seulement à montrer ce que l’échelle mesure.',
+  'the MRR range it is built for': 'la plage de MRR visée',
+  'Below that, the multiple stops meaning much: you are selling a project, not an asset. Above it, the benchmarks this tool uses no longer apply and it would be inventing.':
+    'En dessous, le multiple ne veut plus dire grand-chose : vous vendez un projet, pas un actif. Au-dessus, les barèmes utilisés ici ne s’appliquent plus et l’outil inventerait.',
+  'Where the numbers come from': 'D’où viennent les chiffres',
+  'The market curve is calibrated on public marketplace data — Acquire.com, FE International, ChartMogul — for businesses in the range above. Health thresholds follow the usual conventions: three times on LTV to CAC, twelve months to pay acquisition back, retention at or above a hundred percent.':
+    'La courbe de marché est calibrée sur des données publiques de places de marché — Acquire.com, FE International, ChartMogul — pour des activités dans la plage ci-dessus. Les seuils de santé suivent les conventions d’usage : trois fois sur le LTV rapporté au CAC, douze mois pour rembourser l’acquisition, rétention à cent pour cent ou plus.',
+  'These are orders of magnitude, not quotes. A buyer with a strategic reason to want your app will pay more than any curve says; a tired seller will take less.':
+    'Ce sont des ordres de grandeur, pas des cotations. Un acheteur qui a une raison stratégique de vouloir votre app paiera plus que ne le dit une courbe ; un vendeur fatigué acceptera moins.',
+  'What it will not do': 'Ce qu’il ne fera pas',
+  'Replace a real buyer. No comparable transactions, no due diligence, no negotiation.':
+    'Remplacer un vrai acheteur. Pas de transactions comparables, pas d’audit, pas de négociation.',
+  'Price an enterprise business. Past a certain price per customer the tool says so instead of guessing.':
+    'Valoriser un grand compte. Au-delà d’un certain prix par client, l’outil le dit au lieu de deviner.',
+  'Pretend to a precision it does not have. The range matters more than the midpoint, and both move the moment an assumption does.':
+    'Prétendre à une précision qu’il n’a pas. La fourchette compte plus que le point médian, et les deux bougent dès qu’une hypothèse bouge.',
+
   // — Modules pédagogiques —
   'Understand what you are adjusting': 'Comprendre ce que vous réglez',
   'Four things to grasp, in order. Each one is played rather than read: move something, watch what it does, and the sentence underneath will already be obvious.':

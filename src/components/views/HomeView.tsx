@@ -6,6 +6,7 @@ import { BrandMark } from '@/components/BrandMark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PricePad } from '@/components/home/PricePad'
+import { ConceptBento } from '@/components/home/ConceptBento'
 import { Landmarks } from '@/components/home/Landmarks'
 import { LearnSection } from '@/components/learn/LearnSection'
 import { SavedLibrary } from '@/components/home/SavedLibrary'
@@ -244,6 +245,8 @@ export function HomeView({ openGrain }: { openGrain?: string }) {
           </div>
           <MiniSimulator />
         </section>
+
+        <ConceptBento />
 
         <LearnSection openGrain={openGrain} />
 
