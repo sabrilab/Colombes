@@ -1,7 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { CompanyLogo } from '@/components/CompanyLogo'
-import { landmarksForTier } from '@/lib/landmarks'
 import { PRICING_ANIMALS, reachableOnPad, type PricingAnimal } from '@/lib/pricePad'
 import { useT } from '@/store/simulator'
 
@@ -175,24 +173,6 @@ export function TierCarousel({ current, variant = 'compact' }: TierCarouselProps
             </span>
           )}
         </div>
-        {/* Les marques qui incarnent le palier. « Lapin » ne dit rien ; « le
-            palier de Netflix » se comprend sans une phrase — c'est le
-            raccourci le plus court vers ce que l'échelle mesure. */}
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
-          {landmarksForTier(shown).map((company) => (
-            <span key={company.id} className="flex items-center gap-1.5">
-              <CompanyLogo company={company} className="size-5 shrink-0" />
-              <span
-                className={`text-[11px] text-muted-foreground ${
-                  compact ? 'hidden sm:inline' : ''
-                }`}
-              >
-                {company.name}
-              </span>
-            </span>
-          ))}
-        </div>
-
         <p
           className={`mt-1 text-[11px] leading-relaxed text-muted-foreground ${
             compact ? 'hidden lg:block' : ''
