@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react'
 
 export type Route =
-  | { view: 'home' }
+  /** `grain` : un lien pédagogique entrant, qui vise un module de l'accueil. */
+  | { view: 'home'; grain?: string }
   | { view: 'simulator' }
   | { view: 'lab' }
   | { view: 'colombe'; id: string }
@@ -18,6 +19,11 @@ export function parseRoute(hash: string): Route {
   if (path === '' || path === '/') return { view: 'home' }
   if (path === '/simulateur') return { view: 'simulator' }
   if (path === '/lab') return { view: 'lab' }
+
+  // Les modules ne vivent que sur l'accueil : cette route y mène, elle ne
+  // crée pas de page.
+  const grain = path.match(/^\/apprendre\/([a-z0-9-]+)$/)
+  if (grain) return { view: 'home', grain: grain[1] }
 
   const colombe = path.match(/^\/colombe\/([a-z0-9-]+)$/)
   if (colombe) return { view: 'colombe', id: colombe[1] }

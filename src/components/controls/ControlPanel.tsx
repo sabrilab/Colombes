@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/accordion'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Learn } from '@/components/learn/Learn'
 import { GaugeRow } from './GaugeRow'
 import { TierRow } from './TierRow'
 import { useResults, useSimulator, useT, type PanelMode } from '@/store/simulator'
@@ -134,6 +135,7 @@ export function ControlPanel() {
                 max: formatPercent(zone.churnMax, 0),
               })}
             </p>
+            <Learn grain="tiers" />
           </AccordionContent>
         </AccordionItem>
 
@@ -167,6 +169,7 @@ export function ControlPanel() {
                 markerLabel={t('Marker {value} — 12-month payback', { value: formatCurrency(cacMarker) })}
               />
             )}
+            <Learn grain="levers" />
           </AccordionContent>
         </AccordionItem>
 
@@ -233,6 +236,7 @@ export function ControlPanel() {
                 step={100}
                 format={formatCurrency}
               />
+              <Learn grain="what-remains" />
             </AccordionContent>
           </AccordionItem>
         )}

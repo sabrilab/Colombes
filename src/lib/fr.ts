@@ -75,6 +75,46 @@ export const FR: Record<string, string> = {
   'Enterprise. A thousand customers is a whole company. Field sales, procurement, months of cycle and custom work: the revenue is enormous per logo, but so is the cost of winning and keeping it. Beyond this simulator’s price range.':
     'Le grand compte. Mille clients, c’est une entreprise entière. Commerciaux terrain, achats, des mois de cycle et du sur-mesure : le revenu par logo est énorme, le coût de conquête aussi. Au-delà de la plage de prix de ce simulateur.',
 
+  // — Modules pédagogiques —
+  'Understand what you are adjusting': 'Comprendre ce que vous réglez',
+  'Four things to grasp, in order. Each one is played rather than read: move something, watch what it does, and the sentence underneath will already be obvious.':
+    'Quatre choses à saisir, dans l’ordre. Chacune se joue plutôt qu’elle ne se lit : déplacez quelque chose, regardez ce que ça fait, et la phrase du dessous sera déjà évidente.',
+  'Every number here comes from the same engine as the simulator: nothing is staged for the demonstration, and anything you see can be reproduced on your own figures.':
+    'Tous les chiffres viennent du même moteur que le simulateur : rien n’est mis en scène pour la démonstration, et tout ce que vous voyez est reproductible sur vos propres chiffres.',
+  'The belief:': 'La croyance :',
+  'Understand: {title}': 'Comprendre : {title}',
+
+  'The two levers': 'Les deux leviers',
+  'Where does that number even come from?': 'D’où sort ce chiffre, au juste ?',
+  'I need more customers.': '« Il me faut plus de clients. »',
+  'Your revenue is a surface: price on one side, customers on the other. Doubling either doubles it — but one of the two is free.':
+    'Votre revenu est une surface : le prix d’un côté, les clients de l’autre. Doubler l’un ou l’autre le double — mais l’un des deux est gratuit.',
+  'Double the price': 'Doubler le prix',
+  'Double the customers': 'Doubler les clients',
+
+  'Which animal are you': 'Quel animal êtes-vous',
+  'What am I, in all this?': 'Je suis quoi, moi, dans cette histoire ?',
+  'My price is a packaging detail.': '« Mon prix est un détail de packaging. »',
+  'Your price per customer decides your trade: who sells, who onboards, and how many customers you need. Spotify is a mouse, Salesforce is a whale.':
+    'Votre prix par client décide de votre métier : qui vend, qui accompagne, et combien de clients il vous faut. Spotify est une souris, Salesforce une baleine.',
+  'Your price per customer': 'Votre prix par client',
+
+  'What actually remains': 'Ce qui reste vraiment',
+  'Why is my revenue not my income?': 'Pourquoi mon chiffre d’affaires n’est pas mon revenu ?',
+  'I make €12K of MRR, so I earn €12K.': '« Je fais 12 K€ de MRR, donc je gagne 12 K€. »',
+  'Direct costs, acquisition and fixed costs each take their share. What a buyer pays for is the bottom of that waterfall, never the top.':
+    'Les coûts directs, l’acquisition et les charges fixes prélèvent chacun leur part. Ce qu’un acheteur paie, c’est le bas de cette cascade, jamais le haut.',
+  'Direct costs': 'Coûts directs',
+  Acquisition: 'Acquisition',
+  'What remains': 'Ce qui reste',
+  'No profit, no multiple.': 'Pas de profit, pas de multiple.',
+
+  'How a multiple is built': 'Comment se construit un multiple',
+  'Why three times and not ten?': 'Pourquoi trois fois et pas dix ?',
+  'A valuation is just an opinion.': '« Une valorisation, c’est une opinion. »',
+  'The market curve gives a base multiple for your size. Nine quality lines then push it up or down — and you can name every one of them.':
+    'Le barème de marché donne un multiple de base pour votre taille. Neuf lignes de qualité le poussent ensuite vers le haut ou vers le bas — et vous pouvez toutes les nommer.',
+
   // — Simulateur —
   'Pricing, retention and valuation, live': 'Pricing, rétention et valorisation, en direct',
   Settings: 'Réglages',

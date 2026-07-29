@@ -21,6 +21,19 @@ describe('parseRoute', () => {
     expect(parseRoute('#/lab')).toEqual({ view: 'lab' })
   })
 
+  it('mène un lien pédagogique vers son module d accueil', () => {
+    expect(parseRoute('#/apprendre/levers')).toEqual({ view: 'home', grain: 'levers' })
+    expect(parseRoute('#/apprendre/what-remains')).toEqual({
+      view: 'home',
+      grain: 'what-remains',
+    })
+  })
+
+  it('retombe sur l accueil nu si le grain est mal formé', () => {
+    expect(parseRoute('#/apprendre/')).toEqual({ view: 'home' })
+    expect(parseRoute('#/apprendre/A_B')).toEqual({ view: 'home' })
+  })
+
   it('route les liens de partage historiques vers le simulateur', () => {
     expect(parseRoute('#s=eyJhIjoxfQ')).toEqual({ view: 'simulator' })
   })

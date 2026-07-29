@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PricePad } from '@/components/home/PricePad'
 import { Landmarks } from '@/components/home/Landmarks'
+import { LearnSection } from '@/components/learn/LearnSection'
 import { SavedLibrary } from '@/components/home/SavedLibrary'
 import { TierCarousel } from '@/components/home/TierCarousel'
 import { animalFor } from '@/lib/pricePad'
@@ -180,7 +181,7 @@ function useAnnounceAccounts() {
     })
 }
 
-export function HomeView() {
+export function HomeView({ openGrain }: { openGrain?: string }) {
   const t = useT()
   const announceAccounts = useAnnounceAccounts()
 
@@ -243,6 +244,8 @@ export function HomeView() {
           </div>
           <MiniSimulator />
         </section>
+
+        <LearnSection openGrain={openGrain} />
 
         <SavedLibrary />
 

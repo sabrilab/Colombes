@@ -20,7 +20,7 @@ export default function App() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="min-h-svh bg-background text-foreground">
-        {route.view === 'home' && <HomeView />}
+        {route.view === 'home' && <HomeView openGrain={route.grain} />}
         {route.view === 'simulator' && <SimulatorView />}
         {route.view === 'lab' && <PadLabView />}
         {route.view === 'colombe' && <ColombeProfileView id={route.id} />}

@@ -1,8 +1,8 @@
 /** L'icône officielle Colombes (SVG fourni par l'utilisateur, Fichier 1).
     `currentColor` : suit le thème. */
-export function DoveLogo({ className }: { className?: string }) {
+export function DoveLogo({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
-    <svg viewBox="0 0 486.52 383.84" fill="currentColor" aria-hidden className={className}>
+    <svg viewBox="0 0 486.52 383.84" fill="currentColor" aria-hidden className={className} style={style}>
       <path d="M437.8,130.83c-4.24,1.84-7.6,5.16-8.72,9.56l-32.09,125.48-288.89,117.97,44.87-52.06,69.66-77.81L0,140.42.23,0l307.8,156.93,46.18-51.71c3.89-5.3,8.73-9.38,14.52-12.35l41.56-13.58c7.99-2.61,14.57-1.38,21.71,2.45l54.52,29.24-48.71,19.86Z" />
     </svg>
   )
