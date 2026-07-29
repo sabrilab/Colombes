@@ -2,6 +2,9 @@ import { useEffect } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { HomeView } from '@/components/views/HomeView'
+import { LearnView } from '@/components/views/LearnView'
+import { AviaryView } from '@/components/views/AviaryView'
+import { SavedView } from '@/components/views/SavedView'
 import { SimulatorView } from '@/components/views/SimulatorView'
 import { ColombeProfileView } from '@/components/views/ColombeProfileView'
 import { PadLabView } from '@/components/views/PadLabView'
@@ -20,7 +23,10 @@ export default function App() {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="min-h-svh bg-background text-foreground">
-        {route.view === 'home' && <HomeView openGrain={route.grain} />}
+        {route.view === 'home' && <HomeView />}
+        {route.view === 'learn' && <LearnView openGrain={route.grain} />}
+        {route.view === 'aviary' && <AviaryView />}
+        {route.view === 'saved' && <SavedView />}
         {route.view === 'simulator' && <SimulatorView />}
         {route.view === 'lab' && <PadLabView />}
         {route.view === 'colombe' && <ColombeProfileView id={route.id} />}

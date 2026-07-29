@@ -1,21 +1,14 @@
 import { useMemo, useState } from 'react'
-import { toast } from 'sonner'
-import { AppHeader } from '@/components/AppHeader'
-import { TierBadge } from '@/components/AnimalGlyph'
-import { BrandMark } from '@/components/BrandMark'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { SectionShell } from '@/components/SectionShell'
 import { PricePad } from '@/components/home/PricePad'
 import { ConceptBento } from '@/components/home/ConceptBento'
-import { Landmarks } from '@/components/home/Landmarks'
-import { LearnSection } from '@/components/learn/LearnSection'
-import { SavedLibrary } from '@/components/home/SavedLibrary'
 import { TierCarousel } from '@/components/home/TierCarousel'
 import { animalFor } from '@/lib/pricePad'
-import { AVIARY, type Colombe } from '@/lib/aviary'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
 import { compute } from '@/lib/engine'
-import { formatCompactCurrency, formatCurrency, formatMultiple, formatPercent } from '@/lib/format'
+import { formatCurrency, formatMultiple, formatPercent } from '@/lib/format'
 import { quickInputs } from '@/lib/quickSim'
 import { navigate } from '@/lib/router'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
@@ -127,91 +120,14 @@ function MiniSimulator() {
   )
 }
 
-function ColombeCard({ colombe, order }: { colombe: Colombe; order: number }) {
-  const results = useMemo(() => compute(colombe.inputs), [colombe])
+
+
+export function HomeView() {
   const t = useT()
 
   return (
-    <button
-      type="button"
-      onClick={() => navigate(`#/colombe/${colombe.id}`)}
-      className="reveal group text-left"
-      style={{ '--reveal-order': order } as React.CSSProperties}
-      aria-label={t('View {name}’s profile', { name: colombe.name })}
-    >
-      <Card className="h-full gap-0 overflow-hidden p-0 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-foreground/25 group-focus-visible:border-foreground/40">
-        {/* Bandeau d'identité : la marque et son secteur, rien d'autre. */}
-        <div className="card-band flex items-center gap-3 border-b border-border/50 p-4">
-          <BrandMark
-            id={colombe.id}
-            className="size-10 shrink-0 rounded-full ring-1 ring-foreground/10"
-          />
-          <div className="min-w-0">
-            <p className="font-display text-base font-semibold leading-tight">{colombe.name}</p>
-            <p className="truncate text-xs text-muted-foreground">{t(colombe.sector)}</p>
-          </div>
-        </div>
-
-        {/* Socle : un seul chiffre qui compte, et son multiple. */}
-        <div className="flex items-end justify-between gap-3 p-4">
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-              {t('Valuation')}
-            </p>
-            <p className="font-mono text-2xl font-semibold tabular-nums">
-              {formatCompactCurrency(results.valuation.value)}
-            </p>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <p className="font-mono text-sm text-muted-foreground tabular-nums">
-              {formatMultiple(results.valuation.multiple)}
-            </p>
-            <TierBadge animal={animalFor(results.revenue.arpu).name} />
-          </div>
-        </div>
-      </Card>
-    </button>
-  )
-}
-
-function useAnnounceAccounts() {
-  const t = useT()
-  return () =>
-    toast(t('Accounts are coming soon'), {
-      description: t('Until then, your saved simulations live in this browser.'),
-    })
-}
-
-export function HomeView({ openGrain }: { openGrain?: string }) {
-  const t = useT()
-  const announceAccounts = useAnnounceAccounts()
-
-  return (
-    <>
-      <AppHeader
-        actions={
-          <>
-            <Button
-              size="sm"
-              variant="outline"
-              className="hidden sm:inline-flex"
-              onClick={() => navigate('#/simulateur')}
-            >
-              {t('Full simulator')}
-            </Button>
-            {/* Les comptes n'existent pas encore : plutôt qu'un bouton mort ou
-                un faux formulaire, on dit où vivent les données aujourd'hui. */}
-            <Button size="sm" variant="ghost" onClick={announceAccounts}>
-              {t('Sign in')}
-            </Button>
-            <Button size="sm" className="lume-pill px-4" onClick={announceAccounts}>
-              {t('Sign up')}
-            </Button>
-          </>
-        }
-      />
-      <main className="mx-auto max-w-5xl px-4 py-6 lg:px-6 lg:py-14">
-        {/* Mobile d'abord : le module — chiffre, animal, pad — passe devant le
+    <SectionShell>
+      {/* Mobile d'abord : le module — chiffre, animal, pad — passe devant le
             texte d'intention pour tenir dans le premier écran d'un téléphone.
             Au-delà du point de rupture la place ne manque plus, et l'ordre de
             lecture d'origine revient. */}
@@ -248,31 +164,6 @@ export function HomeView({ openGrain }: { openGrain?: string }) {
 
         <ConceptBento />
 
-        <LearnSection openGrain={openGrain} />
-
-        <SavedLibrary />
-
-        <section className="mt-12 lg:mt-16" aria-label="The aviary">
-          <h2
-            className="font-display reveal text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground"
-            style={{ '--reveal-order': 3 } as React.CSSProperties}
-          >
-            {t('The aviary')}
-          </h2>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {AVIARY.map((colombe, index) => (
-              <ColombeCard key={colombe.id} colombe={colombe} order={4 + index} />
-            ))}
-          </div>
-          <p className="mt-6 text-xs text-muted-foreground">
-            {t(
-              'Fictional companies, plausible numbers: every profile is calibrated on the simulator’s market benchmarks (Acquire.com, FE International, ChartMogul).',
-            )}
-          </p>
-        </section>
-
-        <Landmarks />
-      </main>
-    </>
+      </SectionShell>
   )
 }

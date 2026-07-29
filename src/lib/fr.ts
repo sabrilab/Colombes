@@ -15,6 +15,20 @@ export const FR: Record<string, string> = {
   'Switch to French': 'Passer en français',
   'Switch to English': 'Passer en anglais',
 
+  // — Navigation par sections —
+  Simulate: 'Simuler',
+  Understand: 'Comprendre',
+  Aviary: 'Volière',
+  'My runs': 'Mes calculs',
+  'Six invented apps, each one an archetype you will recognise, and six real companies placed on the same scale. Open any of them to see what makes its multiple — then load it into the simulator and change your mind about something.':
+    'Six apps inventées, chacune un archétype que vous reconnaîtrez, et six entreprises réelles placées sur la même échelle. Ouvrez-en une pour voir ce qui fait son multiple — puis chargez-la dans le simulateur et changez d’avis sur quelque chose.',
+  'Every simulation you save lands here, with the valuation it produced. Keep two side by side to see what one assumption really costs.':
+    'Chaque simulation enregistrée atterrit ici, avec la valorisation qu’elle a produite. Gardez-en deux côte à côte pour voir ce que coûte vraiment une hypothèse.',
+  'Nothing saved yet. Run a simulation, name it, and it will wait for you here.':
+    'Rien d’enregistré pour l’instant. Lancez une simulation, nommez-la, et elle vous attendra ici.',
+  'Open the simulator': 'Ouvrir le simulateur',
+  'Where are my runs stored?': 'Où sont stockés mes calculs ?',
+
   // — Accueil —
   'Your app, ballpark': 'Votre app, à la louche',
   'The five tiers': 'Les cinq paliers',

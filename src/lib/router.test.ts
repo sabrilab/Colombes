@@ -21,10 +21,17 @@ describe('parseRoute', () => {
     expect(parseRoute('#/lab')).toEqual({ view: 'lab' })
   })
 
-  it('mène un lien pédagogique vers son module d accueil', () => {
-    expect(parseRoute('#/apprendre/levers')).toEqual({ view: 'home', grain: 'levers' })
+  it('reconnaît les quatre sections de navigation', () => {
+    expect(parseRoute('#/')).toEqual({ view: 'home' })
+    expect(parseRoute('#/comprendre')).toEqual({ view: 'learn' })
+    expect(parseRoute('#/voliere')).toEqual({ view: 'aviary' })
+    expect(parseRoute('#/mes-calculs')).toEqual({ view: 'saved' })
+  })
+
+  it('mène un lien pédagogique vers son module, dans la section Comprendre', () => {
+    expect(parseRoute('#/apprendre/levers')).toEqual({ view: 'learn', grain: 'levers' })
     expect(parseRoute('#/apprendre/what-remains')).toEqual({
-      view: 'home',
+      view: 'learn',
       grain: 'what-remains',
     })
   })

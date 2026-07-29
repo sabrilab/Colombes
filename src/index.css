@@ -218,6 +218,29 @@
       inset 0 -10px 18px -12px oklch(0.4 0.08 112 / 0.6);
   }
 
+  /* La barre de navigation : verre épais posé sur le sombre. Plus opaque que
+     l'en-tête, parce qu'elle flotte au-dessus du contenu et doit rester
+     lisible quoi qu'il passe dessous. */
+  .nav-glass {
+    backdrop-filter: blur(24px) saturate(1.4);
+    background: color-mix(in oklab, var(--background) 82%, transparent);
+    border: 1px solid color-mix(in oklab, var(--foreground) 12%, transparent);
+    box-shadow:
+      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 14%, transparent),
+      0 -1px 24px -12px oklch(0 0 0 / 0.8),
+      0 8px 24px -16px oklch(0 0 0 / 0.9);
+  }
+
+  /* La pastille de l'onglet actif : creusée, pas posée. Elle donne
+     l'impression que l'onglet s'enfonce, comme une touche pressée. */
+  .nav-focus {
+    background: color-mix(in oklab, var(--lume) 12%, transparent);
+    border: 1px solid color-mix(in oklab, var(--lume) 28%, transparent);
+    box-shadow:
+      inset 0 1px 2px oklch(0 0 0 / 0.35),
+      inset 0 -1px 0 0 color-mix(in oklab, var(--lume) 18%, transparent);
+  }
+
   /* La molette de coffre : un disque de métal brossé, cerclé, creusé au
      centre. Le relief vient de deux lumières opposées — arête haute claire,
      base sombre — comme sur les boutons, pour que l'objet appartienne au même
