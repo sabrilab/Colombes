@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Slider } from '@/components/ui/slider'
+import { Dial } from '@/components/learn/Dial'
 import { DEFAULT_INPUTS } from '@/lib/defaults'
 import { compute } from '@/lib/engine'
 import { formatCurrency, formatMultiple, formatPercent } from '@/lib/format'
@@ -150,43 +150,25 @@ export function BuildupScene() {
         })}
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm">{t('Revenue churn / mo')}</span>
-            <span className="font-mono text-sm tabular-nums">
-              {formatPercent(levers.revenueChurn)}
-            </span>
-          </div>
-          <Slider
-            value={[levers.revenueChurn]}
-            min={0}
-            max={0.15}
-            step={0.001}
-            onValueChange={([revenueChurn]) => setLevers((state) => ({ ...state, revenueChurn }))}
-            thumbLabel={t('Revenue churn / mo')}
-            thumbValueText={formatPercent(levers.revenueChurn)}
-          />
-        </div>
-        <div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm">{t('Top client share')}</span>
-            <span className="font-mono text-sm tabular-nums">
-              {formatPercent(levers.topClientShare, 0)}
-            </span>
-          </div>
-          <Slider
-            value={[levers.topClientShare]}
-            min={0}
-            max={0.6}
-            step={0.01}
-            onValueChange={([topClientShare]) =>
-              setLevers((state) => ({ ...state, topClientShare }))
-            }
-            thumbLabel={t('Top client share')}
-            thumbValueText={formatPercent(levers.topClientShare, 0)}
-          />
-        </div>
+      <div className="flex flex-wrap items-start justify-center gap-6 rounded-xl border border-border/60 p-4">
+        <Dial
+          label={t('Revenue churn / mo')}
+          value={levers.revenueChurn}
+          min={0}
+          max={0.15}
+          step={0.001}
+          format={(value) => formatPercent(value)}
+          onChange={(revenueChurn) => setLevers((state) => ({ ...state, revenueChurn }))}
+        />
+        <Dial
+          label={t('Top client share')}
+          value={levers.topClientShare}
+          min={0}
+          max={0.6}
+          step={0.01}
+          format={(value) => formatPercent(value, 0)}
+          onChange={(topClientShare) => setLevers((state) => ({ ...state, topClientShare }))}
+        />
       </div>
     </div>
   )

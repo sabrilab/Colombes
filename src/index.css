@@ -202,30 +202,46 @@
   }
 
 
-  /* Nappe lumineuse : la couleur de la marque étalée en grand, citron d'un
-     bord, mauve de l'autre. Elle passe DERRIÈRE les cartes et déborde du
-     cadre — c'est une ambiance, jamais un fond de carte. */
-  .lume-wash {
+  /* Le bandeau d'ouverture EST un bouton citron, à l'échelle d'une carte :
+     même dégradé, même arête haute éclairée, même base qui retient l'ombre.
+     Aucune lueur portée — une ombre externe colorée bave sur fond sombre et
+     ne ressemble à rien de ce que la marque fait par ailleurs. */
+  .lume-slab {
+    border: none;
     background:
-      radial-gradient(72% 90% at 10% 0%, color-mix(in oklab, var(--lume) 18%, transparent), transparent 62%),
-      radial-gradient(62% 80% at 96% 100%, color-mix(in oklab, var(--haze) 16%, transparent), transparent 64%);
+      linear-gradient(150deg, oklch(1 0 0 / 0.22), transparent 44%),
+      linear-gradient(180deg, oklch(0.93 0.135 110), oklch(0.875 0.13 110));
+    color: oklch(0.2 0.03 112);
+    box-shadow:
+      inset 0 1px 0 0 oklch(1 0 0 / 0.65),
+      inset 0 -1px 0 0 oklch(0.45 0.09 112 / 0.55),
+      inset 0 -10px 18px -12px oklch(0.4 0.08 112 / 0.6);
   }
 
-  /* Le biseau du bouton citron, porté à l'échelle d'un bandeau : même verre
-     taillé, même arête haute qui prend la lumière, mais teinté vers le mauve
-     en descendant pour que la grande surface ne soit pas un aplat. */
-  .lume-slab {
+  /* La molette de coffre : un disque de métal brossé, cerclé, creusé au
+     centre. Le relief vient de deux lumières opposées — arête haute claire,
+     base sombre — comme sur les boutons, pour que l'objet appartienne au même
+     monde plutôt que de faire pastiche. */
+  .dial-face {
     background:
-      linear-gradient(152deg, oklch(1 0 0 / 0.16), transparent 44%),
-      linear-gradient(
-        168deg,
-        color-mix(in oklab, var(--lume) 26%, transparent),
-        color-mix(in oklab, var(--haze) 16%, transparent)
+      radial-gradient(circle at 50% 30%, oklch(1 0 0 / 0.10), transparent 58%),
+      conic-gradient(
+        from 210deg,
+        color-mix(in oklab, var(--foreground) 10%, var(--card)),
+        color-mix(in oklab, var(--background) 70%, var(--card)) 25%,
+        color-mix(in oklab, var(--foreground) 8%, var(--card)) 50%,
+        color-mix(in oklab, var(--background) 70%, var(--card)) 75%,
+        color-mix(in oklab, var(--foreground) 10%, var(--card))
       );
+    border: 1px solid color-mix(in oklab, var(--foreground) 14%, transparent);
     box-shadow:
-      inset 0 1px 0 0 color-mix(in oklab, var(--foreground) 22%, transparent),
-      inset 0 -1px 0 0 oklch(0 0 0 / 0.25),
-      0 12px 36px -26px var(--lume);
+      inset 0 2px 3px -1px oklch(1 0 0 / 0.22),
+      inset 0 -8px 14px -8px oklch(0 0 0 / 0.65),
+      0 2px 6px -2px oklch(0 0 0 / 0.5);
+    cursor: grab;
+  }
+  .dial-face:active {
+    cursor: grabbing;
   }
 
   /* La scène d'un grain pédagogique : même famille que le pad — plaque

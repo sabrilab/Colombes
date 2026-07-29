@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Slider } from '@/components/ui/slider'
+import { Dial } from '@/components/learn/Dial'
 import { DEFAULT_INPUTS } from '@/lib/defaults'
 import { compute } from '@/lib/engine'
 import { formatCurrency, formatPercent } from '@/lib/format'
@@ -150,23 +150,32 @@ export function CascadeScene() {
         })}
       </div>
 
-      <div className="space-y-3">
-        <Lever
+      <div className="flex flex-wrap items-start justify-center gap-6 rounded-xl border border-border/60 p-4">
+        <Dial
           label={t('Gross margin')}
-          value={formatPercent(levers.grossMargin, 0)}
-          slider={[levers.grossMargin, 0.5, 0.99, 0.01]}
+          value={levers.grossMargin}
+          min={0.5}
+          max={0.99}
+          step={0.01}
+          format={(value) => formatPercent(value, 0)}
           onChange={(grossMargin) => setLevers((state) => ({ ...state, grossMargin }))}
         />
-        <Lever
+        <Dial
           label="CAC"
-          value={formatCurrency(levers.cac)}
-          slider={[levers.cac, 0, 2_000, 10]}
+          value={levers.cac}
+          min={0}
+          max={2_000}
+          step={10}
+          format={formatCurrency}
           onChange={(cac) => setLevers((state) => ({ ...state, cac }))}
         />
-        <Lever
+        <Dial
           label={t('Fixed costs / mo')}
-          value={formatCurrency(levers.fixedCosts)}
-          slider={[levers.fixedCosts, 0, 20_000, 100]}
+          value={levers.fixedCosts}
+          min={0}
+          max={20_000}
+          step={100}
+          format={formatCurrency}
           onChange={(fixedCosts) => setLevers((state) => ({ ...state, fixedCosts }))}
         />
       </div>
@@ -174,32 +183,3 @@ export function CascadeScene() {
   )
 }
 
-function Lever({
-  label,
-  value,
-  slider: [current, min, max, step],
-  onChange,
-}: {
-  label: string
-  value: string
-  slider: [number, number, number, number]
-  onChange: (value: number) => void
-}) {
-  return (
-    <div>
-      <div className="flex items-baseline justify-between">
-        <span className="text-sm">{label}</span>
-        <span className="font-mono text-sm tabular-nums">{value}</span>
-      </div>
-      <Slider
-        value={[current]}
-        min={min}
-        max={max}
-        step={step}
-        onValueChange={([next]) => onChange(next)}
-        thumbLabel={label}
-        thumbValueText={value}
-      />
-    </div>
-  )
-}
