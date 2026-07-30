@@ -24,6 +24,7 @@ import { loadAnimal, lume, plaster, project, standardLights, type CameraMove } f
 import { DIM, INK, LUME, RED, centred, display, mono } from './tokens'
 import { stepsPassed, ticksOf } from './motion.mjs'
 import { TIMELINE, TOTAL_FRAMES } from './cuts/built.mjs'
+import captions from './captions-built.json'
 
 /**
  * « Anyone can build it now » — soixante-dix secondes, la version rapide.
@@ -891,7 +892,7 @@ const SHOT_NODES: Record<string, React.ReactNode> = {
   claude: <ClaudeBeat />,
   anything: (
     <Whip from="in" blur={34}>
-      <LetterLine text="So anyone can ship it" accent="anyone" />
+      <LetterLine text="Anyone can ship it" accent="Anyone" />
     </Whip>
   ),
   platforms: <Platforms />,
@@ -930,6 +931,7 @@ export function Built70({ sound = true }: { sound?: boolean }) {
       nodes={SHOT_NODES}
       frames={TOTAL_FRAMES}
       mix="film/mix-built.mp3"
+      captions={captions}
       sound={sound}
     />
   )

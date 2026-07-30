@@ -18,7 +18,7 @@
  *     node scripts/build-mix.mjs
  */
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { stepFrames } from '../video/motion.mjs'
@@ -61,10 +61,26 @@ const FILMS = [
     label: 'la version rapide, 1 min 10',
     output: 'public/film/mix-built.mp3',
     cut: '../video/cuts/built.mjs',
-    voice: null,
-    musicRms: -17.5,
+    voice: 'video/audio/voice-built.wav',
+    /*
+     * La voix entre à la quatrième seconde et se tait à la soixante-deuxième.
+     * Le couloir d'ouverture et la chute sont donc portés par la musique seule,
+     * qui y monte de trois décibels — sinon l'ouverture paraît vide et la fin
+     * s'éteint trop tôt.
+     */
+    voiceFrom: 4,
+    musicRms: -25.5,
+    /*
+     * Niveau de repli tant que la voix n'est pas déposée : sans elle, une musique
+     * réglée pour passer dessous sort huit décibels trop bas, et le film paraît
+     * cassé alors qu'il ne manque qu'un fichier.
+     */
+    musicRmsSolo: -17.5,
     musicFrom: 8,
-    swells: [],
+    swells: [
+      [0, 4.2, 3],
+      [62, Infinity, 3],
+    ],
   },
   {
     label: "l'échelle, 35 s",
@@ -313,12 +329,25 @@ async function buildFilm(film) {
   // ── La voix ───────────────────────────────────────────────────────────────
   let voice = null
   let voiceReport = 'aucune'
-  if (film.voice) {
+  if (film.voice && !existsSync(film.voice)) {
+    // Le fichier n'est pas encore là : on construit quand même la piste, sans
+    // voix. Refuser de mixer bloquerait aussi les films qui n'en ont pas besoin.
+    voiceReport = `${film.voice} absent — mixé sans voix`
+  } else if (film.voice) {
     voice = compress(resample(readWavMono(film.voice)))
     const measured = speechRms(voice)
     const gain = dbToGain(VOICE_RMS) / measured.value
     for (let i = 0; i < voice.length; i++) voice[i] *= gain
-    voiceReport = `${gainToDb(measured.value).toFixed(1)} dBFS mesurés → ${VOICE_RMS} (gain ${gainToDb(gain).toFixed(1)} dB)`
+
+    // Décalage d'entrée : la voix ne commence pas forcément à la première image.
+    const offset = Math.round((film.voiceFrom ?? 0) * RATE)
+    if (offset > 0) {
+      const shifted = new Float32Array(voice.length + offset)
+      shifted.set(voice, offset)
+      voice = shifted
+    }
+
+    voiceReport = `${gainToDb(measured.value).toFixed(1)} dBFS mesurés → ${VOICE_RMS} (gain ${gainToDb(gain).toFixed(1)} dB), entrée à ${film.voiceFrom ?? 0} s`
   }
 
   // ── La musique ────────────────────────────────────────────────────────────
@@ -332,7 +361,8 @@ async function buildFilm(film) {
     const position = (start + i) % loopLength
     music[i] = MUSIC[position] ?? 0
   }
-  const musicGain = dbToGain(film.musicRms) / Math.max(rms(music), 1e-6)
+  const musicTarget = voice ? film.musicRms : (film.musicRmsSolo ?? film.musicRms)
+  const musicGain = dbToGain(musicTarget) / Math.max(rms(music), 1e-6)
   for (let i = 0; i < length; i++) music[i] *= musicGain
 
   if (voice) {
@@ -403,7 +433,7 @@ async function buildFilm(film) {
 
   console.log(`${film.output}  ${(length / RATE).toFixed(2)} s — ${film.label}`)
   console.log(`  voix     ${voiceReport}`)
-  console.log(`  musique  ${film.musicRms} dBFS, entrée à ${film.musicFrom} s${voice ? `, évitement ${MUSIC_DUCK} dB` : ''}`)
+  console.log(`  musique  ${musicTarget} dBFS, entrée à ${film.musicFrom} s${voice ? `, évitement ${MUSIC_DUCK} dB` : ''}`)
   console.log(`  bruitage ${cuts} coupes, ${ticks} crans`)
   console.log(`  sortie   ${gainToDb(rms(mix)).toFixed(1)} dBFS moyens, crête ${gainToDb(peakOf(mix)).toFixed(1)} dBFS, ${((reduced / length) * 100).toFixed(2)} % limités`)
 }

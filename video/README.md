@@ -58,6 +58,25 @@ monte.
 Poser ces sons à la main marche pour trois crans et se décale dès qu'on change
 l'accélération — et l'erreur ne s'entend qu'après le rendu.
 
+## Déposer une voix off
+
+Deux films en attendent une : le fichier va dans `video/audio/`, puis
+
+```bash
+pnpm video:audio && pnpm video:render:built
+```
+
+`build-mix.mjs` et `align-captions.mjs` sautent proprement une voix absente et le
+disent — ils ne bloquent pas les autres films. Tant qu'elle manque, la musique du
+film concerné passe à son niveau de repli, huit décibels plus haut : réglée pour
+tenir sous une voix, elle sortirait sinon trop bas et le film paraîtrait cassé
+alors qu'il ne manque qu'un fichier.
+
+Le montage de `cuts/built.mjs` est déjà calé sur la voix commandée — 57,75 s,
+entrée à la quatrième seconde — de sorte que la chute tombe sur le mot
+« Colombes ». Les positions sont estimées au prorata des caractères prononcés ;
+`align-captions.mjs` les mesure ensuite sur l'onde pour les sous-titres.
+
 ## Le son
 
 Une piste par film, `public/film/mix-*.mp3`, construite avant le rendu par

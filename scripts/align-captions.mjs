@@ -12,9 +12,8 @@
  *
  * Écrit `video/captions.json` (lu par le montage) et le `.srt` livré à part.
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
-const VOICE = 'video/audio/voice-en.wav'
 const FPS = 30
 
 /**
@@ -24,7 +23,7 @@ const FPS = 30
  * `text` est ce qu'on incruste. Sans cette distinction, un symbole compté pour
  * un caractère décalerait tout ce qui suit.
  */
-const SCRIPT = [
+const FILM70 = [
   { text: 'You built an app.' },
   { text: "Somebody, someday, will ask what it's worth." },
   { text: 'Most calculators hand you a number.' },
@@ -52,6 +51,45 @@ const SCRIPT = [
   { text: 'And how much of the company walks out of the door with you.' },
   { text: 'Every one of them, named.' },
   { text: 'Colombes. Free. No sign-up.', spoken: 'Colombes. Free. No sign up.' },
+]
+
+/** Le texte de la version rapide, envoyé à la même voix. */
+const BUILT = [
+  { text: 'Something just changed.' },
+  { text: 'Claude writes the code now.' },
+  { text: 'So anyone can ship it.' },
+  { text: "Mobile, desktop, headset: it's all an app, sold by subscription." },
+  { text: 'And everyone is shipping.' },
+  { text: 'But shipping was the easy part.' },
+  { text: "The hard question is what it's worth." },
+  { text: 'Every calculator hands you a number, and keeps the reasoning.' },
+  { text: 'So here is the reasoning.' },
+  { text: 'You drag one dove across a plate, and a valuation happens.' },
+  { text: 'Your revenue is a surface: price on one side, customers on the other.' },
+  { text: 'Where that puts you has a name.' },
+  {
+    text: 'On the pricing ladder, Spotify is a mouse, at €2 a month.',
+    spoken: 'On the pricing ladder, Spotify is a mouse, at two euros a month.',
+  },
+  { text: 'Salesforce is a whale.' },
+  { text: 'Everyone sits somewhere.' },
+  { text: 'Your price per customer decides your trade.' },
+  { text: 'Then direct costs, acquisition and fixed costs each take their share.' },
+  { text: 'And nine lines build the multiple on what remains.' },
+  { text: 'Building it was never the hard part.' },
+  { text: "Knowing what it's worth is." },
+  { text: 'Colombes. Free. No sign-up.', spoken: 'Colombes. Free. No sign up.' },
+]
+
+/**
+ * Les films qui ont une voix off.
+ *
+ * Les deux courts n'en ont pas et ne passent donc pas ici : sans parole, il n'y a
+ * rien à caler et rien à sous-titrer.
+ */
+const FILMS = [
+  { voice: 'video/audio/voice-en.wav', script: FILM70, captions: 'video/captions.json', srt: 'public/film/colombes-70s.en.srt' },
+  { voice: 'video/audio/voice-built.wav', script: BUILT, captions: 'video/captions-built.json', srt: 'public/film/colombes-built.en.srt' },
 ]
 
 /** Décodage d'un WAV PCM 16 bits : suffisant, et évite une dépendance. */
@@ -123,12 +161,20 @@ function speechBursts({ samples, rate }) {
     .map((b) => ({ start: b.start / 100, end: (b.end + 1) / 100 }))
 }
 
-const voice = readWav(VOICE)
-const bursts = speechBursts(voice)
-const spokenTime = bursts.reduce((total, b) => total + (b.end - b.start), 0)
+for (const film of FILMS) {
+  if (!existsSync(film.voice)) {
+    // Sans le fichier, il n'y a rien à mesurer. On le dit et on passe : les
+    // autres films ne doivent pas être bloqués par celui-là.
+    console.log(`${film.voice} absent — sous-titres non calés`)
+    continue
+  }
 
-/** Position, en secondes réelles, d'un instant donné sur l'axe « parole seule ». */
-function wallClock(spokenOffset) {
+  const voice = readWav(film.voice)
+  const bursts = speechBursts(voice)
+  const spokenTime = bursts.reduce((total, b) => total + (b.end - b.start), 0)
+
+  /** Position, en secondes réelles, d'un instant donné sur l'axe « parole seule ». */
+  function wallClock(spokenOffset) {
   let remaining = spokenOffset
   for (const burst of bursts) {
     const length = burst.end - burst.start
@@ -136,14 +182,14 @@ function wallClock(spokenOffset) {
     remaining -= length
   }
   return bursts[bursts.length - 1].end
-}
+  }
 
-const weights = SCRIPT.map((line) => (line.spoken ?? line.text).replace(/\s/g, '').length)
-const totalWeight = weights.reduce((a, b) => a + b, 0)
+  const weights = film.script.map((line) => (line.spoken ?? line.text).replace(/\s/g, '').length)
+  const totalWeight = weights.reduce((a, b) => a + b, 0)
 
-const captions = []
-let cursor = 0
-SCRIPT.forEach((line, index) => {
+  const captions = []
+  let cursor = 0
+  film.script.forEach((line, index) => {
   const from = wallClock((cursor / totalWeight) * spokenTime)
   cursor += weights[index]
   const to = wallClock((cursor / totalWeight) * spokenTime)
@@ -158,33 +204,34 @@ SCRIPT.forEach((line, index) => {
     len: Math.max(Math.round((to - start) * FPS), 24),
     text: line.text,
   })
-})
+  })
 
-// Aucune ligne ne doit mordre sur la suivante : le chevauchement afficherait
-// deux sous-titres l'un sur l'autre.
-for (let i = 0; i < captions.length - 1; i++) {
+  // Aucune ligne ne doit mordre sur la suivante : le chevauchement afficherait
+  // deux sous-titres l'un sur l'autre.
+  for (let i = 0; i < captions.length - 1; i++) {
   const overlap = captions[i].at + captions[i].len - captions[i + 1].at
   if (overlap > 0) captions[i].len -= overlap
-}
+  }
 
-writeFileSync('video/captions.json', `${JSON.stringify(captions, null, 2)}\n`)
+  writeFileSync(film.captions, `${JSON.stringify(captions, null, 2)}\n`)
 
-const stamp = (frames) => {
+  const stamp = (frames) => {
   const total = frames / FPS
   const h = String(Math.floor(total / 3600)).padStart(2, '0')
   const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0')
   const s = String(Math.floor(total % 60)).padStart(2, '0')
   const ms = String(Math.round((total % 1) * 1000)).padStart(3, '0')
   return `${h}:${m}:${s},${ms}`
-}
+  }
 
-const srt = captions
+  const srt = captions
   .map((c, i) => `${i + 1}\n${stamp(c.at)} --> ${stamp(c.at + c.len)}\n${c.text}\n`)
   .join('\n')
-writeFileSync('public/film/colombes-70s.en.srt', srt)
+  writeFileSync(film.srt, srt)
 
-console.log(`parole : ${spokenTime.toFixed(2)} s utiles sur ${bursts.length} salves`)
-for (const c of captions) {
+  console.log(`\n${film.voice} — ${spokenTime.toFixed(2)} s de parole sur ${bursts.length} salves`)
+  for (const c of captions) {
   console.log(`${(c.at / FPS).toFixed(2).padStart(6)}s  ${(c.len / FPS).toFixed(2)}s  ${c.text}`)
+  }
+  console.log(`${film.captions} et ${film.srt} : ${captions.length} lignes`)
 }
-console.log(`\nvideo/captions.json et le .srt écrits : ${captions.length} lignes`)
