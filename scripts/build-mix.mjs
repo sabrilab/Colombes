@@ -83,6 +83,17 @@ const FILMS = [
     ],
   },
   {
+    label: 'les deux leviers, 1 min 10',
+    output: 'public/film/mix-levers.mp3',
+    cut: '../video/cuts/levers.mjs',
+    voice: 'video/audio/voice-levers.wav',
+    voiceFrom: 0,
+    musicRms: -25.5,
+    musicRmsSolo: -17.5,
+    musicFrom: 74,
+    swells: [],
+  },
+  {
     label: "l'échelle, 35 s",
     output: 'public/film/mix-ladder.mp3',
     cut: '../video/cuts/ladder.mjs',

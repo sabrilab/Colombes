@@ -1,0 +1,83 @@
+1
+00:00:04,000 --> 00:00:05,733
+Something just changed.
+
+2
+00:00:05,733 --> 00:00:07,600
+Claude writes the code now.
+
+3
+00:00:07,600 --> 00:00:09,067
+So anyone can ship it.
+
+4
+00:00:09,067 --> 00:00:13,567
+Mobile, desktop, headset: it's all an app, sold by subscription.
+
+5
+00:00:13,567 --> 00:00:15,367
+And everyone is shipping.
+
+6
+00:00:15,367 --> 00:00:17,500
+But shipping was the easy part.
+
+7
+00:00:17,500 --> 00:00:20,033
+The hard question is what it's worth.
+
+8
+00:00:20,033 --> 00:00:24,300
+Every calculator hands you a number, and keeps the reasoning.
+
+9
+00:00:24,300 --> 00:00:26,000
+So here is the reasoning.
+
+10
+00:00:26,000 --> 00:00:29,933
+You drag one dove across a plate, and a valuation happens.
+
+11
+00:00:29,933 --> 00:00:34,600
+Your revenue is a surface: price on one side, customers on the other.
+
+12
+00:00:34,600 --> 00:00:36,633
+Where that puts you has a name.
+
+13
+00:00:36,633 --> 00:00:40,900
+On the pricing ladder, Spotify is a mouse, at €2 a month.
+
+14
+00:00:40,900 --> 00:00:42,433
+Salesforce is a whale.
+
+15
+00:00:42,433 --> 00:00:44,233
+Everyone sits somewhere.
+
+16
+00:00:44,233 --> 00:00:47,267
+Your price per customer decides your trade.
+
+17
+00:00:47,267 --> 00:00:52,100
+Then direct costs, acquisition and fixed costs each take their share.
+
+18
+00:00:52,100 --> 00:00:55,533
+And nine lines build the multiple on what remains.
+
+19
+00:00:55,533 --> 00:00:57,967
+Building it was never the hard part.
+
+20
+00:00:57,967 --> 00:00:59,833
+Knowing what it's worth is.
+
+21
+00:00:59,867 --> 00:01:01,733
+Colombes. Free. No sign-up.

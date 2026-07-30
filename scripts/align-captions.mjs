@@ -4,13 +4,19 @@
  * La première version datait les lignes à la main : deux phrases manquaient et
  * les autres dérivaient de plus d'une seconde. Ici on mesure le fichier — on
  * découpe l'onde en salves de parole, puis on répartit le texte au prorata des
- * caractères prononcés sur le temps de parole effectif, les silences exclus.
- * Une ligne ne peut donc plus tomber dans un blanc, et son début est recalé sur
- * la salve la plus proche.
+ * caractères prononcés sur le temps de parole effectif, les silences exclus. Une
+ * ligne ne peut donc plus tomber dans un blanc, et son début est recalé sur la
+ * salve la plus proche.
+ *
+ * Quand le fichier n'est pas encore là, on estime au lieu de renoncer : la durée
+ * de la synthèse est connue dès la commande, et la même répartition au prorata des
+ * caractères donne un calage à quelques dixièmes près. Un film livré avec des
+ * sous-titres approchés vaut mieux qu'un film livré sans, et le jour où l'onde
+ * arrive, la mesure les remplace sans qu'on touche à rien.
  *
  *     node scripts/align-captions.mjs
  *
- * Écrit `video/captions.json` (lu par le montage) et le `.srt` livré à part.
+ * Écrit un `captions*.json` par film (lu par le montage) et le `.srt` livré à part.
  */
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
@@ -81,6 +87,37 @@ const BUILT = [
   { text: 'Colombes. Free. No sign-up.', spoken: 'Colombes. Free. No sign up.' },
 ]
 
+/** Le texte du film des deux leviers. */
+const LEVERS = [
+  { text: 'You have a thousand customers, paying you €10 a month.', spoken: 'You have a thousand customers, paying you ten euros a month.' },
+  { text: '€10,000.', spoken: 'Ten thousand euros.' },
+  { text: 'And the first thing you think is: I need more customers.' },
+  { text: 'That is the instinct.' },
+  { text: 'And it is the expensive one.' },
+  { text: 'Because revenue is not a line. It is a surface.' },
+  { text: 'Price on one side, customers on the other,' },
+  { text: 'and your money is the area between them.' },
+  { text: 'Double the customers, and you double the area.' },
+  { text: 'Double the price, and you double it too.' },
+  { text: 'Exactly the same money. Two completely different companies.' },
+  { text: 'Ten thousand customers means ten thousand people to find,' },
+  { text: 'to convince, to onboard, and to keep.' },
+  { text: 'At €180 to acquire each one,', spoken: 'At a hundred and eighty euros to acquire each one,' },
+  { text: 'that is €1,800,000,', spoken: 'that is one million eight hundred thousand euros,' },
+  { text: 'spent before a single one of them pays you back.' },
+  { text: 'Doubling your price takes one afternoon. It costs nothing at all.' },
+  { text: 'Some of them will leave, and even then, the arithmetic is not close.' },
+  { text: 'One lever is free.' },
+  { text: 'The other one is your whole company.' },
+  { text: 'Most founders pull the expensive one first, because it looks like work.' },
+  { text: 'Hiring looks like work. Advertising looks like work.' },
+  { text: 'Changing a number on a pricing page does not.' },
+  { text: 'Colombes puts both levers on the same plate.' },
+  { text: 'You drag one dove, and you watch the surface change.' },
+  { text: 'Then you decide which one you are actually pulling.' },
+  { text: 'Free. No sign-up.', spoken: 'Free. No sign up.' },
+]
+
 /**
  * Les films qui ont une voix off.
  *
@@ -88,8 +125,32 @@ const BUILT = [
  * rien à caler et rien à sous-titrer.
  */
 const FILMS = [
-  { voice: 'video/audio/voice-en.wav', script: FILM70, captions: 'video/captions.json', srt: 'public/film/colombes-70s.en.srt' },
-  { voice: 'video/audio/voice-built.wav', script: BUILT, captions: 'video/captions-built.json', srt: 'public/film/colombes-built.en.srt' },
+  {
+    voice: 'video/audio/voice-en.wav',
+    script: FILM70,
+    captions: 'video/captions.json',
+    srt: 'public/film/colombes-70s.en.srt',
+    duration: 64.5,
+    from: 0,
+  },
+  {
+    voice: 'video/audio/voice-built.wav',
+    script: BUILT,
+    captions: 'video/captions-built.json',
+    srt: 'public/film/colombes-built.en.srt',
+    // Durée rendue par la synthèse, et entrée de la voix dans le film : de quoi
+    // estimer tant que le fichier manque. `build-mix.mjs` applique le même décalage.
+    duration: 57.745,
+    from: 4,
+  },
+  {
+    voice: 'video/audio/voice-levers.wav',
+    script: LEVERS,
+    captions: 'video/captions-levers.json',
+    srt: 'public/film/colombes-levers.en.srt',
+    duration: 65.274,
+    from: 0.4,
+  },
 ]
 
 /** Décodage d'un WAV PCM 16 bits : suffisant, et évite une dépendance. */
@@ -162,26 +223,31 @@ function speechBursts({ samples, rate }) {
 }
 
 for (const film of FILMS) {
-  if (!existsSync(film.voice)) {
-    // Sans le fichier, il n'y a rien à mesurer. On le dit et on passe : les
-    // autres films ne doivent pas être bloqués par celui-là.
-    console.log(`${film.voice} absent — sous-titres non calés`)
-    continue
+  const measured = existsSync(film.voice)
+  let bursts = null
+  let spokenTime = film.duration
+
+  if (measured) {
+    bursts = speechBursts(readWav(film.voice))
+    spokenTime = bursts.reduce((total, b) => total + (b.end - b.start), 0)
   }
 
-  const voice = readWav(film.voice)
-  const bursts = speechBursts(voice)
-  const spokenTime = bursts.reduce((total, b) => total + (b.end - b.start), 0)
-
-  /** Position, en secondes réelles, d'un instant donné sur l'axe « parole seule ». */
+  /**
+   * Position, en secondes du film, d'un instant donné sur l'axe « parole seule ».
+   *
+   * Mesuré, l'axe saute les silences : une ligne ne peut donc pas tomber dans un
+   * blanc. Estimé, il n'y a pas de silences connus — on étale simplement sur la
+   * durée annoncée, décalée de l'entrée de la voix.
+   */
   function wallClock(spokenOffset) {
+  if (!bursts) return film.from + spokenOffset
   let remaining = spokenOffset
   for (const burst of bursts) {
     const length = burst.end - burst.start
-    if (remaining <= length) return burst.start + remaining
+    if (remaining <= length) return film.from + burst.start + remaining
     remaining -= length
   }
-  return bursts[bursts.length - 1].end
+  return film.from + bursts[bursts.length - 1].end
   }
 
   const weights = film.script.map((line) => (line.spoken ?? line.text).replace(/\s/g, '').length)
@@ -196,7 +262,13 @@ for (const film of FILMS) {
 
   // Recalage sur la salve la plus proche : une entrée posée sur l'attaque se
   // lit comme synchrone, une entrée à 200 ms près se lit comme un décalage.
-  const snapped = bursts.reduce((best, b) => (Math.abs(b.start - from) < Math.abs(best - from) ? b.start : best), from)
+  // Sans onde, il n'y a rien sur quoi se recaler.
+  const snapped = bursts
+    ? bursts.reduce(
+        (best, b) => (Math.abs(film.from + b.start - from) < Math.abs(best - from) ? film.from + b.start : best),
+        from,
+      )
+    : from
   const start = Math.abs(snapped - from) < 0.4 ? snapped : from
 
   captions.push({
@@ -229,7 +301,11 @@ for (const film of FILMS) {
   .join('\n')
   writeFileSync(film.srt, srt)
 
-  console.log(`\n${film.voice} — ${spokenTime.toFixed(2)} s de parole sur ${bursts.length} salves`)
+  console.log(
+    measured
+      ? `\n${film.voice} — ${spokenTime.toFixed(2)} s de parole mesurés sur ${bursts.length} salves`
+      : `\n${film.voice} absent — ${spokenTime.toFixed(2)} s estimés, entrée à ${film.from} s`,
+  )
   for (const c of captions) {
   console.log(`${(c.at / FPS).toFixed(2).padStart(6)}s  ${(c.len / FPS).toFixed(2)}s  ${c.text}`)
   }

@@ -1,1 +1,107 @@
-[]
+[
+  {
+    "at": 120,
+    "len": 52,
+    "text": "Something just changed."
+  },
+  {
+    "at": 172,
+    "len": 56,
+    "text": "Claude writes the code now."
+  },
+  {
+    "at": 228,
+    "len": 44,
+    "text": "So anyone can ship it."
+  },
+  {
+    "at": 272,
+    "len": 135,
+    "text": "Mobile, desktop, headset: it's all an app, sold by subscription."
+  },
+  {
+    "at": 407,
+    "len": 54,
+    "text": "And everyone is shipping."
+  },
+  {
+    "at": 461,
+    "len": 64,
+    "text": "But shipping was the easy part."
+  },
+  {
+    "at": 525,
+    "len": 76,
+    "text": "The hard question is what it's worth."
+  },
+  {
+    "at": 601,
+    "len": 128,
+    "text": "Every calculator hands you a number, and keeps the reasoning."
+  },
+  {
+    "at": 729,
+    "len": 51,
+    "text": "So here is the reasoning."
+  },
+  {
+    "at": 780,
+    "len": 118,
+    "text": "You drag one dove across a plate, and a valuation happens."
+  },
+  {
+    "at": 898,
+    "len": 140,
+    "text": "Your revenue is a surface: price on one side, customers on the other."
+  },
+  {
+    "at": 1038,
+    "len": 61,
+    "text": "Where that puts you has a name."
+  },
+  {
+    "at": 1099,
+    "len": 128,
+    "text": "On the pricing ladder, Spotify is a mouse, at €2 a month."
+  },
+  {
+    "at": 1227,
+    "len": 46,
+    "text": "Salesforce is a whale."
+  },
+  {
+    "at": 1273,
+    "len": 54,
+    "text": "Everyone sits somewhere."
+  },
+  {
+    "at": 1327,
+    "len": 91,
+    "text": "Your price per customer decides your trade."
+  },
+  {
+    "at": 1418,
+    "len": 145,
+    "text": "Then direct costs, acquisition and fixed costs each take their share."
+  },
+  {
+    "at": 1563,
+    "len": 103,
+    "text": "And nine lines build the multiple on what remains."
+  },
+  {
+    "at": 1666,
+    "len": 73,
+    "text": "Building it was never the hard part."
+  },
+  {
+    "at": 1739,
+    "len": 56,
+    "text": "Knowing what it's worth is."
+  },
+  {
+    "at": 1796,
+    "len": 56,
+    "text": "Colombes. Free. No sign-up."
+  }
+]

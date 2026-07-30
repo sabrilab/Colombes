@@ -9,6 +9,7 @@ modèles 3D. Ce que le spectateur voit est reproductible dans le simulateur.
 
 ```bash
 pnpm video:audio             # le son des trois films : bruitage, sous-titres, mixages
+pnpm video:render:levers     # → colombes-levers.mp4   (1 min 10, les deux leviers)
 pnpm video:render:built      # → colombes-built.mp4    (1 min 10, la version rapide)
 pnpm video:render:70         # → colombes-70s.mp4      (1 min 10, anglais, voix off)
 pnpm video:render:ladder     # → colombes-ladder.mp4   (35 s, l'échelle des prix)
@@ -20,14 +21,14 @@ pnpm video:studio            # l'aperçu interactif, pour régler un montage
 `video:audio` est à relancer dès qu'on touche à un montage : il replace le
 bruitage sur les nouvelles coupes.
 
-## Quatre films, une langue
+## Cinq films, une langue
 
 `kit.tsx` porte le vocabulaire commun — pigments, titres qui s'écrivent lettre à
 lettre, pad de tarification, molette de coffre, barres de réglage, entrées
 lancées, traits de vitesse, emojis, chute. `tokens.ts` les jetons, `data.ts` les
 chiffres des repères, `three.ts` les matières et la projection, `Scene3D.tsx` le
 rendu des volumes. Sans ce partage, chaque film redéfinirait une molette
-légèrement différente et les quatre cesseraient d'avoir l'air du même produit —
+légèrement différente et les cinq cesseraient d'avoir l'air du même produit —
 le contraire de ce qu'ils démontrent.
 
 ## Le montage
@@ -60,7 +61,8 @@ l'accélération — et l'erreur ne s'entend qu'après le rendu.
 
 ## Déposer une voix off
 
-Deux films en attendent une : le fichier va dans `video/audio/`, puis
+Deux films en attendent une — la version rapide et les deux leviers. Le fichier va
+dans `video/audio/`, puis
 
 ```bash
 pnpm video:audio && pnpm video:render:built
@@ -72,10 +74,12 @@ film concerné passe à son niveau de repli, huit décibels plus haut : réglée
 tenir sous une voix, elle sortirait sinon trop bas et le film paraîtrait cassé
 alors qu'il ne manque qu'un fichier.
 
-Le montage de `cuts/built.mjs` est déjà calé sur la voix commandée — 57,75 s,
-entrée à la quatrième seconde — de sorte que la chute tombe sur le mot
-« Colombes ». Les positions sont estimées au prorata des caractères prononcés ;
-`align-captions.mjs` les mesure ensuite sur l'onde pour les sous-titres.
+Les montages de `cuts/built.mjs` et `cuts/levers.mjs` sont déjà calés sur les voix
+commandées — 57,75 s et 65,27 s — de sorte que la chute tombe sur le mot
+« Colombes ». Les positions sont estimées au prorata des caractères prononcés, et
+`align-captions.mjs` en tire aussi des sous-titres estimés : les films sont donc
+livrés sous-titrés sans attendre l'onde, et la mesure les remplace le jour où le
+fichier arrive.
 
 ## Le son
 
