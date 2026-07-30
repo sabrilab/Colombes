@@ -74,12 +74,16 @@ film concerné passe à son niveau de repli, huit décibels plus haut : réglée
 tenir sous une voix, elle sortirait sinon trop bas et le film paraîtrait cassé
 alors qu'il ne manque qu'un fichier.
 
-Les montages de `cuts/built.mjs` et `cuts/levers.mjs` sont déjà calés sur les voix
-commandées — 57,75 s et 65,27 s — de sorte que la chute tombe sur le mot
-« Colombes ». Les positions sont estimées au prorata des caractères prononcés, et
-`align-captions.mjs` en tire aussi des sous-titres estimés : les films sont donc
-livrés sous-titrés sans attendre l'onde, et la mesure les remplace le jour où le
-fichier arrive.
+Tant que le fichier manque, `align-captions.mjs` estime le calage à partir de la
+durée annoncée par la synthèse : le film est donc livré sous-titré sans attendre
+l'onde. L'estimation vaut ce qu'elle vaut — six dixièmes d'écart en moyenne,
+mesurés sur le film des leviers, mais une seconde sept sur le pire plan. Assez
+pour des sous-titres, pas pour un montage.
+
+Quand le fichier arrive, le script imprime aussi **les durées de plan à recopier
+dans le montage**, calculées sur l'onde. Les films qui déclarent des `anchors` —
+quel plan commence sur quelle réplique — en profitent automatiquement ; il n'y a
+qu'à coller la liste dans le fichier de `cuts/` et relancer le rendu.
 
 ## Le son
 

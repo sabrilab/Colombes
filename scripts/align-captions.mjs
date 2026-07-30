@@ -150,6 +150,32 @@ const FILMS = [
     srt: 'public/film/colombes-levers.en.srt',
     duration: 65.274,
     from: 0.4,
+    /*
+     * Le plan qui commence sur chaque ligne. Une fois l'onde mesurée, le script
+     * en déduit les durées exactes à recopier dans `cuts/levers.mjs` — ce qui
+     * évite de les calculer à la main et de laisser l'image traîner derrière la
+     * voix, comme c'était le cas de la version estimée.
+     */
+    anchors: [
+      ['storm', 0],
+      ['instinct', 3],
+      ['not-a-line', 5],
+      ['surface', 6],
+      ['more-customers', 8],
+      ['more-price', 9],
+      ['compare', 10],
+      ['chores', 11],
+      ['bill', 13],
+      ['before', 15],
+      ['afternoon', 16],
+      ['even-then', 17],
+      ['one-is-free', 18],
+      ['looks-like-work', 20],
+      ['does-not', 22],
+      ['pad', 23],
+      ['closing', 26],
+    ],
+    total: 2100,
   },
 ]
 
@@ -310,4 +336,16 @@ for (const film of FILMS) {
   console.log(`${(c.at / FPS).toFixed(2).padStart(6)}s  ${(c.len / FPS).toFixed(2)}s  ${c.text}`)
   }
   console.log(`${film.captions} et ${film.srt} : ${captions.length} lignes`)
+
+  if (film.anchors) {
+    // Les durées de plan que le montage devrait porter, calculées et non estimées.
+    // Le premier plan part de l'image zéro, pas de sa réplique : le film commence
+    // avant que la voix entre, et ce silence appartient à l'accroche.
+    const starts = film.anchors.map(([id, line], index) => ({ id, at: index === 0 ? 0 : captions[line].at }))
+    console.log(`\n  durées à porter dans le montage (${measured ? 'mesurées' : 'estimées'}) :`)
+    starts.forEach((shot, index) => {
+      const next = starts[index + 1]?.at ?? film.total
+      console.log(`    { id: '${shot.id}', len: ${next - shot.at} },`.padEnd(46) + `// ${(shot.at / FPS).toFixed(2)} s`)
+    })
+  }
 }
