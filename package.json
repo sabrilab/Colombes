@@ -13,7 +13,8 @@
     "video:render:70": "remotion render video/index.ts Colombes70 public/film/colombes-70s.mp4 --public-dir=public",
     "video:audio": "node scripts/build-sfx.mjs && node scripts/align-captions.mjs && node scripts/build-mix.mjs",
     "video:render:ladder": "remotion render video/index.ts Ladder35 public/film/colombes-ladder.mp4 --public-dir=public",
-    "video:render:remains": "remotion render video/index.ts Remains35 public/film/colombes-remains.mp4 --public-dir=public"
+    "video:render:remains": "remotion render video/index.ts Remains35 public/film/colombes-remains.mp4 --public-dir=public",
+    "video:render:built": "remotion render video/index.ts Built70 public/film/colombes-built.mp4 --public-dir=public"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

@@ -3,8 +3,8 @@ import { AbsoluteFill, interpolate, spring, useCurrentFrame, useVideoConfig } fr
 import * as THREE from 'three'
 import { formatCurrency } from '../src/lib/format'
 import { PRICING_ANIMALS, animalFor } from '../src/lib/pricePad'
-import { LANDMARKS, landmarkAcv } from '../src/lib/landmarks'
 import { AnimalBeat, Closing, DialFace, Eyebrow, Film, Leader, LetterLine } from './kit'
+import { landmarkMonthly } from './data'
 import { Scene3D } from './Scene3D'
 import { lume, plaster, project, standardLights, type CameraSpec } from './three'
 import { DIM, INK, LUME, centred, display, mono } from './tokens'
@@ -442,13 +442,6 @@ function Trade() {
       </p>
     </AbsoluteFill>
   )
-}
-
-/** Le prix mensuel par client d'un repère, calculé et non recopié. */
-function landmarkMonthly(id: string): string {
-  const company = LANDMARKS.find((candidate) => candidate.id === id)
-  if (!company) return ''
-  return `${formatCurrency(Math.round(landmarkAcv(company) / 12))} / month`
 }
 
 const SHOT_NODES: Record<string, React.ReactNode> = {

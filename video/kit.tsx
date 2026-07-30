@@ -12,6 +12,9 @@ import {
 import { ColombesWordmark, DoveLogo } from '../src/components/DoveLogo'
 import { AnimalShot } from './AnimalShot'
 import { BG, DIM, INK, LUME, centred, display, mono, useCount } from './tokens'
+import { compute } from '../src/lib/engine'
+import { DEFAULT_INPUTS } from '../src/lib/defaults'
+import { formatCurrency } from '../src/lib/format'
 
 /**
  * Le vocabulaire commun des films.
@@ -476,6 +479,297 @@ export function AnimalBeat({
         )}
       </div>
     </AbsoluteFill>
+  )
+}
+
+/**
+ * Le pad de tarification, tel qu'on le manipule dans l'app.
+ *
+ * C'est l'objet signature : le seul geste que personne d'autre ne propose — on
+ * tire une bille sur une plaque, et une valorisation se fait. Il sert d'accroche
+ * dans deux films, et c'est pour ça qu'il vit ici plutôt que dans l'un des deux.
+ * La bille suit une courbe — un déplacement en ligne droite aurait l'air d'une
+ * animation, pas d'un doigt. Le chiffre est recalculé à chaque image par le
+ * moteur de l'app, ce qui interdit de tricher sur la démonstration.
+ */
+export function PricePad({ caption = 'What the app is worth' }: { caption?: string }) {
+  const frame = useCurrentFrame()
+  const { fps } = useVideoConfig()
+
+  const travel = spring({ frame: frame - 6, fps, config: { damping: 26, mass: 1.1, stiffness: 90 } })
+  const x = interpolate(travel, [0, 1], [0.14, 0.74])
+  const y = interpolate(travel, [0, 1], [0.82, 0.26]) - Math.sin(travel * Math.PI) * 0.06
+
+  // Prix et clients lus sur la plaque, puis la valorisation qui en découle.
+  const price = Math.round(4 + (1 - y) ** 2.1 * 190)
+  const customers = Math.round(40 + x ** 2.3 * 3_400)
+  const results = compute({
+    ...DEFAULT_INPUTS,
+    tiers: [{ name: 'Subscription', price, mix: 1 }],
+    customers,
+    newCustomersPerMonth: Math.max(4, Math.round(customers * 0.05)),
+  })
+
+  const grid = 11
+
+  return (
+    <AbsoluteFill style={{ ...centred, padding: '0 60px' }}>
+      {/* La valorisation, en haut, comme sur la page d'accueil. */}
+      <p
+        style={{
+          ...mono,
+          margin: 0,
+          fontSize: 138,
+          fontWeight: 600,
+          letterSpacing: '-0.03em',
+          color: INK,
+          textShadow: `0 0 60px oklch(0.92 0.145 112 / ${0.15 + travel * 0.3})`,
+        }}
+      >
+        {formatCurrency(Math.round(results.valuation.value))}
+      </p>
+      <p
+        style={{
+          ...display,
+          margin: '6px 0 44px',
+          fontSize: 29,
+          letterSpacing: '0.24em',
+          textTransform: 'uppercase',
+          color: DIM,
+        }}
+      >
+        {caption}
+      </p>
+
+      <div
+        style={{
+          position: 'relative',
+          width: 960,
+          height: 1060,
+          borderRadius: 34,
+          border: '1px solid oklch(1 0 0 / 0.12)',
+          backgroundColor: 'oklch(0.16 0.006 110)',
+          boxShadow: 'inset 0 1px 0 0 oklch(1 0 0 / 0.07), inset 0 0 90px -10px oklch(0 0 0 / 0.7)',
+          overflow: 'hidden',
+        }}
+      >
+        {/* La trame gravée. */}
+        {Array.from({ length: grid }, (_, i) => (
+          <React.Fragment key={i}>
+            <span
+              style={{
+                position: 'absolute',
+                left: `${(i / (grid - 1)) * 100}%`,
+                top: 0,
+                bottom: 0,
+                width: 1,
+                backgroundColor: 'oklch(1 0 0 / 0.05)',
+              }}
+            />
+            <span
+              style={{
+                position: 'absolute',
+                top: `${(i / (grid - 1)) * 100}%`,
+                left: 0,
+                right: 0,
+                height: 1,
+                backgroundColor: 'oklch(1 0 0 / 0.05)',
+              }}
+            />
+          </React.Fragment>
+        ))}
+
+        {/* La surface parcourue : l'aire, c'est le revenu. */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 0,
+            bottom: 0,
+            width: `${x * 100}%`,
+            height: `${(1 - y) * 100}%`,
+            background:
+              'linear-gradient(to top right, oklch(0.92 0.145 112 / 0.05), oklch(0.92 0.145 112 / 0.3))',
+            borderRight: '2px solid oklch(0.92 0.145 112 / 0.6)',
+            borderTop: '2px solid oklch(0.92 0.145 112 / 0.6)',
+          }}
+        />
+
+        {/* La traînée du geste : elle dit d'où vient la bille.
+
+            `pathLength={1}` normalise la longueur de la courbe : sans lui, le
+            tiret est exprimé dans les unités déformées du `viewBox` et se
+            fragmente au lieu de se dérouler. */}
+        <svg
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        >
+          <path
+            d="M 14 82 C 34 78, 52 60, 74 26"
+            fill="none"
+            stroke="oklch(0.92 0.145 112 / 0.35)"
+            strokeWidth="3"
+            strokeLinecap="round"
+            pathLength={1}
+            strokeDasharray="1"
+            strokeDashoffset={1 - travel}
+          />
+        </svg>
+
+        {/* La bille, et son onde à l'arrivée. */}
+        <div
+          style={{
+            position: 'absolute',
+            left: `${x * 100}%`,
+            top: `${y * 100}%`,
+            transform: 'translate(-50%, -50%)',
+            width: 132,
+            height: 132,
+            borderRadius: '50%',
+            display: 'flex',
+            ...centred,
+            border: '1px solid oklch(0.92 0.145 112 / 0.55)',
+            background: 'radial-gradient(circle at 32% 26%, oklch(1 0 0 / 0.2), oklch(0.13 0 0))',
+            boxShadow: `0 0 ${40 + travel * 30}px -4px oklch(0.92 0.145 112 / 0.9), inset 0 1px 1px oklch(1 0 0 / 0.25)`,
+          }}
+        >
+          <div style={{ width: 58, color: LUME }}>
+            <DoveLogo className="" />
+          </div>
+        </div>
+
+        <span
+          style={{ ...mono, position: 'absolute', left: 26, top: 22, fontSize: 30, color: 'oklch(1 0 0 / 0.45)' }}
+        >
+          {formatCurrency(price)}/mo
+        </span>
+        <span
+          style={{ ...mono, position: 'absolute', right: 26, bottom: 20, fontSize: 30, color: 'oklch(1 0 0 / 0.45)' }}
+        >
+          {customers.toLocaleString('en-US')} customers
+        </span>
+      </div>
+    </AbsoluteFill>
+  )
+}
+
+/**
+ * Une entrée lancée : la couche arrive floue, décalée et sur-dimensionnée, puis se
+ * pose en une douzaine d'images.
+ *
+ * C'est du flou de mouvement simulé, et c'est assumé : un vrai flou de bougé
+ * demanderait de rendre plusieurs sous-images par image et multiplierait le temps
+ * de rendu. À cette vitesse, l'œil ne fait pas la différence — il lit « ça arrive
+ * vite », ce qui est tout ce qu'on lui demande.
+ */
+export function Whip({
+  children,
+  from = 'right',
+  distance = 260,
+  blur = 30,
+  frames = 13,
+  delay = 0,
+}: {
+  children: React.ReactNode
+  from?: 'left' | 'right' | 'up' | 'down' | 'in'
+  distance?: number
+  blur?: number
+  frames?: number
+  delay?: number
+}) {
+  const frame = useCurrentFrame()
+  const eased = interpolate(frame - delay, [0, frames], [0, 1], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+    easing: (t) => 1 - (1 - t) ** 4,
+  })
+  const left = 1 - eased
+
+  const offset = {
+    left: `translateX(${-left * distance}px)`,
+    right: `translateX(${left * distance}px)`,
+    up: `translateY(${-left * distance}px)`,
+    down: `translateY(${left * distance}px)`,
+    in: `scale(${1 + left * 0.5})`,
+  }[from]
+
+  return (
+    <AbsoluteFill
+      style={{
+        transform: offset,
+        filter: `blur(${left * blur}px)`,
+        opacity: Math.min(1, eased * 2.4),
+      }}
+    >
+      {children}
+    </AbsoluteFill>
+  )
+}
+
+/**
+ * Des traits de vitesse qui traversent l'image et s'effacent.
+ *
+ * Ils ne durent que huit images. Plus longtemps, ils deviennent un décor ; là ils
+ * ne font que souligner l'impact d'une coupe, et on ne les voit pas vraiment —
+ * on les ressent.
+ */
+export function SpeedLines({ delay = 0, count = 14, tone = LUME }: { delay?: number; count?: number; tone?: string }) {
+  const frame = useCurrentFrame()
+  const life = interpolate(frame - delay, [0, 8], [1, 0], {
+    extrapolateLeft: 'clamp',
+    extrapolateRight: 'clamp',
+  })
+  if (life <= 0) return null
+
+  return (
+    <AbsoluteFill style={{ overflow: 'hidden', pointerEvents: 'none' }}>
+      {Array.from({ length: count }, (_, index) => {
+        // Réparties par un pas irrégulier plutôt qu'au hasard : le rendu doit
+        // donner la même image à chaque capture.
+        const y = ((index * 137) % 100) + 0.5
+        const length = 180 + ((index * 71) % 320)
+        const shift = (1 - life) * (600 + ((index * 53) % 400))
+
+        return (
+          <span
+            key={index}
+            style={{
+              position: 'absolute',
+              top: `${y}%`,
+              right: shift,
+              width: length,
+              height: 2,
+              borderRadius: 2,
+              background: `linear-gradient(90deg, transparent, ${tone})`,
+              opacity: life * 0.5,
+            }}
+          />
+        )
+      })}
+    </AbsoluteFill>
+  )
+}
+
+/**
+ * Un emoji, à la taille voulue.
+ *
+ * La pile de polices nomme explicitement Noto Color Emoji : le rendu se fait dans
+ * un Chromium sans interface, où la police par défaut ne couvre pas ces glyphes et
+ * les remplacerait par des rectangles vides — un plan entier de tofu, découvert au
+ * montage final.
+ */
+export function Emoji({ children, size = 96 }: { children: React.ReactNode; size?: number }) {
+  return (
+    <span
+      style={{
+        fontFamily: "'Noto Color Emoji', 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif",
+        fontSize: size,
+        lineHeight: 1,
+        display: 'inline-block',
+      }}
+    >
+      {children}
+    </span>
   )
 }
 

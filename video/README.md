@@ -9,6 +9,7 @@ modèles 3D. Ce que le spectateur voit est reproductible dans le simulateur.
 
 ```bash
 pnpm video:audio             # le son des trois films : bruitage, sous-titres, mixages
+pnpm video:render:built      # → colombes-built.mp4    (1 min 10, la version rapide)
 pnpm video:render:70         # → colombes-70s.mp4      (1 min 10, anglais, voix off)
 pnpm video:render:ladder     # → colombes-ladder.mp4   (35 s, l'échelle des prix)
 pnpm video:render:remains    # → colombes-remains.mp4  (35 s, ce qui reste)
@@ -19,14 +20,15 @@ pnpm video:studio            # l'aperçu interactif, pour régler un montage
 `video:audio` est à relancer dès qu'on touche à un montage : il replace le
 bruitage sur les nouvelles coupes.
 
-## Trois films, une langue
+## Quatre films, une langue
 
 `kit.tsx` porte le vocabulaire commun — pigments, titres qui s'écrivent lettre à
-lettre, molette de coffre, barres de réglage, chute. `tokens.ts` les jetons,
-`three.ts` les matières et la projection, `Scene3D.tsx` le rendu des volumes.
-Sans ce partage, chaque film redéfinirait une molette légèrement différente et
-les trois cesseraient d'avoir l'air du même produit — le contraire de ce qu'ils
-démontrent.
+lettre, pad de tarification, molette de coffre, barres de réglage, entrées
+lancées, traits de vitesse, emojis, chute. `tokens.ts` les jetons, `data.ts` les
+chiffres des repères, `three.ts` les matières et la projection, `Scene3D.tsx` le
+rendu des volumes. Sans ce partage, chaque film redéfinirait une molette
+légèrement différente et les quatre cesseraient d'avoir l'air du même produit —
+le contraire de ce qu'ils démontrent.
 
 ## Le montage
 
@@ -89,6 +91,23 @@ plateformes.
 La version datée à la main qui l'a précédé oubliait deux phrases et dérivait de
 plus d'une seconde : ne pas y revenir.
 
+## La caméra qui se déplace
+
+`Scene3D` accepte une caméra décrite comme une fonction du temps du plan, et non
+comme une pose figée. C'est ce qui permet les traversées de `Built70.tsx` — un
+couloir d'anneaux, un nuage de tuiles, une allée d'animaux.
+
+La pose reste déduite du numéro d'image, condition non négociable : Remotion
+capture dans le désordre et parfois deux fois la même image, dans deux onglets
+différents. Une caméra animée par une horloge donnerait deux cadrages pour la
+même image.
+
+Un piège de cadrage s'y ajoute, vérifié à l'image : en format vertical, la
+demi-largeur visible ne fait qu'un tiers de la distance. Un objet placé à
+cinquante centimètres de l'axe sort du cadre dès un mètre cinquante — c'est-à-dire
+au moment précis où la caméra arrive sur lui. Les animaux de l'allée sont donc à
+trente centimètres, et la course s'arrête avant le dernier.
+
 ## Les schémas en volume
 
 Deux plans du film de l'échelle et deux de celui de la cascade sont de la vraie
@@ -119,9 +138,26 @@ avec `preserveDrawingBuffer`, puis la recopie sur une toile 2D visible. Une toil
 WebGL posée dans le document revient vide de la capture : le compositeur a déjà
 rendu sa mémoire.
 
+**Les emojis.** `Emoji` nomme explicitement Noto Color Emoji dans sa pile de
+polices. Le rendu se fait dans un Chromium sans interface, où la police par défaut
+ne couvre pas ces glyphes : sans ça, un plan entier de rectangles vides, découvert
+au montage final.
+
 **Le décodeur meshopt.** Les modèles de `public/models` sont compressés en
 meshopt. Sans `loader.setMeshoptDecoder(MeshoptDecoder)`, le chargement échoue par
 le rappel d'erreur — donc sans rien interrompre — et l'animal n'apparaît jamais.
+
+## Les marques
+
+Les logos à l'image viennent de `public/logos`, en CC0, et l'usage est nominatif :
+on situe des entreprises connues sur une échelle de prix pour expliquer l'échelle.
+Deux repères de l'app n'ont volontairement pas de fichier — leurs marques ont
+demandé le retrait de Simple Icons — et ils n'apparaissent donc pas dans les films.
+
+Aucune marque n'est redessinée de mémoire, y compris celle de Claude : le nom est
+composé en typographie. Redessiner un logo de tête produit un faux qui prétend à
+l'officiel ; le nom dit la même chose et n'invente rien. Voir
+`public/logos/README.md`.
 
 ## Le navigateur
 

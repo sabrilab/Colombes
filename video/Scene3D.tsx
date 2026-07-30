@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { continueRender, delayRender, useCurrentFrame, useVideoConfig } from 'remotion'
 import * as THREE from 'three'
-import { type CameraSpec, DEFAULT_TARGET } from './three'
+import { DEFAULT_TARGET, poseAt, type CameraMove } from './three'
 
 /**
  * Une scène en trois dimensions, rendue image par image.
@@ -41,7 +41,7 @@ export function Scene3D({
 }: {
   width: number
   height: number
-  camera: CameraSpec
+  camera: CameraMove
   /** Construit la scène, une fois. La capture attend la promesse. */
   build: (scene: THREE.Scene) => void | Promise<void>
   /** Appelé avant chaque rendu. `progress` va de 0 à 1 sur la durée du plan. */
@@ -62,8 +62,11 @@ export function Scene3D({
   updateRef.current = update
   const frameRef = useRef(frame)
   frameRef.current = frame
-
-  const at = (value: number) => (durationInFrames > 1 ? value / (durationInFrames - 1) : 0)
+  const cameraRef = useRef(camera)
+  cameraRef.current = camera
+  /** Lue dans l'effet de construction, qui ne doit pas se relancer quand elle change. */
+  const durationRef = useRef(durationInFrames)
+  durationRef.current = durationInFrames
 
   useEffect(() => {
     const visible = canvasRef.current
@@ -87,9 +90,9 @@ export function Scene3D({
     renderer.setSize(width, height, false)
 
     const scene = new THREE.Scene()
-    const lens = new THREE.PerspectiveCamera(camera.fov ?? 35, width / height, 0.1, 100)
-    lens.position.set(...camera.position)
-    lens.lookAt(new THREE.Vector3(...(camera.target ?? DEFAULT_TARGET)))
+    // La focale de départ suffit à créer l'objectif : la pose complète est
+    // réappliquée à chaque image, y compris la focale si le plan la fait varier.
+    const lens = new THREE.PerspectiveCamera(35, width / height, 0.1, 200)
 
     const rig: Rig = { renderer, scene, lens, paint, source }
 
@@ -98,7 +101,7 @@ export function Scene3D({
         rigRef.current = rig
         // Premier tracé avant de libérer la capture : `setReady` est asynchrone,
         // et Remotion photographierait la toile encore vide.
-        drawRig(rig, frameRef.current, at(frameRef.current), updateRef.current)
+        paintScene(rig, frameRef.current, durationRef.current, cameraRef.current, updateRef.current)
         setReady(true)
       })
       .catch((error) => {
@@ -111,8 +114,9 @@ export function Scene3D({
     return () => {
       renderer.dispose()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [width, height, camera.fov, camera.position.join(), camera.target?.join()])
+    // La scène ne se reconstruit que si la toile change de taille : tout le reste
+    // — pose de caméra, contenu — est réappliqué image par image.
+  }, [width, height])
 
   /**
    * Le tracé passe par un effet de mise en page, pas par un effet différé :
@@ -122,7 +126,7 @@ export function Scene3D({
   useLayoutEffect(() => {
     const rig = rigRef.current
     if (!rig || !ready) return
-    drawRig(rig, frame, at(frame), updateRef.current)
+    paintScene(rig, frame, durationInFrames, cameraRef.current, updateRef.current)
   })
 
   return (
@@ -135,13 +139,24 @@ export function Scene3D({
   )
 }
 
-/** Mise à jour, rendu, recopie — dans cet ordre, à chaque image. */
-function drawRig(
+/** Pose de caméra, mise à jour, rendu, recopie — dans cet ordre, à chaque image. */
+function paintScene(
   rig: Rig,
   frame: number,
-  progress: number,
+  durationInFrames: number,
+  camera: CameraMove,
   update: (frame: number, progress: number, scene: THREE.Scene) => void,
 ) {
+  const progress = durationInFrames > 1 ? frame / (durationInFrames - 1) : 0
+
+  const pose = poseAt(camera, progress, frame)
+  rig.lens.position.set(...pose.position)
+  rig.lens.lookAt(new THREE.Vector3(...(pose.target ?? DEFAULT_TARGET)))
+  if (rig.lens.fov !== (pose.fov ?? 35)) {
+    rig.lens.fov = pose.fov ?? 35
+    rig.lens.updateProjectionMatrix()
+  }
+
   update(frame, progress, rig.scene)
   rig.renderer.render(rig.scene, rig.lens)
   rig.paint.clearRect(0, 0, rig.source.width, rig.source.height)

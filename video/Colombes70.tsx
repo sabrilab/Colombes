@@ -7,7 +7,17 @@ import { formatCurrency, formatMultiple } from '../src/lib/format'
 import { PRICING_ANIMALS, animalFor } from '../src/lib/pricePad'
 import { LANDMARKS, landmarkAcv } from '../src/lib/landmarks'
 import { GRAINS } from '../src/lib/learn'
-import { AnimalBeat, Closing, DialFace, Eyebrow, Film, LetterLine, SliderBar } from './kit'
+import {
+  AnimalBeat,
+  Closing,
+  DialFace,
+  Eyebrow,
+  Film,
+  LetterLine,
+  PricePad,
+  SliderBar,
+} from './kit'
+import { landmarkMonthly, tierBand } from './data'
 import { DIM, HAZE, INK, LUME, RED, centred, display, mono } from './tokens'
 import { TIMELINE, TOTAL_FRAMES } from './cuts/film70.mjs'
 import captions from './captions.json'
@@ -28,200 +38,6 @@ import captions from './captions.json'
  * Le son est un seul fichier, mixé d'avance par `scripts/build-mix.mjs` : voix,
  * musique et bruitage y sont déjà d'accord entre eux.
  */
-
-/* ────────────────────────────────────────────────────────────────────────────
-   Acte 0 — l'accroche : le pad, en marche
-   ──────────────────────────────────────────────────────────────────────────── */
-
-/**
- * Le pad de tarification, tel qu'on le manipule dans l'app.
- *
- * C'est le plan d'ouverture parce que c'est le seul geste que personne d'autre
- * ne propose : on tire une bille sur une plaque, et une valorisation se fait.
- * La bille suit une courbe — un déplacement en ligne droite aurait l'air d'une
- * animation, pas d'un doigt. Le chiffre est recalculé à chaque image par le
- * moteur de l'app, ce qui interdit de tricher sur la démonstration.
- */
-function PadHook() {
-  const frame = useCurrentFrame()
-  const { fps } = useVideoConfig()
-
-  const travel = spring({ frame: frame - 6, fps, config: { damping: 26, mass: 1.1, stiffness: 90 } })
-  const x = interpolate(travel, [0, 1], [0.14, 0.74])
-  const y = interpolate(travel, [0, 1], [0.82, 0.26]) - Math.sin(travel * Math.PI) * 0.06
-
-  // Prix et clients lus sur la plaque, puis la valorisation qui en découle.
-  const price = Math.round(4 + (1 - y) ** 2.1 * 190)
-  const customers = Math.round(40 + x ** 2.3 * 3_400)
-  const results = compute({
-    ...DEFAULT_INPUTS,
-    tiers: [{ name: 'Subscription', price, mix: 1 }],
-    customers,
-    newCustomersPerMonth: Math.max(4, Math.round(customers * 0.05)),
-  })
-
-  const grid = 11
-
-  return (
-    <AbsoluteFill style={{ ...centred, padding: '0 60px' }}>
-      {/* La valorisation, en haut, comme sur la page d'accueil. */}
-      <p
-        style={{
-          ...mono,
-          margin: 0,
-          fontSize: 138,
-          fontWeight: 600,
-          letterSpacing: '-0.03em',
-          color: INK,
-          textShadow: `0 0 60px oklch(0.92 0.145 112 / ${0.15 + travel * 0.3})`,
-        }}
-      >
-        {formatCurrency(Math.round(results.valuation.value))}
-      </p>
-      <p
-        style={{
-          ...display,
-          margin: '6px 0 44px',
-          fontSize: 29,
-          letterSpacing: '0.24em',
-          textTransform: 'uppercase',
-          color: DIM,
-        }}
-      >
-        What the app is worth
-      </p>
-
-      <div
-        style={{
-          position: 'relative',
-          width: 960,
-          height: 1060,
-          borderRadius: 34,
-          border: '1px solid oklch(1 0 0 / 0.12)',
-          backgroundColor: 'oklch(0.16 0.006 110)',
-          boxShadow: 'inset 0 1px 0 0 oklch(1 0 0 / 0.07), inset 0 0 90px -10px oklch(0 0 0 / 0.7)',
-          overflow: 'hidden',
-        }}
-      >
-        {/* La trame gravée. */}
-        {Array.from({ length: grid }, (_, i) => (
-          <React.Fragment key={i}>
-            <span
-              style={{
-                position: 'absolute',
-                left: `${(i / (grid - 1)) * 100}%`,
-                top: 0,
-                bottom: 0,
-                width: 1,
-                backgroundColor: 'oklch(1 0 0 / 0.05)',
-              }}
-            />
-            <span
-              style={{
-                position: 'absolute',
-                top: `${(i / (grid - 1)) * 100}%`,
-                left: 0,
-                right: 0,
-                height: 1,
-                backgroundColor: 'oklch(1 0 0 / 0.05)',
-              }}
-            />
-          </React.Fragment>
-        ))}
-
-        {/* La surface parcourue : l'aire, c'est le revenu. */}
-        <div
-          style={{
-            position: 'absolute',
-            left: 0,
-            bottom: 0,
-            width: `${x * 100}%`,
-            height: `${(1 - y) * 100}%`,
-            background:
-              'linear-gradient(to top right, oklch(0.92 0.145 112 / 0.05), oklch(0.92 0.145 112 / 0.3))',
-            borderRight: '2px solid oklch(0.92 0.145 112 / 0.6)',
-            borderTop: '2px solid oklch(0.92 0.145 112 / 0.6)',
-          }}
-        />
-
-        {/* La traînée du geste : elle dit d'où vient la bille.
-
-            `pathLength={1}` normalise la longueur de la courbe : sans lui, le
-            tiret est exprimé dans les unités déformées du `viewBox` et se
-            fragmente au lieu de se dérouler. */}
-        <svg
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-        >
-          <path
-            d="M 14 82 C 34 78, 52 60, 74 26"
-            fill="none"
-            stroke="oklch(0.92 0.145 112 / 0.35)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            pathLength={1}
-            strokeDasharray="1"
-            strokeDashoffset={1 - travel}
-          />
-        </svg>
-
-        {/* La bille, et son onde à l'arrivée. */}
-        <div
-          style={{
-            position: 'absolute',
-            left: `${x * 100}%`,
-            top: `${y * 100}%`,
-            transform: 'translate(-50%, -50%)',
-            width: 132,
-            height: 132,
-            borderRadius: '50%',
-            display: 'flex',
-            ...centred,
-            border: '1px solid oklch(0.92 0.145 112 / 0.55)',
-            background: 'radial-gradient(circle at 32% 26%, oklch(1 0 0 / 0.2), oklch(0.13 0 0))',
-            boxShadow: `0 0 ${40 + travel * 30}px -4px oklch(0.92 0.145 112 / 0.9), inset 0 1px 1px oklch(1 0 0 / 0.25)`,
-          }}
-        >
-          <div style={{ width: 58, color: LUME }}>
-            <DoveLogo className="" />
-          </div>
-        </div>
-
-        <span
-          style={{ ...mono, position: 'absolute', left: 26, top: 22, fontSize: 30, color: 'oklch(1 0 0 / 0.45)' }}
-        >
-          {formatCurrency(price)}/mo
-        </span>
-        <span
-          style={{ ...mono, position: 'absolute', right: 26, bottom: 20, fontSize: 30, color: 'oklch(1 0 0 / 0.45)' }}
-        >
-          {customers.toLocaleString('en-US')} customers
-        </span>
-      </div>
-    </AbsoluteFill>
-  )
-}
-
-/**
- * Le prix mensuel par client d'un repère, calculé et non recopié.
- *
- * Écrire ces chiffres à la main est ce qui rend un film faux : Salesforce est à
- * dix-neuf mille euros par client et par mois, pas au millier qu'on imagine, et
- * c'est précisément ce que la démonstration doit faire voir.
- */
-function landmarkMonthly(id: string): string {
-  const company = LANDMARKS.find((candidate) => candidate.id === id)
-  if (!company) return ''
-  return `${formatCurrency(Math.round(landmarkAcv(company) / 12))} / month`
-}
-
-/** La fourchette de prix d'un palier, pour les plans sans repère nommé. */
-function tierBand(name: string): string {
-  const animal = PRICING_ANIMALS.find((candidate) => candidate.name === name)
-  if (!animal) return ''
-  return `${formatCurrency(animal.minPrice)} – ${formatCurrency(animal.maxPrice)} / month`
-}
 
 /* ────────────────────────────────────────────────────────────────────────────
    Acte 1 — le chiffre emprunté
@@ -1109,7 +925,7 @@ function Modules() {
  * repartent à chaque coupe.
  */
 const SHOT_NODES: Record<string, React.ReactNode> = {
-  pad: <PadHook />,
+  pad: <PricePad caption="What the app is worth" />,
   worth: <LetterLine text="Nobody told you what it's worth" accent="worth" size={104} />,
   borrowed: <BorrowedNumber />,
   reasoning: <LetterLine text="So here is the reasoning" accent="reasoning" />,

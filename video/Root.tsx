@@ -4,9 +4,11 @@ import { Colombes40 } from './Colombes40'
 import { Colombes70 } from './Colombes70'
 import { Ladder35 } from './Ladder35'
 import { Remains35 } from './Remains35'
+import { Built70 } from './Built70'
 import { FPS, TOTAL_FRAMES } from './cuts/film70.mjs'
 import { TOTAL_FRAMES as LADDER_FRAMES } from './cuts/ladder.mjs'
 import { TOTAL_FRAMES as REMAINS_FRAMES } from './cuts/remains.mjs'
+import { TOTAL_FRAMES as BUILT_FRAMES } from './cuts/built.mjs'
 import './assets/fonts.css'
 import './assets/base.css'
 
@@ -48,6 +50,18 @@ export function RemotionRoot() {
         id="Ladder35"
         component={Ladder35}
         durationInFrames={LADDER_FRAMES}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{ sound: true }}
+      />
+
+      {/* La version rapide : caméra mobile, emojis, logos. Même durée que le film
+          d'une minute dix, deux fois plus de mouvement. */}
+      <Composition
+        id="Built70"
+        component={Built70}
+        durationInFrames={BUILT_FRAMES}
         fps={FPS}
         width={1080}
         height={1920}

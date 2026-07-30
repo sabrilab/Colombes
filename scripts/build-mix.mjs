@@ -58,6 +58,15 @@ const FILMS = [
     ],
   },
   {
+    label: 'la version rapide, 1 min 10',
+    output: 'public/film/mix-built.mp3',
+    cut: '../video/cuts/built.mjs',
+    voice: null,
+    musicRms: -17.5,
+    musicFrom: 8,
+    swells: [],
+  },
+  {
     label: "l'échelle, 35 s",
     output: 'public/film/mix-ladder.mp3',
     cut: '../video/cuts/ladder.mjs',

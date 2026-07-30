@@ -48,6 +48,20 @@ export function project(
   }
 }
 
+/**
+ * La caméra d'un plan : figée, ou pilotée image par image.
+ *
+ * Une caméra qui se déplace est ce qui distingue une scène en volume d'une
+ * illustration en relief. On la décrit comme une fonction du temps du plan plutôt
+ * que par une animation posée sur l'objet : la pose reste ainsi déductible du
+ * numéro d'image, ce dont Remotion a besoin pour capturer dans le désordre.
+ */
+export type CameraMove = CameraSpec | ((progress: number, frame: number) => CameraSpec)
+
+export function poseAt(camera: CameraMove, progress: number, frame: number): CameraSpec {
+  return typeof camera === 'function' ? camera(progress, frame) : camera
+}
+
 /** L'éclairage de l'app : clé chaude, contre-jour citron, ambiance discrète. */
 export function standardLights(scene: THREE.Scene) {
   const key = new THREE.DirectionalLight(0xffffff, 2.6)
