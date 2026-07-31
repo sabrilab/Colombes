@@ -8,7 +8,8 @@ modèles 3D. Ce que le spectateur voit est reproductible dans le simulateur.
 ## Rendre
 
 ```bash
-pnpm video:audio             # le son des trois films : bruitage, sous-titres, mixages
+pnpm video:audio               # le son de tous les films : bruitage, sous-titres, mixages
+pnpm video:render:heuristics # → colombes-heuristics.mp4 (1 min 10, les six règles)
 pnpm video:render:levers     # → colombes-levers.mp4   (1 min 10, les deux leviers)
 pnpm video:render:built      # → colombes-built.mp4    (1 min 10, la version rapide)
 pnpm video:render:70         # → colombes-70s.mp4      (1 min 10, anglais, voix off)
@@ -21,15 +22,24 @@ pnpm video:studio            # l'aperçu interactif, pour régler un montage
 `video:audio` est à relancer dès qu'on touche à un montage : il replace le
 bruitage sur les nouvelles coupes.
 
-## Cinq films, une langue
+## Six films, une langue
 
 `kit.tsx` porte le vocabulaire commun — pigments, titres qui s'écrivent lettre à
 lettre, pad de tarification, molette de coffre, barres de réglage, entrées
 lancées, traits de vitesse, emojis, chute. `tokens.ts` les jetons, `data.ts` les
 chiffres des repères, `three.ts` les matières et la projection, `Scene3D.tsx` le
 rendu des volumes. Sans ce partage, chaque film redéfinirait une molette
-légèrement différente et les cinq cesseraient d'avoir l'air du même produit —
+légèrement différente et les six cesseraient d'avoir l'air du même produit —
 le contraire de ce qu'ils démontrent.
+
+Le dernier, `Heuristics70.tsx`, s'écarte des autres sur un point de fond : il
+n'explique pas une mécanique, il s'adresse à quelqu'un. Le sujet de chaque
+réplique est le spectateur, le premier mot lisible du film est « you », et les six
+règles qu'il donne ne sont pas écrites pour le film — ce sont les seuils de
+`HEALTH_THRESHOLDS`, ceux que l'app applique déjà, libellés compris. Il s'interdit
+par ailleurs toute arête vive : relief, anneaux, cylindres, billes. La seule
+grille rectangulaire est celle du tableur, c'est-à-dire ce que le film désigne
+comme l'adversaire, et elle se dissout à l'image.
 
 ## Le montage
 
@@ -61,8 +71,8 @@ l'accélération — et l'erreur ne s'entend qu'après le rendu.
 
 ## Déposer une voix off
 
-Deux films en attendent une — la version rapide et les deux leviers. Le fichier va
-dans `video/audio/`, puis
+Deux films en attendent une — la version rapide (`voice-built.wav`) et les six
+règles (`voice-heuristics.wav`). Le fichier va dans `video/audio/`, puis
 
 ```bash
 pnpm video:audio && pnpm video:render:built
@@ -191,8 +201,13 @@ l'officiel ; le nom dit la même chose et n'invente rien. Voir
 Dans un environnement sans Chrome installable, désigner un binaire existant :
 
 ```bash
-pnpm video:render:70 --browser-executable=/chemin/vers/headless_shell
+REMOTION_BROWSER=/chemin/vers/headless_shell pnpm video:render:70
 ```
+
+`remotion.config.ts` lit cette variable ; les scripts de `package.json` restent
+donc valables sur une machine ordinaire, où Remotion télécharge son propre
+Chromium. Là où la sortie réseau est filtrée, ce téléchargement répond 403 et plus
+rien ne se rend — alors qu'un binaire utilisable est souvent déjà installé.
 
 Il faut le **headless shell**, pas Chrome complet : les versions récentes de
 Chrome ont retiré l'ancien mode sans interface dont Remotion se sert.

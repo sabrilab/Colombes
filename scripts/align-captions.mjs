@@ -119,6 +119,46 @@ const LEVERS = [
 ]
 
 /**
+ * Le texte du film des règles empiriques.
+ *
+ * Le registre change, et c'est délibéré : les autres films expliquent une
+ * mécanique, celui-ci s'adresse à quelqu'un. Le sujet de chaque phrase est le
+ * spectateur — « tu », jamais « on » — parce que ce qui intéresse le plus une
+ * personne reste elle-même. Le silence devant la question n'est pas présenté
+ * comme une faute mais comme une information qu'on ne lui a jamais donnée, et
+ * l'adversaire du film n'est pas l'acheteur : c'est le mystère entretenu autour
+ * du chiffre.
+ *
+ * Les six règles ne sont pas inventées pour le film : ce sont les seuils de
+ * `src/lib/engine/benchmarks.ts`, ceux que l'app applique déjà. Un film qui
+ * annoncerait d'autres chiffres que le simulateur serait une publicité, pas une
+ * démonstration.
+ */
+const HEURISTICS = [
+  { text: 'You built something. And every month, people pay you for it.' },
+  { text: "Then somebody asks what it's worth, and you go quiet." },
+  { text: 'That silence is not a gap in you.' },
+  { text: 'Nobody ever told you the honest part: nobody computes that number.' },
+  { text: 'They estimate it, with rules of thumb.' },
+  { text: 'There are six. And you can have all six, right now.' },
+  { text: 'Churn under 3% a month.', spoken: 'Churn under three percent a month.' },
+  { text: 'Revenue that grows inside the customers you already have.' },
+  { text: 'A customer worth three times what they cost to win.' },
+  { text: 'That cost paid back inside twelve months.' },
+  { text: '80% gross margin.', spoken: 'Eighty percent gross margin.' },
+  { text: 'And growth plus margin above forty.' },
+  { text: 'Same revenue, six rules held instead of missed, and it is worth more than twice as much.' },
+  { text: 'You were told to just go and get more users. You suspected that was lazy advice.' },
+  { text: 'You were right. Nobody is counting your users. They are reading whether they stay.' },
+  { text: 'So the fear of being found out, in a room full of spreadsheets, has it backwards.' },
+  { text: 'It was never a test you fail. It is a map.' },
+  { text: 'And you are the only one who has ever stood on the terrain.' },
+  { text: 'Colombes puts all six in your hands. Move one, and watch your number move.' },
+  { text: 'Your app is worth something today. Go and find out what.' },
+  { text: 'Free. No sign-up.', spoken: 'Free. No sign up.' },
+]
+
+/**
  * Les films qui ont une voix off.
  *
  * Les deux courts n'en ont pas et ne passent donc pas ici : sans parole, il n'y a
@@ -174,6 +214,48 @@ const FILMS = [
       ['does-not', 22],
       ['pad', 23],
       ['closing', 26],
+    ],
+    total: 2100,
+  },
+  {
+    voice: 'video/audio/voice-heuristics.wav',
+    script: HEURISTICS,
+    captions: 'video/captions-heuristics.json',
+    srt: 'public/film/colombes-heuristics.en.srt',
+    /*
+     * Estimation tant que l'onde n'est pas là : 215 mots au débit mesuré sur les
+     * deux voix précédentes — 235 mots en 65,27 s, soit 3,6 mots par seconde.
+     * Le film est monté sur cette estimation, et `anchors` ci-dessous imprimera
+     * les durées vraies dès que le fichier arrivera.
+     */
+    duration: 59.7,
+    from: 4,
+    /*
+     * Le plan qui commence sur chaque ligne. « map » en porte deux : la carte est
+     * le seul endroit du film où l'on s'arrête, et la couper en deux casserait le
+     * seul plan qui respire.
+     */
+    anchors: [
+      ['you', 0],
+      ['quiet', 1],
+      ['not-a-gap', 2],
+      ['nobody-computes', 3],
+      ['estimate', 4],
+      ['six', 5],
+      ['churn', 6],
+      ['nrr', 7],
+      ['ltv-cac', 8],
+      ['payback', 9],
+      ['margin', 10],
+      ['rule-of-40', 11],
+      ['worth-twice', 12],
+      ['lazy-advice', 13],
+      ['you-were-right', 14],
+      ['fear', 15],
+      ['map', 16],
+      ['pad', 18],
+      ['today', 19],
+      ['closing', 20],
     ],
     total: 2100,
   },

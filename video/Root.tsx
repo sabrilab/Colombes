@@ -6,11 +6,13 @@ import { Ladder35 } from './Ladder35'
 import { Remains35 } from './Remains35'
 import { Built70 } from './Built70'
 import { Levers70 } from './Levers70'
+import { Heuristics70 } from './Heuristics70'
 import { FPS, TOTAL_FRAMES } from './cuts/film70.mjs'
 import { TOTAL_FRAMES as LADDER_FRAMES } from './cuts/ladder.mjs'
 import { TOTAL_FRAMES as REMAINS_FRAMES } from './cuts/remains.mjs'
 import { TOTAL_FRAMES as BUILT_FRAMES } from './cuts/built.mjs'
 import { TOTAL_FRAMES as LEVERS_FRAMES } from './cuts/levers.mjs'
+import { TOTAL_FRAMES as HEURISTICS_FRAMES } from './cuts/heuristics.mjs'
 import './assets/fonts.css'
 import './assets/base.css'
 
@@ -76,6 +78,19 @@ export function RemotionRoot() {
         id="Levers70"
         component={Levers70}
         durationInFrames={LEVERS_FRAMES}
+        fps={FPS}
+        width={1080}
+        height={1920}
+        defaultProps={{ sound: true }}
+      />
+
+      {/* « Six rules of thumb » : le film qui s'adresse à quelqu'un plutôt qu'à un
+          sujet. Vingt plans, cinq scènes en volume, et aucune arête vive — sauf la
+          grille du tableur, qui est ce que le film désigne comme l'adversaire. */}
+      <Composition
+        id="Heuristics70"
+        component={Heuristics70}
+        durationInFrames={HEURISTICS_FRAMES}
         fps={FPS}
         width={1080}
         height={1920}

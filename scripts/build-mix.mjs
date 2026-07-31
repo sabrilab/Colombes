@@ -94,6 +94,30 @@ const FILMS = [
     swells: [],
   },
   {
+    label: 'les six règles, 1 min 10',
+    output: 'public/film/mix-heuristics.mp3',
+    cut: '../video/cuts/heuristics.mjs',
+    voice: 'video/audio/voice-heuristics.wav',
+    /*
+     * La voix entre à la quatrième seconde — l'accroche survole le relief sans
+     * un mot — et se tait vers la soixante-quatrième. Le survol et la chute sont
+     * donc portés par la musique seule, qui y monte de trois décibels.
+     */
+    voiceFrom: 4,
+    musicRms: -25.5,
+    musicRmsSolo: -17.5,
+    /*
+     * 26 s : la piste dure 2 min 14, donc soixante-dix secondes prises là ne
+     * bouclent pas — et c'est une section qu'aucun des quatre autres films
+     * n'emploie, ce qui évite de les entendre comme cinq montages du même rush.
+     */
+    musicFrom: 26,
+    swells: [
+      [0, 4.2, 3],
+      [64, Infinity, 3],
+    ],
+  },
+  {
     label: "l'échelle, 35 s",
     output: 'public/film/mix-ladder.mp3',
     cut: '../video/cuts/ladder.mjs',

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Colombes — les films</title>
-    <meta name="description" content="Trois films rendus par le code depuis le design system de l'app." />
+    <meta name="description" content="Les films de Colombes, rendus par le code depuis le design system de l'app." />
     <meta name="theme-color" content="#14150f" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="robots" content="noindex" />
@@ -153,8 +153,25 @@
   <body>
     <header>
       <p class="eyebrow">Colombes</p>
-      <h1>Trois films</h1>
+      <h1>Les films</h1>
     </header>
+
+    <section>
+      <h2>1 min 10 · les six règles</h2>
+      <p class="note">
+        Le film qui s'adresse à quelqu'un plutôt qu'à un sujet. On survole un relief
+        pendant sept secondes, on te pose dessus, puis on te donne les six règles
+        empiriques dont l'app se sert — celles-là mêmes, seuils compris. Voix off et
+        sous-titres.
+      </p>
+      <video src="/film/colombes-heuristics.mp4" controls playsinline preload="metadata">
+        <track kind="subtitles" srclang="en" label="English" src="/film/colombes-heuristics.en.srt" default />
+      </video>
+      <div class="actions">
+        <a class="primary" href="/film/colombes-heuristics.mp4" download>Télécharger</a>
+        <a class="ghost" href="/film/colombes-heuristics.en.srt" download>Sous-titres .srt</a>
+      </div>
+    </section>
 
     <section>
       <h2>1 min 10 · les deux leviers</h2>
