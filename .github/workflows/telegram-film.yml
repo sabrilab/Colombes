@@ -1,0 +1,108 @@
+# Envoie sur Telegram les films qui viennent d'être poussés.
+#
+# Pourquoi passer par une action et non par la session qui fabrique le film :
+# l'environnement d'exécution de Claude Code a une politique de sortie réseau
+# qui refuse `api.telegram.org` — 403 sur le CONNECT, vérifié. Les coureurs de
+# GitHub n'ont pas cette restriction. La session pousse donc le fichier, et c'est
+# GitHub qui l'expédie.
+#
+# Le jeton ne vit nulle part dans le dépôt. Deux secrets à créer dans
+# Settings → Secrets and variables → Actions :
+#
+#   TELEGRAM_BOT_TOKEN   donné par @BotFather
+#   TELEGRAM_CHAT_ID     l'identifiant de la conversation (parler au bot, puis
+#                        lire `chat.id` sur https://api.telegram.org/bot<jeton>/getUpdates)
+#
+# Tant que ces deux secrets n'existent pas, le travail s'arrête proprement en
+# le disant. Il ne casse rien et ne fait pas échouer la poussée.
+
+name: Envoyer les films sur Telegram
+
+on:
+  push:
+    branches:
+      - main
+      - 'claude/films/**'
+    paths:
+      - 'public/film/**.mp4'
+
+# Deux poussées rapprochées ne doivent pas envoyer deux fois le même film.
+concurrency:
+  group: telegram-film-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Il faut l'état d'avant pour savoir quels fichiers ont changé, et une
+          # profondeur de deux ne suffit pas quand la poussée porte plusieurs
+          # commits.
+          fetch-depth: 0
+
+      - name: Lister les films de cette poussée
+        id: films
+        run: |
+          before='${{ github.event.before }}'
+          # Sur une branche neuve, `before` ne vaut que des zéros : il n'y a pas
+          # d'état précédent à comparer, on prend donc le dernier commit.
+          if [ -z "$before" ] || [ "$before" = "0000000000000000000000000000000000000000" ]; then
+            range='HEAD~1 HEAD'
+          else
+            range="$before ${{ github.sha }}"
+          fi
+
+          # `--diff-filter=d` écarte les suppressions : un fichier effacé n'a
+          # rien à envoyer, et `curl` échouerait dessus.
+          git diff --name-only --diff-filter=d $range -- 'public/film/*.mp4' > films.txt || true
+          echo "count=$(wc -l < films.txt)" >> "$GITHUB_OUTPUT"
+          cat films.txt
+
+      - name: Envoyer
+        if: steps.films.outputs.count != '0'
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$CHAT" ]; then
+            echo "TELEGRAM_BOT_TOKEN ou TELEGRAM_CHAT_ID manquant : rien envoyé."
+            exit 0
+          fi
+
+          while read -r film; do
+            [ -f "$film" ] || continue
+
+            # L'API bot refuse au-delà de cinquante mégaoctets. Les films en font
+            # entre quinze et vingt-cinq ; le garde-fou existe pour le jour où
+            # l'un d'eux grossit, afin qu'on lise la raison plutôt qu'une erreur
+            # de l'API.
+            size=$(stat -c%s "$film")
+            if [ "$size" -gt 49000000 ]; then
+              echo "$film fait $((size / 1000000)) Mo, au-delà de la limite de l'API bot. Ignoré."
+              continue
+            fi
+
+            name=$(basename "$film")
+            subtitles="${film%.mp4}.en.srt"
+            caption="🕊 $name — $(git log -1 --pretty=%s)"
+
+            curl -sS --fail-with-body \
+              -F "chat_id=$CHAT" \
+              -F "caption=$caption" \
+              -F "supports_streaming=true" \
+              -F "video=@$film" \
+              "https://api.telegram.org/bot$TOKEN/sendVideo" > /dev/null
+
+            # Les sous-titres partent à part : Telegram ne les incruste pas, et
+            # les plateformes de publication les demandent en fichier.
+            if [ -f "$subtitles" ]; then
+              curl -sS --fail-with-body \
+                -F "chat_id=$CHAT" \
+                -F "document=@$subtitles" \
+                "https://api.telegram.org/bot$TOKEN/sendDocument" > /dev/null
+            fi
+
+            echo "envoyé : $name"
+          done < films.txt
