@@ -7,12 +7,14 @@ import { Remains35 } from './Remains35'
 import { Built70 } from './Built70'
 import { Levers70 } from './Levers70'
 import { Heuristics70 } from './Heuristics70'
+import { Product60 } from './Product60'
 import { FPS, TOTAL_FRAMES } from './cuts/film70.mjs'
 import { TOTAL_FRAMES as LADDER_FRAMES } from './cuts/ladder.mjs'
 import { TOTAL_FRAMES as REMAINS_FRAMES } from './cuts/remains.mjs'
 import { TOTAL_FRAMES as BUILT_FRAMES } from './cuts/built.mjs'
 import { TOTAL_FRAMES as LEVERS_FRAMES } from './cuts/levers.mjs'
 import { TOTAL_FRAMES as HEURISTICS_FRAMES } from './cuts/heuristics.mjs'
+import { TOTAL_FRAMES as PRODUCT_FRAMES } from './cuts/product.mjs'
 import './assets/fonts.css'
 import './assets/base.css'
 
@@ -94,6 +96,19 @@ export function RemotionRoot() {
         fps={FPS}
         width={1080}
         height={1920}
+        defaultProps={{ sound: true }}
+      />
+
+      {/* Le seul film en 16/9, et le seul qui montre le produit lui-même : des
+          captures de l'app construite, posées sur des plaques dans un espace en
+          perspective. Une minute, en anglais, pour obtenir une inscription. */}
+      <Composition
+        id="Product60"
+        component={Product60}
+        durationInFrames={PRODUCT_FRAMES}
+        fps={FPS}
+        width={1920}
+        height={1080}
         defaultProps={{ sound: true }}
       />
 

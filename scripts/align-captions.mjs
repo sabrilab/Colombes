@@ -159,6 +159,35 @@ const HEURISTICS = [
 ]
 
 /**
+ * Le texte du film de présentation, le seul en 16/9.
+ *
+ * Il ne démontre pas une idée : il montre le produit et demande une inscription.
+ * D'où un texte plus court et plus plat que les autres — chaque réplique nomme
+ * ce qui est à l'écran au même instant, et rien de plus. Sur un film de produit,
+ * une phrase qui brille pendant qu'on regarde une interface fait perdre les deux.
+ */
+const PRODUCT = [
+  { text: 'You built an app. People pay for it every month, and it is worth something today.' },
+  { text: 'You just have no way of knowing what.' },
+  { text: 'Every calculator online hands you one number and keeps the reasoning to itself.' },
+  { text: 'Colombes gives you the reasoning.' },
+  { text: 'Set a price, set a customer count, and you have a first estimate.' },
+  { text: 'You get a valuation, the range around it, and the multiple that produced it.' },
+  { text: 'Then the levers that actually move it: pricing, churn, acquisition.' },
+  { text: 'Move one, and the number moves with it, in front of you.' },
+  {
+    text: 'Every metric is graded against the market: lifetime value over cost, payback, retention, rule of 40.',
+    spoken:
+      'Every metric is graded against the market: lifetime value over cost, payback, retention, rule of forty.',
+  },
+  { text: 'Where you sit has a name — five tiers, from mice to whales, and each one is a different company to run.' },
+  { text: 'And when you want to know why a number moved, it is written down in plain words.' },
+  { text: 'Or drag a single dove across a plate, and watch a valuation happen under your hand.' },
+  { text: 'No spreadsheet. No sales call. No credit card.' },
+  { text: 'Colombes. Create your free account.' },
+]
+
+/**
  * Les films qui ont une voix off.
  *
  * Les deux courts n'en ont pas et ne passent donc pas ici : sans parole, il n'y a
@@ -258,6 +287,34 @@ const FILMS = [
       ['closing', 20],
     ],
     total: 2100,
+  },
+  {
+    voice: 'video/audio/voice-product.wav',
+    script: PRODUCT,
+    captions: 'video/captions-product.json',
+    srt: 'public/film/colombes-product.en.srt',
+    // 174 mots au débit mesuré sur les voix précédentes, entrée à la troisième
+    // seconde : la chute garde ainsi neuf secondes de bouton à l'image.
+    duration: 48.3,
+    from: 3,
+    anchors: [
+      ['open', 0],
+      ['worth', 1],
+      ['black-box', 2],
+      ['enter', 3],
+      ['home', 4],
+      ['valuation', 5],
+      // « bouge un levier » et « le chiffre bouge avec » sont le même plan : c'est
+      // le seul endroit du film où l'on voit deux états réels de l'app se succéder.
+      ['levers', 6],
+      ['health', 8],
+      ['tiers', 9],
+      ['learn', 10],
+      ['pad', 11],
+      ['free', 12],
+      ['cta', 13],
+    ],
+    total: 1800,
   },
 ]
 

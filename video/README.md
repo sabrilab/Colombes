@@ -9,6 +9,8 @@ modèles 3D. Ce que le spectateur voit est reproductible dans le simulateur.
 
 ```bash
 pnpm video:audio               # le son de tous les films : bruitage, sous-titres, mixages
+pnpm video:shoot             # photographie les vraies vues de l'app (film 16/9)
+pnpm video:render:product    # → colombes-product.mp4  (1 min, 16/9, le produit)
 pnpm video:render:heuristics # → colombes-heuristics.mp4 (1 min 10, les six règles)
 pnpm video:render:levers     # → colombes-levers.mp4   (1 min 10, les deux leviers)
 pnpm video:render:built      # → colombes-built.mp4    (1 min 10, la version rapide)
@@ -22,14 +24,14 @@ pnpm video:studio            # l'aperçu interactif, pour régler un montage
 `video:audio` est à relancer dès qu'on touche à un montage : il replace le
 bruitage sur les nouvelles coupes.
 
-## Six films, une langue
+## Sept films, une langue
 
 `kit.tsx` porte le vocabulaire commun — pigments, titres qui s'écrivent lettre à
 lettre, pad de tarification, molette de coffre, barres de réglage, entrées
 lancées, traits de vitesse, emojis, chute. `tokens.ts` les jetons, `data.ts` les
 chiffres des repères, `three.ts` les matières et la projection, `Scene3D.tsx` le
 rendu des volumes. Sans ce partage, chaque film redéfinirait une molette
-légèrement différente et les six cesseraient d'avoir l'air du même produit —
+légèrement différente et les sept cesseraient d'avoir l'air du même produit —
 le contraire de ce qu'ils démontrent.
 
 Le dernier, `Heuristics70.tsx`, s'écarte des autres sur un point de fond : il
@@ -40,6 +42,37 @@ règles qu'il donne ne sont pas écrites pour le film — ce sont les seuils de
 par ailleurs toute arête vive : relief, anneaux, cylindres, billes. La seule
 grille rectangulaire est celle du tableur, c'est-à-dire ce que le film désigne
 comme l'adversaire, et elle se dissout à l'image.
+
+## Le film qui montre le produit
+
+`Product60.tsx` est le seul en 16/9, et le seul dont l'image n'est pas dessinée :
+ce sont des captures de l'app construite, prises par `scripts/shoot-ui.mjs`, avec
+ses vrais modèles en volume et les chiffres que le moteur venait de calculer.
+Redessiner l'interface aurait été plus commode et aurait produit un film qui
+vieillit sans prévenir — le jour où un bouton change, la publicité ment.
+
+Les captures ne sont pas posées à plat : elles vivent sur des plaques dans un
+espace en perspective CSS que la caméra traverse. De la perspective et non de la
+3D, pour une raison de netteté — une capture collée en texture sur un plan
+devient molle dès qu'elle s'incline, alors qu'un `transform` la garde au pixel.
+
+Un plan y fait monter les prix pendant que la valorisation suit. Ce sont **deux
+états réels** de l'app, photographiés l'un après l'autre par un lien de partage
+`#s=…` qui porte les réglages — pas un chiffre animé par-dessus une image fixe.
+Le fondu entre les deux dure huit images : à vingt-quatre, le milieu superposait
+deux montants et se lisait comme un défaut de rendu.
+
+Trois pièges de la capture, tous vérifiés :
+
+- **le serveur et le navigateur dans le même processus.** `execFileSync` fige la
+  boucle d'événements, donc le serveur statique ne répond plus pendant que
+  Chromium charge la page : la capture n'arrive jamais et rien ne le dit. Il faut
+  `spawn` et attendre la promesse ;
+- **le profil de Chromium.** Deux lancements qui se suivent se disputent le
+  profil par défaut ; le second attend indéfiniment. Un `--user-data-dir` par vue
+  règle la question ;
+- **les sorties.** Chromium écrit beaucoup sur la sortie d'erreur ; un tube que
+  personne ne vide se remplit et bloque le navigateur en écriture.
 
 ## Le montage
 
@@ -71,8 +104,9 @@ l'accélération — et l'erreur ne s'entend qu'après le rendu.
 
 ## Déposer une voix off
 
-Deux films en attendent une — la version rapide (`voice-built.wav`) et les six
-règles (`voice-heuristics.wav`). Le fichier va dans `video/audio/`, puis
+Trois films en attendent une — la version rapide (`voice-built.wav`), les six
+règles (`voice-heuristics.wav`) et la présentation du produit
+(`voice-product.wav`). Le fichier va dans `video/audio/`, puis
 
 ```bash
 pnpm video:audio && pnpm video:render:built

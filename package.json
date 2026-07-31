@@ -16,7 +16,9 @@
     "video:render:remains": "remotion render video/index.ts Remains35 public/film/colombes-remains.mp4 --public-dir=public",
     "video:render:built": "remotion render video/index.ts Built70 public/film/colombes-built.mp4 --public-dir=public",
     "video:render:levers": "remotion render video/index.ts Levers70 public/film/colombes-levers.mp4 --public-dir=public",
-    "video:render:heuristics": "remotion render video/index.ts Heuristics70 public/film/colombes-heuristics.mp4 --public-dir=public"
+    "video:render:heuristics": "remotion render video/index.ts Heuristics70 public/film/colombes-heuristics.mp4 --public-dir=public",
+    "video:render:product": "remotion render video/index.ts Product60 public/film/colombes-product.mp4 --public-dir=public",
+    "video:shoot": "pnpm build && node scripts/shoot-ui.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",

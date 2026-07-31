@@ -118,6 +118,24 @@ const FILMS = [
     ],
   },
   {
+    label: 'la présentation du produit, 1 min, 16/9',
+    output: 'public/film/mix-product.mp3',
+    cut: '../video/cuts/product.mjs',
+    voice: 'video/audio/voice-product.wav',
+    // La voix entre à la troisième seconde : l'accroche traverse les plaques
+    // sans un mot, et la chute garde dix secondes de bouton en musique seule.
+    voiceFrom: 3,
+    musicRms: -25.5,
+    musicRmsSolo: -17.5,
+    // 58 s : soixante secondes prises là ne bouclent pas, et la section n'est
+    // employée par aucun des cinq autres films.
+    musicFrom: 58,
+    swells: [
+      [0, 3.2, 3],
+      [52, Infinity, 3],
+    ],
+  },
+  {
     label: "l'échelle, 35 s",
     output: 'public/film/mix-ladder.mp3',
     cut: '../video/cuts/ladder.mjs',

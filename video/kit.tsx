@@ -852,7 +852,7 @@ export function Leader({
  * de plan en plan, une ligne posée nue devient illisible dès qu'elle croise une
  * zone claire.
  */
-export function Caption({ text }: { text: string }) {
+export function Caption({ text, wide = false }: { text: string; wide?: boolean }) {
   const frame = useCurrentFrame()
   const { fps, durationInFrames } = useVideoConfig()
   const enter = spring({ frame, fps, config: { damping: 200, mass: 0.32 } })
@@ -865,9 +865,11 @@ export function Caption({ text }: { text: string }) {
       style={{
         alignItems: 'center',
         justifyContent: 'flex-end',
-        paddingBottom: 132,
-        paddingLeft: 62,
-        paddingRight: 62,
+        // En 16/9 le cadre n'a que 1 080 pixels de haut : la marge du format
+        // vertical y remonterait la ligne au milieu de l'image.
+        paddingBottom: wide ? 64 : 132,
+        paddingLeft: wide ? 220 : 62,
+        paddingRight: wide ? 220 : 62,
       }}
     >
       <p
@@ -875,7 +877,7 @@ export function Caption({ text }: { text: string }) {
           ...display,
           margin: 0,
           textAlign: 'center',
-          fontSize: 46,
+          fontSize: wide ? 38 : 46,
           lineHeight: 1.22,
           fontWeight: 600,
           color: INK,
@@ -1018,6 +1020,7 @@ export function Film({
   mix,
   captions = [],
   sound = true,
+  wide = false,
 }: {
   timeline: Shot[]
   nodes: Record<string, React.ReactNode>
@@ -1026,6 +1029,8 @@ export function Film({
   mix: string
   captions?: { at: number; len: number; text: string }[]
   sound?: boolean
+  /** Le format large : sous-titres plus bas, plus petits, moins larges. */
+  wide?: boolean
 }) {
   const orphan = timeline.find((shot) => !nodes[shot.id])
   if (orphan) throw new Error(`Le plan « ${orphan.id} » n'a pas de composant.`)
@@ -1045,7 +1050,7 @@ export function Film({
       {/* Les sous-titres passent au-dessus de tous les plans. */}
       {captions.map((caption) => (
         <Sequence key={caption.at} from={caption.at} durationInFrames={caption.len}>
-          <Caption text={caption.text} />
+          <Caption text={caption.text} wide={wide} />
         </Sequence>
       ))}
     </AbsoluteFill>

@@ -1,0 +1,55 @@
+1
+00:00:03,000 --> 00:00:07,067
+You built an app. People pay for it every month, and it is worth something today.
+
+2
+00:00:07,067 --> 00:00:08,933
+You just have no way of knowing what.
+
+3
+00:00:08,933 --> 00:00:13,067
+Every calculator online hands you one number and keeps the reasoning to itself.
+
+4
+00:00:13,067 --> 00:00:14,833
+Colombes gives you the reasoning.
+
+5
+00:00:14,833 --> 00:00:18,100
+Set a price, set a customer count, and you have a first estimate.
+
+6
+00:00:18,100 --> 00:00:22,000
+You get a valuation, the range around it, and the multiple that produced it.
+
+7
+00:00:22,000 --> 00:00:25,567
+Then the levers that actually move it: pricing, churn, acquisition.
+
+8
+00:00:25,567 --> 00:00:28,333
+Move one, and the number moves with it, in front of you.
+
+9
+00:00:28,367 --> 00:00:33,767
+Every metric is graded against the market: lifetime value over cost, payback, retention, rule of 40.
+
+10
+00:00:33,767 --> 00:00:38,833
+Where you sit has a name — five tiers, from mice to whales, and each one is a different company to run.
+
+11
+00:00:38,833 --> 00:00:42,767
+And when you want to know why a number moved, it is written down in plain words.
+
+12
+00:00:42,800 --> 00:00:46,967
+Or drag a single dove across a plate, and watch a valuation happen under your hand.
+
+13
+00:00:46,967 --> 00:00:49,367
+No spreadsheet. No sales call. No credit card.
+
+14
+00:00:49,400 --> 00:00:51,300
+Colombes. Create your free account.
