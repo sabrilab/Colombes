@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { AppHeader } from '@/components/AppHeader'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { ControlPanel } from '@/components/controls/ControlPanel'
@@ -68,7 +67,6 @@ export function SimulatorView() {
   return (
     <>
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <AppHeader />
         <SheetContent side="bottom" className="max-h-[85svh] overflow-y-auto">
           <SheetHeader className="sticky top-0 z-10 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <SheetTitle>{t('Control panel')}</SheetTitle>
@@ -93,9 +91,14 @@ export function SimulatorView() {
           </div>
         </div>
 
-        <div className="mx-auto flex max-w-[1600px] gap-6 p-4 pb-28 lg:p-6">
+        {/* Deux colonnes de gauche coexistent au-delà du point de rupture : la
+            barre latérale de l'application, repliable, et le panneau de réglage
+            du simulateur. C'est exactement l'écran pour lequel on veut pouvoir
+            replier la première — trois cents pixels rendus au tableau de bord,
+            sans perdre le moyen d'en sortir. */}
+        <div className="mx-auto flex w-full max-w-[1600px] gap-6 p-4 pb-28 lg:p-6">
           <aside className="hidden w-[360px] shrink-0 lg:block">
-            <div className="sticky top-[4.5rem] max-h-[calc(100svh-6rem)] overflow-y-auto pr-2">
+            <div className="sticky top-[4.25rem] max-h-[calc(100svh-5.5rem)] overflow-y-auto pr-2">
               <ControlPanel />
             </div>
           </aside>

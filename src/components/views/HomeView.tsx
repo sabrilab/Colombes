@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { PricePad } from '@/components/home/PricePad'
+import { MarginPanel } from '@/components/home/MarginPanel'
 import { ConceptBento } from '@/components/home/ConceptBento'
 import { TierCarousel } from '@/components/home/TierCarousel'
 import { animalFor } from '@/lib/pricePad'
@@ -9,7 +10,7 @@ import { BILLING_PERIODS, type BillingPeriod } from '@/lib/billingPeriod'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
 import { compute } from '@/lib/engine'
 import { formatCurrency, formatMultiple, formatPercent } from '@/lib/format'
-import { quickInputs } from '@/lib/quickSim'
+import { quickInputs, type QuickCosts } from '@/lib/quickSim'
 import { navigate } from '@/lib/router'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
 import { useSimulator, useT } from '@/store/simulator'
@@ -66,10 +67,17 @@ function MiniSimulator() {
   const [params, setParams] = useState({ price: 29, customers: 500 })
   const [period, setPeriod] = useState<BillingPeriod>('monthly')
   const [showTiers, setShowTiers] = useState(false)
+  /*
+   * Les deux dépenses restent déduites tant qu'on n'y a pas touché — un objet
+   * vide, et non des valeurs par défaut recopiées. C'est ce qui permet de
+   * déplacer la colombe d'un bout à l'autre du pad sans que les coûts perdent
+   * tout sens ; dès qu'on tient un curseur, il cesse de suivre.
+   */
+  const [costs, setCosts] = useState<QuickCosts>({})
   const t = useT()
   const loadInputs = useSimulator((state) => state.loadInputs)
 
-  const inputs = useMemo(() => quickInputs(params, period), [params, period])
+  const inputs = useMemo(() => quickInputs(params, period, costs), [params, period, costs])
   const results = useMemo(() => compute(inputs), [inputs])
   const animatedValue = useAnimatedNumber(results.valuation.value)
 
@@ -151,7 +159,7 @@ function MiniSimulator() {
           <p className="pt-3 text-xs text-muted-foreground">
             {t('Median assumptions applied: churn {churn}/mo, {rest}.', {
               churn: formatPercent(inputs.revenueChurn),
-              rest: describeHiddenAssumptions(inputs, t),
+              rest: describeHiddenAssumptions(inputs, t, ['margin', 'fixedCosts']),
             })}
             {/* Facturer à l'année n'est pas qu'une unité : le client s'engage
                 douze mois et ne décide qu'au renouvellement. Le moteur le
@@ -175,6 +183,22 @@ function MiniSimulator() {
           <Button className="lume-pill w-full px-5 sm:w-fit" onClick={refine}>
             {t('Refine in the simulator')}
           </Button>
+        </div>
+
+        {/* Ce qui reste, sur toute la largeur. La barre des quatre parts a
+            besoin de longueur pour que les segments minces restent lisibles,
+            et la question qu'elle pose — qu'est-ce que je garde ? — vient
+            après le chiffre, jamais avant. */}
+        <div className="order-4 border-t border-border/60 pt-5 lg:col-span-2 lg:row-start-3 lg:mt-2">
+          <MarginPanel
+            results={results}
+            costToServe={1 - inputs.grossMargin}
+            fixedCosts={inputs.fixedCosts}
+            onCostToServe={(value) =>
+              setCosts((state) => ({ ...state, grossMargin: 1 - value }))
+            }
+            onFixedCosts={(value) => setCosts((state) => ({ ...state, fixedCosts: value }))}
+          />
         </div>
       </div>
       )}

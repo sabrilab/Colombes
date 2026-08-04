@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { AppShell } from '@/components/AppShell'
 import { SectionShell } from '@/components/SectionShell'
 import { SectionRoutes } from '@/components/SectionRoutes'
 import { SimulatorView } from '@/components/views/SimulatorView'
@@ -51,10 +52,30 @@ export default function App() {
     )
   }
 
+  /*
+   * Le simulateur complet prend la même coque que les sections : c'est l'écran
+   * où l'on reste le plus longtemps, et il n'avait aucune navigation — on y
+   * arrivait par un bouton et on en repartait par le retour du navigateur.
+   *
+   * Le banc d'essai et les profils gardent leur chrome propre : ce sont des vues
+   * de détail, ouvertes depuis un endroit précis et refermées vers lui.
+   */
+  if (route.view === 'simulator') {
+    return (
+      <TooltipProvider delayDuration={200}>
+        <div className="min-h-svh bg-background text-foreground">
+          <AppShell>
+            <SimulatorView />
+          </AppShell>
+        </div>
+        <Toaster />
+      </TooltipProvider>
+    )
+  }
+
   return (
     <TooltipProvider delayDuration={200}>
       <div className="min-h-svh bg-background text-foreground">
-        {route.view === 'simulator' && <SimulatorView />}
         {route.view === 'lab' && <PadLabView />}
         {route.view === 'colombe' && <ColombeProfileView id={route.id} />}
       </div>

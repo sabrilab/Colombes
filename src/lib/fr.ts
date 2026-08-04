@@ -46,6 +46,21 @@ export const FR: Record<string, string> = {
   Yearly: 'Par an',
   '/wk': '/sem',
   '/yr': '/an',
+  'What you actually keep': 'Ce que vous gardez vraiment',
+  'net margin': 'de marge nette',
+  'Cost to serve them': 'Ce que coûte le service',
+  'Team and tools': 'Équipe et outils',
+  'Serving them': 'Les servir',
+  'Winning them': 'Les gagner',
+  'What you keep': 'Ce qui reste',
+  'of revenue': 'du revenu',
+  'per month': 'par mois',
+  'Hosting, the APIs you resell, the support you answer.':
+    'L’hébergement, les API que vous revendez, le support que vous assurez.',
+  'What you pay every month whoever shows up: you, a freelance, the tools.':
+    'Ce que vous payez chaque mois quoi qu’il arrive : vous, un freelance, les outils.',
+  '{mrr} of revenue: {serve} serving, {acquire} acquiring, {fixed} fixed, {profit} kept.':
+    '{mrr} de revenu : {serve} de service, {acquire} d’acquisition, {fixed} de charges fixes, {profit} gardés.',
   'Billed yearly: the model halves the churn on that commitment.':
     'Facturé à l’année : le modèle divise par deux le churn sur cet engagement.',
   'Fictional companies, plausible numbers: every profile is calibrated on the simulator’s market benchmarks (Acquire.com, FE International, ChartMogul).':
