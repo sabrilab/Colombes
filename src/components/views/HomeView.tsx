@@ -192,10 +192,14 @@ function MiniSimulator() {
         <div className="order-4 border-t border-border/60 pt-5 lg:col-span-2 lg:row-start-3 lg:mt-2">
           <MarginPanel
             results={results}
-            costToServe={1 - inputs.grossMargin}
+            /* Le coût affiché se relit du moteur, jamais de l'état local : c'est
+               ce qui garde le curseur sur la valeur déduite tant qu'on n'y a pas
+               touché, et sur la valeur saisie dès qu'on l'a fait. */
+            costPerCustomer={results.revenue.arpu * (1 - inputs.grossMargin)}
             fixedCosts={inputs.fixedCosts}
-            onCostToServe={(value) =>
-              setCosts((state) => ({ ...state, grossMargin: 1 - value }))
+            period={period}
+            onCostPerCustomer={(monthly) =>
+              setCosts((state) => ({ ...state, costPerCustomer: monthly }))
             }
             onFixedCosts={(value) => setCosts((state) => ({ ...state, fixedCosts: value }))}
           />

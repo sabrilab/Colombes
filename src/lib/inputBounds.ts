@@ -23,7 +23,14 @@ export const INPUT_BOUNDS = {
   cac: { min: 0, max: 2_000 },
   revenueChurn: { min: 0, max: 0.15 },
   expansion: { min: 0, max: 0.1 },
-  grossMargin: { min: 0.5, max: 0.99 },
+  /*
+   * Zéro et non cinquante pour cent. Le plancher à 0,5 datait du SaaS classique,
+   * où servir un client coûte de l'hébergement et rien d'autre. Une app qui
+   * revend de l'inférence paie parfois la moitié de son prix en jetons, et le
+   * simulateur doit savoir la représenter — sinon il écrête en silence et
+   * affiche un coût plus bas que celui qu'on vient de lui donner.
+   */
+  grossMargin: { min: 0, max: 0.99 },
   fixedCosts: { min: 0, max: 100_000 },
   topClientShare: { min: 0, max: 0.6 },
   ageMonths: { min: 0, max: 96 },

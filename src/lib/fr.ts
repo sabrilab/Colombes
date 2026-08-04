@@ -48,15 +48,16 @@ export const FR: Record<string, string> = {
   '/yr': '/an',
   'What you actually keep': 'Ce que vous gardez vraiment',
   'net margin': 'de marge nette',
-  'Cost to serve them': 'Ce que coûte le service',
+  'Cost per customer': 'Coût par client',
+  'in total': 'au total',
+  'per customer': 'par client',
+  'What one customer costs you to serve: hosting, the tokens you resell, support.':
+    'Ce qu’un client vous coûte à servir : hébergement, jetons revendus, support.',
   'Team and tools': 'Équipe et outils',
   'Serving them': 'Les servir',
   'Winning them': 'Les gagner',
   'What you keep': 'Ce qui reste',
-  'of revenue': 'du revenu',
   'per month': 'par mois',
-  'Hosting, the APIs you resell, the support you answer.':
-    'L’hébergement, les API que vous revendez, le support que vous assurez.',
   'What you pay every month whoever shows up: you, a freelance, the tools.':
     'Ce que vous payez chaque mois quoi qu’il arrive : vous, un freelance, les outils.',
   '{mrr} of revenue: {serve} serving, {acquire} acquiring, {fixed} fixed, {profit} kept.':

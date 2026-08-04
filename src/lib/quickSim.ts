@@ -40,10 +40,25 @@ export interface QuickParams {
  * bouger parce qu'il a ajouté trois clients.
  */
 export interface QuickCosts {
-  /** Marge brute, entre 0,5 et 0,99. Absente : déduite. */
-  grossMargin?: number
+  /**
+   * Ce qu'un client coûte à servir, en euros par mois.
+   *
+   * Un montant et non une part du revenu : personne ne sait dire « mon service
+   * me coûte quinze pour cent », tout le monde sait dire « ce client me coûte
+   * deux euros d'inférence par mois ». Le moteur, lui, raisonne en marge brute
+   * — la conversion se fait ici, une fois, à partir du prix.
+   *
+   * Toujours mensuel, comme le prix : la cadence choisie à l'écran ne sert qu'à
+   * la saisie et à l'affichage.
+   */
+  costPerCustomer?: number
   /** Coûts fixes mensuels. Absents : déduits du revenu. */
   fixedCosts?: number
+}
+
+/** Ce qu'un client coûte quand on ne l'a pas encore dit : la marge par défaut. */
+export function defaultCostPerCustomer(monthlyPrice: number): number {
+  return monthlyPrice * (1 - DEFAULT_INPUTS.grossMargin)
 }
 
 export function quickInputs(
@@ -55,7 +70,16 @@ export function quickInputs(
   // Milieu de la zone de churn typique pour ce niveau de prix.
   const revenueChurn = Number(((zone.churnMin + zone.churnMax) / 2).toFixed(3))
 
-  const grossMargin = clampTo(INPUT_BOUNDS.grossMargin, costs.grossMargin ?? DEFAULT_INPUTS.grossMargin)
+  /*
+   * Le coût par client devient une marge brute, parce que c'est ce que le moteur
+   * sait lire. Un prix nul n'a pas de marge définie — on retombe alors sur la
+   * valeur par défaut plutôt que de diviser par zéro.
+   */
+  const costPerCustomer = costs.costPerCustomer ?? defaultCostPerCustomer(price)
+  const grossMargin =
+    price > 0
+      ? clampTo(INPUT_BOUNDS.grossMargin, 1 - costPerCustomer / price)
+      : DEFAULT_INPUTS.grossMargin
   // Un CAC calé sur ~8 mois de payback : ni machine à cash, ni gouffre.
   const cac = clampTo(INPUT_BOUNDS.cac, Math.round(8 * price * grossMargin))
   // Une acquisition qui renouvelle ~5 % de la base chaque mois.

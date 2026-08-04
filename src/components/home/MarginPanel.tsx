@@ -1,6 +1,6 @@
 import { Slider } from '@/components/ui/slider'
-import { formatCurrency, formatPercent } from '@/lib/format'
-import { INPUT_BOUNDS } from '@/lib/inputBounds'
+import { formatCurrency, formatPercent, formatPrice } from '@/lib/format'
+import { billingPeriodOption, fromMonthly, toMonthly, type BillingPeriod } from '@/lib/billingPeriod'
 import type { SimulatorResults } from '@/lib/engine/types'
 import { useT } from '@/store/simulator'
 
@@ -15,9 +15,12 @@ import { useT } from '@/store/simulator'
  * Deux réglages seulement, parce que ce sont les deux dépenses qu'un fondateur
  * reconnaît sans traduction :
  *
- *  — **ce que coûte le service** : l'hébergement, l'API qu'on revend, le support.
- *    Ça monte avec le nombre de clients, donc ça s'exprime en part du revenu.
- *    C'est l'inverse de la marge brute du moteur ;
+ *  — **ce qu'un client coûte à servir**, en euros : l'hébergement, les jetons
+ *    d'inférence qu'on revend, le support. Un montant par client et non une part
+ *    du revenu, parce que personne ne sait dire « mon service me coûte quinze
+ *    pour cent » alors que tout le monde sait dire « ce client me coûte deux
+ *    euros par mois ». La conversion en marge brute, seule chose que le moteur
+ *    sache lire, se fait dans `quickSim` ;
  *  — **l'équipe et les outils** : ce qu'on paie chaque mois quoi qu'il arrive.
  *    Un montant, pas une part — un freelance à 2 000 € coûte 2 000 € qu'on ait
  *    dix clients ou mille.
@@ -32,9 +35,6 @@ import { useT } from '@/store/simulator'
  * refuse de s'afficher plutôt que de mentir joliment.
  */
 
-/** La part maximale du revenu qu'on peut donner au service : la borne du moteur. */
-const MAX_COST_TO_SERVE = 1 - INPUT_BOUNDS.grossMargin.min
-
 /**
  * Plafond du curseur des coûts fixes. Le moteur accepte cent mille euros par
  * mois ; sur ce panneau, la course entière serait alors illisible pour les
@@ -44,20 +44,34 @@ const FIXED_CEILING = 20_000
 
 export function MarginPanel({
   results,
-  costToServe,
+  costPerCustomer,
   fixedCosts,
-  onCostToServe,
+  period,
+  onCostPerCustomer,
   onFixedCosts,
 }: {
   results: SimulatorResults
-  /** Part du revenu absorbée par le service, de 0,01 à 0,5. */
-  costToServe: number
+  /** Coût de service par client, en euros par mois. */
+  costPerCustomer: number
   fixedCosts: number
-  onCostToServe: (value: number) => void
+  /** La cadence choisie dans le panneau : le coût s'y saisit et s'y lit. */
+  period: BillingPeriod
+  onCostPerCustomer: (monthly: number) => void
   onFixedCosts: (value: number) => void
 }) {
   const t = useT()
-  const { mrr, variableCost, acquisitionCost, sdeMonthly, netMargin } = results.revenue
+  const { arpu, mrr, variableCost, acquisitionCost, sdeMonthly, netMargin } = results.revenue
+  const unit = billingPeriodOption(period).unit
+
+  /*
+   * Le curseur ne dépasse pas le prix. Payer plus pour servir un client qu'il ne
+   * rapporte est une situation réelle, mais le moteur borne la marge brute à
+   * zéro : laisser le curseur aller au-delà afficherait un coût que le calcul
+   * n'appliquerait pas. On s'arrête donc là où le modèle s'arrête.
+   */
+  const ceiling = Math.max(arpu, 1)
+  const shown = fromMonthly(Math.min(costPerCustomer, ceiling), period)
+  const step = Math.max(0.5, Math.round(fromMonthly(ceiling, period) / 60))
 
   /*
    * Les quatre parts, dans l'ordre où l'argent s'en va. Le bénéfice peut être
@@ -128,22 +142,24 @@ export function MarginPanel({
       <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <div className="flex items-baseline justify-between gap-2">
-            <span className="text-sm">{t('Cost to serve them')}</span>
+            <span className="text-sm">{t('Cost per customer')}</span>
             <span className="font-mono text-sm tabular-nums text-muted-foreground">
-              {formatPercent(costToServe, 0)} · {formatCurrency(variableCost)}
+              {formatPrice(shown)}
+              {t(unit)} · {formatCurrency(variableCost)}
+              {t('/mo')} {t('in total')}
             </span>
           </div>
           <Slider
-            value={[costToServe]}
-            min={0.01}
-            max={MAX_COST_TO_SERVE}
-            step={0.01}
-            onValueChange={([value]) => onCostToServe(value)}
-            thumbLabel={t('Cost to serve them')}
-            thumbValueText={`${formatPercent(costToServe, 0)} ${t('of revenue')}`}
+            value={[shown]}
+            min={0}
+            max={fromMonthly(ceiling, period)}
+            step={step}
+            onValueChange={([value]) => onCostPerCustomer(toMonthly(value, period))}
+            thumbLabel={t('Cost per customer')}
+            thumbValueText={`${formatPrice(shown)} ${t('per customer')}`}
           />
           <p className="text-[11px] text-muted-foreground">
-            {t('Hosting, the APIs you resell, the support you answer.')}
+            {t('What one customer costs you to serve: hosting, the tokens you resell, support.')}
           </p>
         </div>
 

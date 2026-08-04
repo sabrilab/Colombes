@@ -75,3 +75,28 @@ describe('cadence de facturation', () => {
     expect(yearly.valuation.multiple).toBeGreaterThan(monthly.valuation.multiple)
   })
 })
+
+describe('coût par client', () => {
+  it('applique le montant donné, sans le traduire en pourcentage arrondi', () => {
+    // 6 € de coût sur un prix de 29 € : le moteur doit dépenser 6 € par client,
+    // soit 3 000 € pour cinq cents clients. Passer par une marge arrondie au
+    // point de pourcentage donnerait 2 900 € ou 3 190 €, et l'écran mentirait
+    // sur le seul chiffre que la personne a saisi.
+    const results = compute(quickInputs({ price: 29, customers: 500 }, 'monthly', { costPerCustomer: 6 }))
+    expect(results.revenue.variableCost).toBeCloseTo(3_000, 6)
+  })
+
+  it('reste cohérent quand le coût égale le prix', () => {
+    const results = compute(quickInputs({ price: 29, customers: 500 }, 'monthly', { costPerCustomer: 29 }))
+    // Marge brute nulle : tout le revenu part dans le service, et il ne reste
+    // rien pour payer l'acquisition ni les charges fixes.
+    expect(results.revenue.variableCost).toBeCloseTo(results.revenue.mrr, 6)
+    expect(results.revenue.sdeMonthly).toBeLessThan(0)
+  })
+
+  it('déduit le coût du prix tant qu’on ne l’a pas donné', () => {
+    const derived = compute(quickInputs({ price: 29, customers: 500 }))
+    // 15 % de 29 €, la marge par défaut de l'app.
+    expect(derived.revenue.variableCost / derived.revenue.mrr).toBeCloseTo(0.15, 6)
+  })
+})
