@@ -5,6 +5,7 @@ import { PricePad } from '@/components/home/PricePad'
 import { ConceptBento } from '@/components/home/ConceptBento'
 import { TierCarousel } from '@/components/home/TierCarousel'
 import { animalFor } from '@/lib/pricePad'
+import { BILLING_PERIODS, type BillingPeriod } from '@/lib/billingPeriod'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
 import { compute } from '@/lib/engine'
 import { formatCurrency, formatMultiple, formatPercent } from '@/lib/format'
@@ -15,13 +16,60 @@ import { useSimulator, useT } from '@/store/simulator'
 
 /** Le simulateur « à la louche » : deux curseurs, la valo en direct.
     Tout le reste vient d'hypothèses médianes (quickSim.ts), affichées. */
+/**
+ * Le sélecteur de cadence : à la semaine, au mois, à l'année.
+ *
+ * Trois segments et non un menu déroulant. Il y a exactement trois choix, ils
+ * tiennent sur une ligne, et un menu demanderait deux gestes pour en changer —
+ * alors que tout l'intérêt est de basculer d'une cadence à l'autre pour voir
+ * ce que ça donne.
+ */
+function PeriodPicker({
+  period,
+  onChange,
+}: {
+  period: BillingPeriod
+  onChange: (period: BillingPeriod) => void
+}) {
+  const t = useT()
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label={t('Billing period')}
+      className="glass-bevel flex shrink-0 items-center gap-0.5 rounded-full p-0.5"
+    >
+      {BILLING_PERIODS.map((option) => {
+        const active = option.id === period
+        return (
+          <button
+            key={option.id}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            onClick={() => onChange(option.id)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+              active
+                ? 'bg-lume text-[oklch(0.2_0.03_112)]'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t(option.label)}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
 function MiniSimulator() {
   const [params, setParams] = useState({ price: 29, customers: 500 })
+  const [period, setPeriod] = useState<BillingPeriod>('monthly')
   const [showTiers, setShowTiers] = useState(false)
   const t = useT()
   const loadInputs = useSimulator((state) => state.loadInputs)
 
-  const inputs = useMemo(() => quickInputs(params), [params])
+  const inputs = useMemo(() => quickInputs(params, period), [params, period])
   const results = useMemo(() => compute(inputs), [inputs])
   const animatedValue = useAnimatedNumber(results.valuation.value)
 
@@ -37,19 +85,22 @@ function MiniSimulator() {
     >
       {/* Le bascule des paliers vit dans la carte : ils s'y montrent, sans
           panneau qui recouvre tout. */}
-      <div className="mb-3 flex items-start justify-between gap-3">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           {showTiers ? t('The five tiers') : t('Your app, ballpark')}
         </p>
-        <Button
-          variant={showTiers ? 'default' : 'outline'}
-          size="sm"
-          className="h-7 px-3 text-xs"
-          aria-pressed={showTiers}
-          onClick={() => setShowTiers((value) => !value)}
-        >
-          {t('Tiers')}
-        </Button>
+        <div className="flex items-center gap-2">
+          {!showTiers && <PeriodPicker period={period} onChange={setPeriod} />}
+          <Button
+            variant={showTiers ? 'default' : 'outline'}
+            size="sm"
+            className="h-7 px-3 text-xs"
+            aria-pressed={showTiers}
+            onClick={() => setShowTiers((value) => !value)}
+          >
+            {t('Tiers')}
+          </Button>
+        </div>
       </div>
 
       {showTiers ? (
@@ -96,12 +147,24 @@ function MiniSimulator() {
         </div>
 
         <div className="order-2 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-          <PricePad params={params} onChange={setParams} />
+          <PricePad params={params} onChange={setParams} period={period} />
           <p className="pt-3 text-xs text-muted-foreground">
             {t('Median assumptions applied: churn {churn}/mo, {rest}.', {
               churn: formatPercent(inputs.revenueChurn),
               rest: describeHiddenAssumptions(inputs, t),
             })}
+            {/* Facturer à l'année n'est pas qu'une unité : le client s'engage
+                douze mois et ne décide qu'au renouvellement. Le moteur le
+                compte déjà ; le dire ici évite qu'on croie à un bug quand la
+                valorisation monte en changeant de cadence. */}
+            {period === 'yearly' && (
+              <>
+                {' '}
+                <span className="text-lume">
+                  {t('Billed yearly: the model halves the churn on that commitment.')}
+                </span>
+              </>
+            )}
           </p>
         </div>
 

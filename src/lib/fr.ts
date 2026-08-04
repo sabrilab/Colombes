@@ -39,6 +39,15 @@ export const FR: Record<string, string> = {
   Valuation: 'Valorisation',
   'Median assumptions applied: churn {churn}/mo, {rest}.':
     'Hypothèses médianes appliquées : churn {churn}/mois, {rest}.',
+  Sections: 'Sections',
+  'Billing period': 'Périodicité de facturation',
+  Weekly: 'Par semaine',
+  Monthly: 'Par mois',
+  Yearly: 'Par an',
+  '/wk': '/sem',
+  '/yr': '/an',
+  'Billed yearly: the model halves the churn on that commitment.':
+    'Facturé à l’année : le modèle divise par deux le churn sur cet engagement.',
   'Fictional companies, plausible numbers: every profile is calibrated on the simulator’s market benchmarks (Acquire.com, FE International, ChartMogul).':
     'Des entreprises fictives, des chiffres plausibles : chaque profil est calibré sur les barèmes de marché du simulateur (Acquire.com, FE International, ChartMogul).',
 

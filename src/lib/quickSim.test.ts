@@ -49,3 +49,29 @@ describe('quickInputs', () => {
     expect(results.valuation.value).toBeGreaterThan(0)
   })
 })
+
+describe('cadence de facturation', () => {
+  const params = { price: 29, customers: 500 }
+
+  it('ne change pas le revenu quand on change de cadence', () => {
+    // Le prix stocké est mensuel dans les trois cas : seule la lecture change.
+    // Une remise annuelle qui traînerait ferait tomber le MRR de 17 % au simple
+    // basculement, et l'écran passerait pour cassé.
+    const monthly = compute(quickInputs(params, 'monthly'))
+    const yearly = compute(quickInputs(params, 'yearly'))
+    const weekly = compute(quickInputs(params, 'weekly'))
+
+    expect(yearly.revenue.mrr).toBeCloseTo(monthly.revenue.mrr, 6)
+    expect(weekly.revenue.mrr).toBeCloseTo(monthly.revenue.mrr, 6)
+  })
+
+  it("compte l'engagement annuel là où il compte : le churn", () => {
+    const monthly = compute(quickInputs(params, 'monthly'))
+    const yearly = compute(quickInputs(params, 'yearly'))
+
+    // Un client engagé douze mois ne décide qu'au renouvellement : le churn
+    // effectif tombe de moitié, et le multiple monte.
+    expect(quickInputs(params, 'yearly').annualShare).toBe(1)
+    expect(yearly.valuation.multiple).toBeGreaterThan(monthly.valuation.multiple)
+  })
+})

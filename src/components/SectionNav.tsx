@@ -53,12 +53,15 @@ function Tab({
   active,
   onSelect,
   onYellow,
+  rail = false,
 }: {
   section: Section
   active: boolean
   onSelect: () => void
   /** La barre basse est jaune, l'en-tête est sombre : l'encre s'inverse. */
   onYellow: boolean
+  /** En barre latérale : une ligne, icône à gauche, libellé à droite. */
+  rail?: boolean
 }) {
   const hostRef = useRef<HTMLButtonElement>(null)
   const Icon = ICONS[section.id]
@@ -74,7 +77,11 @@ function Tab({
         onSelect()
       }}
       aria-current={active ? 'page' : undefined}
-      className={`relative isolate flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-[1.1rem] px-2 pb-0.5 text-[10px] font-semibold leading-none tracking-tight transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
+      className={`relative isolate flex overflow-hidden rounded-[1.1rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
+        rail
+          ? 'w-full min-h-11 items-center gap-3 px-3 text-sm tracking-tight'
+          : 'min-h-12 flex-1 flex-col items-center justify-center gap-0.5 px-2 pb-0.5 text-[10px] leading-none tracking-tight'
+      } ${
         onYellow
           ? `focus-visible:outline-foreground/50 ${active ? 'nav-ink' : 'nav-ink-dim'}`
           : `focus-visible:outline-lume/60 ${
@@ -87,7 +94,10 @@ function Tab({
           le glissement, et ça reste juste même si l'onglet change de largeur. */}
       {active && (
         <motion.span
-          layoutId="section-focus"
+          /* Un identifiant par barre. Les trois variantes coexistent dans le
+             document — l'une masquée par la requête de média — et un même
+             `layoutId` partagé ferait voyager la pastille de l'une à l'autre. */
+          layoutId={rail ? 'section-focus-rail' : 'section-focus-bottom'}
           aria-hidden
           className={`absolute inset-0 -z-10 rounded-[1.1rem] ${
             onYellow ? 'nav-focus' : 'nav-focus-dark'
@@ -95,18 +105,22 @@ function Tab({
           transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
         />
       )}
-      <Icon className="size-[1.15rem]" aria-hidden />
+      <Icon className={rail ? 'size-[1.15rem] shrink-0' : 'size-[1.15rem]'} aria-hidden />
       <span className="leading-none">{t(section.label)}</span>
     </button>
   )
 }
 
 /**
- * La navigation principale : barre basse au pouce sur téléphone, rangée
- * d'onglets dans l'en-tête au-delà. Même matière que le reste — verre
- * translucide, biseau haut éclairé — et le focus glisse plutôt qu'il ne saute.
+ * La navigation principale : barre basse au pouce sur téléphone, colonne dans
+ * la barre latérale au-delà. Même matière que le reste — verre translucide,
+ * biseau haut éclairé — et le focus glisse plutôt qu'il ne saute.
+ *
+ * Une troisième variante a existé, `inline` : les quatre onglets recopiés au
+ * milieu de l'en-tête sur grand écran. Elle est partie avec la barre latérale,
+ * qui fait le même travail sans imiter un téléphone.
  */
-export function SectionNav({ variant }: { variant: 'bottom' | 'inline' }) {
+export function SectionNav({ variant }: { variant: 'bottom' | 'rail' }) {
   const route = useRoute()
   const active = activeSection(route)
   const reduced = useReducedMotion()
@@ -136,15 +150,16 @@ export function SectionNav({ variant }: { variant: 'bottom' | 'inline' }) {
           section={section}
           active={active === section.id}
           onYellow={variant === 'bottom'}
+          rail={variant === 'rail'}
           onSelect={() => navigate(section.hash)}
         />
       ))}
     </>
   )
 
-  if (variant === 'inline') {
+  if (variant === 'rail') {
     return (
-      <nav aria-label="Sections" className="hidden items-center gap-1 lg:flex">
+      <nav aria-label="Sections" className="flex flex-col gap-1">
         {tabs}
       </nav>
     )

@@ -11,8 +11,28 @@ const compactCurrency = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 1,
 })
 
+const preciseCurrency = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+})
+
 export function formatCurrency(value: number): string {
   return currency.format(Math.round(value))
+}
+
+/**
+ * Un prix, avec ses centimes seulement quand il en a.
+ *
+ * `formatCurrency` arrondit à l'euro, ce qui va pour une valorisation et pas
+ * pour un prix à la semaine : 29 €/mois font 6,69 €/semaine, et l'afficher
+ * « 7 € » ment de cinq pour cent sur le seul chiffre que la personne est venue
+ * régler. Un prix rond reste rond — on n'écrit pas « 29,00 € » pour rien.
+ */
+export function formatPrice(value: number): string {
+  const rounded = Math.round(value * 100) / 100
+  return Number.isInteger(rounded) ? currency.format(rounded) : preciseCurrency.format(rounded)
 }
 
 export function formatCompactCurrency(value: number): string {

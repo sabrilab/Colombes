@@ -1,7 +1,8 @@
 import { useCallback, useRef, useState } from 'react'
 import { Lock, LockOpen, Minus, Plus } from 'lucide-react'
 import { DoveLogo } from '@/components/DoveLogo'
-import { formatCompactCurrency, formatCurrency } from '@/lib/format'
+import { formatCompactCurrency, formatPrice } from '@/lib/format'
+import { billingPeriodOption, fromMonthly, type BillingPeriod } from '@/lib/billingPeriod'
 import { useT } from '@/store/simulator'
 import { DEFAULT_LAYERS, type PadLayers } from '@/lib/padVariants'
 import {
@@ -149,9 +150,22 @@ interface PricePadProps {
   onChange: (params: PadParams) => void
   /** Couches affichées. Par défaut, toutes — voir padVariants.ts. */
   layers?: PadLayers
+  /**
+   * La cadence d'affichage du prix. Le pad continue de travailler en mensuel —
+   * ses deux axes, ses bandes de paliers et ses iso-revenus y sont calibrés —
+   * et seule la lecture change. Convertir les axes serait la même chose à un
+   * facteur près, avec une échelle logarithmique décalée et cinq repères à
+   * refaire pour rien.
+   */
+  period?: BillingPeriod
 }
 
-export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePadProps) {
+export function PricePad({
+  params,
+  onChange,
+  layers = DEFAULT_LAYERS,
+  period = 'monthly',
+}: PricePadProps) {
   const padRef = useRef<HTMLDivElement>(null)
   // Le garde du glissement vit dans une ref : un pointermove qui arrive dans
   // le même tick que le pointerdown ne doit pas être perdu en attendant un rendu.
@@ -222,8 +236,8 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
       <div className="flex flex-wrap items-start gap-x-10 gap-y-4">
         <Readout
           label="Price"
-          value={formatCurrency(params.price)}
-          unit="/mo"
+          value={formatPrice(fromMonthly(params.price, period))}
+          unit={billingPeriodOption(period).unit}
           locked={locked.price}
           onToggleLock={() => setLocked((state) => ({ ...state, price: !state.price }))}
           onStep={(direction) => nudge('price', direction)}
@@ -243,9 +257,11 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
         tabIndex={0}
         aria-label={`Pricing pad. Horizontal axis: customers, currently ${params.customers}${
           locked.customers ? ', locked' : ''
-        }. Vertical axis: monthly price, currently ${formatCurrency(params.price)}${
-          locked.price ? ', locked' : ''
-        }, in the ${animal.name} tier. Use the arrow keys to adjust.`}
+        }. Vertical axis: price, currently ${formatPrice(
+          fromMonthly(params.price, period),
+        )} per ${period.replace('ly', '')}${locked.price ? ', locked' : ''}, in the ${
+          animal.name
+        } tier. Use the arrow keys to adjust.`}
         onKeyDown={(event) => {
           setTouched(true)
           handleKeyDown(event)
@@ -428,7 +444,11 @@ export function PricePad({ params, onChange, layers = DEFAULT_LAYERS }: PricePad
           ? t('Both axes are locked — unlock one to keep exploring.')
           : locked.price
             ? t('Price locked at {price}: drag to see how many customers you need.', {
-                price: formatCurrency(params.price),
+                // Le prix verrouillé se relit dans la cadence choisie, sinon la
+                // phrase annoncerait un montant que le cadran ne montre pas.
+                price: `${formatPrice(fromMonthly(params.price, period))}${t(
+                  billingPeriodOption(period).unit,
+                )}`,
               })
             : locked.customers
               ? t('Customers locked at {customers}: drag to price them.', {

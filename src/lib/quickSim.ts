@@ -1,5 +1,6 @@
 import { priceZoneFor } from './engine'
 import type { SimulatorInputs } from './engine/types'
+import type { BillingPeriod } from './billingPeriod'
 import { DEFAULT_INPUTS } from './defaults'
 import { clampTo, INPUT_BOUNDS } from './inputBounds'
 
@@ -13,8 +14,26 @@ export interface QuickParams {
  * Le mini-simulateur de l'accueil ne demande que deux chiffres. Tout le reste
  * est déduit d'hypothèses médianes de marché — chaque déduction est bornée
  * par les jauges pour que « Affiner dans le simulateur » reparte d'un état sain.
+ *
+ * `period` n'est pas une unité d'affichage de plus. Facturer à l'année engage
+ * le client douze mois : il ne décide qu'au renouvellement, et le moteur sait
+ * déjà ce que cela vaut — `annualShare` réduit de moitié le churn effectif.
+ * Choisir « à l'année » change donc la valorisation, ce qui est juste, et
+ * l'écran l'annonce plutôt que de le faire discrètement.
+ *
+ * `annualDiscount` passe en revanche à zéro, et c'est la subtilité du réglage.
+ * Dans le simulateur complet, la remise annuelle sert à modéliser un *mix* :
+ * une partie des clients paie au mois au tarif affiché, l'autre s'engage à
+ * l'année contre 17 % de moins. Ici il n'y a pas de mix — la personne annonce
+ * un prix annuel, et ce prix est déjà celui qu'elle facture. Laisser la remise
+ * courir retrancherait 17 % d'un montant dont ils ont déjà été retirés : le MRR
+ * tombait de 14 500 € à 12 035 € au seul changement de cadence, ce qui se lit
+ * comme un bug parce que c'en est un.
  */
-export function quickInputs({ price, customers }: QuickParams): SimulatorInputs {
+export function quickInputs(
+  { price, customers }: QuickParams,
+  period: BillingPeriod = 'monthly',
+): SimulatorInputs {
   const zone = priceZoneFor(price)
   // Milieu de la zone de churn typique pour ce niveau de prix.
   const revenueChurn = Number(((zone.churnMin + zone.churnMax) / 2).toFixed(3))
@@ -45,5 +64,7 @@ export function quickInputs({ price, customers }: QuickParams): SimulatorInputs 
     fixedCosts,
     topClientShare: 0.05,
     ageMonths: 24,
+    annualShare: period === 'yearly' ? 1 : 0,
+    annualDiscount: 0,
   }
 }
