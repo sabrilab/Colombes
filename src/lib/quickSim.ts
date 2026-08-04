@@ -39,18 +39,24 @@ export interface QuickParams {
  * qui vient de dire « je paie 2 000 € par mois » ne veut pas voir ce montant
  * bouger parce qu'il a ajouté trois clients.
  */
-export interface QuickCosts {
+/**
+ * Ce qui s'ajoute au prix de base, par client et par mois.
+ *
+ * Trois montants, tous mensuels comme le prix — la cadence choisie à l'écran ne
+ * sert qu'à la saisie et à l'affichage. Aucun n'est un pourcentage : personne ne
+ * sait dire « mon service me coûte quinze pour cent », tout le monde sait dire
+ * « ce client me paie six euros de plus » ou « il me coûte deux euros
+ * d'inférence ». Les conversions vers ce que le moteur lit — un prix de plan et
+ * une marge brute — se font ici, une fois.
+ */
+export interface QuickExtras {
   /**
-   * Ce qu'un client coûte à servir, en euros par mois.
-   *
-   * Un montant et non une part du revenu : personne ne sait dire « mon service
-   * me coûte quinze pour cent », tout le monde sait dire « ce client me coûte
-   * deux euros d'inférence par mois ». Le moteur, lui, raisonne en marge brute
-   * — la conversion se fait ici, une fois, à partir du prix.
-   *
-   * Toujours mensuel, comme le prix : la cadence choisie à l'écran ne sert qu'à
-   * la saisie et à l'affichage.
+   * Le supplément que chaque client paie en plus de l'abonnement : un module,
+   * un siège, un forfait d'usage. Il s'additionne au prix, donc il déplace
+   * l'abonnement total et le palier où l'on se situe.
    */
+  addOnPerCustomer?: number
+  /** Ce qu'un client coûte à servir, en euros par mois. Absent : déduit. */
   costPerCustomer?: number
   /** Coûts fixes mensuels. Absents : déduits du revenu. */
   fixedCosts?: number
@@ -64,9 +70,16 @@ export function defaultCostPerCustomer(monthlyPrice: number): number {
 export function quickInputs(
   { price, customers }: QuickParams,
   period: BillingPeriod = 'monthly',
-  costs: QuickCosts = {},
+  extras: QuickExtras = {},
 ): SimulatorInputs {
-  const zone = priceZoneFor(price)
+  /*
+   * L'abonnement total : le prix du plan plus le supplément. C'est lui qui
+   * gouverne tout le reste — la zone de churn, le coût d'acquisition, le palier
+   * animal — parce que ce qu'un client rapporte ne se divise pas en deux
+   * lignes une fois qu'il a payé.
+   */
+  const total = price + (extras.addOnPerCustomer ?? 0)
+  const zone = priceZoneFor(total)
   // Milieu de la zone de churn typique pour ce niveau de prix.
   const revenueChurn = Number(((zone.churnMin + zone.churnMax) / 2).toFixed(3))
 
@@ -75,13 +88,13 @@ export function quickInputs(
    * sait lire. Un prix nul n'a pas de marge définie — on retombe alors sur la
    * valeur par défaut plutôt que de diviser par zéro.
    */
-  const costPerCustomer = costs.costPerCustomer ?? defaultCostPerCustomer(price)
+  const costPerCustomer = extras.costPerCustomer ?? defaultCostPerCustomer(total)
   const grossMargin =
-    price > 0
-      ? clampTo(INPUT_BOUNDS.grossMargin, 1 - costPerCustomer / price)
+    total > 0
+      ? clampTo(INPUT_BOUNDS.grossMargin, 1 - costPerCustomer / total)
       : DEFAULT_INPUTS.grossMargin
   // Un CAC calé sur ~8 mois de payback : ni machine à cash, ni gouffre.
-  const cac = clampTo(INPUT_BOUNDS.cac, Math.round(8 * price * grossMargin))
+  const cac = clampTo(INPUT_BOUNDS.cac, Math.round(8 * total * grossMargin))
   // Une acquisition qui renouvelle ~5 % de la base chaque mois.
   const newCustomersPerMonth = clampTo(
     INPUT_BOUNDS.newCustomersPerMonth,
@@ -90,12 +103,14 @@ export function quickInputs(
   // Des charges fixes à ~20 % du MRR, plancher de solo-fondateur.
   const fixedCosts = clampTo(
     INPUT_BOUNDS.fixedCosts,
-    costs.fixedCosts ?? Math.max(500, Math.round(price * customers * 0.2)),
+    extras.fixedCosts ?? Math.max(500, Math.round(total * customers * 0.2)),
   )
 
   return {
     ...DEFAULT_INPUTS,
-    tiers: [{ name: 'Subscription', price, mix: 1 }],
+    // Un seul plan, au prix total : le moteur n'a pas à connaître la
+    // décomposition, seulement ce que le client paie chaque mois.
+    tiers: [{ name: 'Subscription', price: total, mix: 1 }],
     customers: clampTo(INPUT_BOUNDS.customers, customers),
     newCustomersPerMonth,
     cac,

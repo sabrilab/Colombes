@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { quickInputs } from './quickSim'
 import { compute, priceZoneFor } from './engine'
+import { toMonthly } from './billingPeriod'
 import { clampTo, INPUT_BOUNDS } from './inputBounds'
 
 describe('quickInputs', () => {
@@ -98,5 +99,32 @@ describe('coût par client', () => {
     const derived = compute(quickInputs({ price: 29, customers: 500 }))
     // 15 % de 29 €, la marge par défaut de l'app.
     expect(derived.revenue.variableCost / derived.revenue.mrr).toBeCloseTo(0.15, 6)
+  })
+})
+
+describe('supplément par client', () => {
+  const params = { price: 29, customers: 500 }
+
+  it("s'ajoute au prix et au revenu", () => {
+    // 29 € de plan et 6 € de supplément : chaque client paie 35 €, et les cinq
+    // cents en font 17 500 € par mois.
+    const results = compute(quickInputs(params, 'monthly', { addOnPerCustomer: 6 }))
+    expect(results.revenue.arpu).toBeCloseTo(35, 6)
+    expect(results.revenue.mrr).toBeCloseTo(17_500, 6)
+  })
+
+  it('déplace le palier quand il change ce que le client rapporte', () => {
+    // Le palier de Janz se lit sur le revenu par client, pas sur le prix du
+    // plan : un supplément qui double l'addition doit pouvoir changer d'animal.
+    const plain = compute(quickInputs({ price: 29, customers: 500 }))
+    const boosted = compute(quickInputs({ price: 29, customers: 500 }, 'monthly', { addOnPerCustomer: 200 }))
+    expect(boosted.revenue.arpu).toBeGreaterThan(plain.revenue.arpu)
+  })
+
+  it('se saisit dans la cadence choisie, sans perdre les semaines', () => {
+    // 6 € par semaine font 26 € par mois : le film complet de la conversion est
+    // gardé par billingPeriod.test.ts, on vérifie ici qu'il arrive au moteur.
+    const weekly = compute(quickInputs(params, 'weekly', { addOnPerCustomer: toMonthly(6, 'weekly') }))
+    expect(weekly.revenue.arpu).toBeCloseTo(29 + 26, 6)
   })
 })

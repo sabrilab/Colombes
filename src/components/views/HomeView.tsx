@@ -10,7 +10,7 @@ import { BILLING_PERIODS, type BillingPeriod } from '@/lib/billingPeriod'
 import { describeHiddenAssumptions } from '@/lib/assumptions'
 import { compute } from '@/lib/engine'
 import { formatCurrency, formatMultiple, formatPercent } from '@/lib/format'
-import { quickInputs, type QuickCosts } from '@/lib/quickSim'
+import { quickInputs, type QuickExtras } from '@/lib/quickSim'
 import { navigate } from '@/lib/router'
 import { useAnimatedNumber } from '@/lib/useAnimatedNumber'
 import { useSimulator, useT } from '@/store/simulator'
@@ -73,11 +73,11 @@ function MiniSimulator() {
    * déplacer la colombe d'un bout à l'autre du pad sans que les coûts perdent
    * tout sens ; dès qu'on tient un curseur, il cesse de suivre.
    */
-  const [costs, setCosts] = useState<QuickCosts>({})
+  const [extras, setExtras] = useState<QuickExtras>({})
   const t = useT()
   const loadInputs = useSimulator((state) => state.loadInputs)
 
-  const inputs = useMemo(() => quickInputs(params, period, costs), [params, period, costs])
+  const inputs = useMemo(() => quickInputs(params, period, extras), [params, period, extras])
   const results = useMemo(() => compute(inputs), [inputs])
   const animatedValue = useAnimatedNumber(results.valuation.value)
 
@@ -192,16 +192,18 @@ function MiniSimulator() {
         <div className="order-4 border-t border-border/60 pt-5 lg:col-span-2 lg:row-start-3 lg:mt-2">
           <MarginPanel
             results={results}
+            addOn={extras.addOnPerCustomer ?? 0}
             /* Le coût affiché se relit du moteur, jamais de l'état local : c'est
-               ce qui garde le curseur sur la valeur déduite tant qu'on n'y a pas
+               ce qui garde le champ sur la valeur déduite tant qu'on n'y a pas
                touché, et sur la valeur saisie dès qu'on l'a fait. */
             costPerCustomer={results.revenue.arpu * (1 - inputs.grossMargin)}
             fixedCosts={inputs.fixedCosts}
             period={period}
+            onAddOn={(monthly) => setExtras((state) => ({ ...state, addOnPerCustomer: monthly }))}
             onCostPerCustomer={(monthly) =>
-              setCosts((state) => ({ ...state, costPerCustomer: monthly }))
+              setExtras((state) => ({ ...state, costPerCustomer: monthly }))
             }
-            onFixedCosts={(value) => setCosts((state) => ({ ...state, fixedCosts: value }))}
+            onFixedCosts={(value) => setExtras((state) => ({ ...state, fixedCosts: value }))}
           />
         </div>
       </div>

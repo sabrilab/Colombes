@@ -1,83 +1,137 @@
-import { Slider } from '@/components/ui/slider'
-import { formatCurrency, formatPercent, formatPrice } from '@/lib/format'
+import { Input } from '@/components/ui/input'
+import { formatCurrency, formatPrice } from '@/lib/format'
 import { billingPeriodOption, fromMonthly, toMonthly, type BillingPeriod } from '@/lib/billingPeriod'
 import type { SimulatorResults } from '@/lib/engine/types'
 import { useT } from '@/store/simulator'
 
 /**
- * Ce qui reste, et de quoi on peut le tâter.
+ * Ce que chaque client ajoute, et ce qu'il en reste.
  *
  * Le mini-simulateur montrait un revenu et une valorisation, et posait la marge
- * en hypothèse muette au bas du panneau — « marge 85 %, coûts fixes 2 900 €/mois »
- * dans une ligne grise que personne ne lit. Or c'est là que se joue la question
- * qu'on se pose vraiment : je facture 14 500 €, mais qu'est-ce que je garde ?
+ * en hypothèse muette au bas du panneau. Or la question qu'on se pose vraiment
+ * est par client : celui-ci me paie six euros de plus, il m'en coûte deux à
+ * servir — au bout du compte, l'abonnement fait combien, et je garde quoi ?
  *
- * Deux réglages seulement, parce que ce sont les deux dépenses qu'un fondateur
- * reconnaît sans traduction :
+ * D'où trois montants qu'on tape, et ni pourcentage ni curseur. Une part du
+ * revenu demande de traduire soi-même, et un curseur demande de viser :
+ * quelqu'un qui sait que son client paie six euros de plus veut écrire six.
  *
- *  — **ce qu'un client coûte à servir**, en euros : l'hébergement, les jetons
- *    d'inférence qu'on revend, le support. Un montant par client et non une part
- *    du revenu, parce que personne ne sait dire « mon service me coûte quinze
- *    pour cent » alors que tout le monde sait dire « ce client me coûte deux
- *    euros par mois ». La conversion en marge brute, seule chose que le moteur
- *    sache lire, se fait dans `quickSim` ;
- *  — **l'équipe et les outils** : ce qu'on paie chaque mois quoi qu'il arrive.
- *    Un montant, pas une part — un freelance à 2 000 € coûte 2 000 € qu'on ait
- *    dix clients ou mille.
+ *  — **le supplément**, ce que le client paie en plus de l'abonnement de base.
+ *    Il s'additionne au prix, donc il déplace l'abonnement total, le palier où
+ *    l'on se situe et le coût d'acquisition qu'on peut se permettre ;
+ *  — **le coût de service** : hébergement, jetons d'inférence revendus, support ;
+ *  — **l'équipe et les outils**, seul montant qui ne soit pas par client — un
+ *    freelance à deux mille euros coûte deux mille euros qu'on ait dix clients
+ *    ou mille.
  *
- * L'acquisition apparaît dans la barre sans curseur : elle est déduite du coût
- * d'acquisition et du rythme d'entrée, tous deux calculés par `quickSim`. La
- * montrer sans la rendre réglable est le seul choix honnête — elle mange une
- * part réelle du revenu, et prétendre l'inverse ferait un profit imaginaire.
+ * Les deux premiers se saisissent dans la cadence choisie au-dessus du panneau,
+ * et l'équivalent mensuel s'affiche dessous : c'est la conversion qu'on ne veut
+ * pas faire de tête, six euros par semaine faisant vingt-six euros par mois et
+ * non vingt-quatre.
  *
- * Aucun chiffre n'est recalculé ici : les quatre parts viennent de `compute()`,
- * qui est le moteur de production. Une somme qui ne retombe pas sur le revenu
- * refuse de s'afficher plutôt que de mentir joliment.
+ * L'acquisition apparaît dans la barre sans champ : elle est déduite du coût
+ * d'acquisition et du rythme d'entrée. La montrer sans la rendre saisissable est
+ * le seul choix honnête — elle mange une part réelle du revenu, et prétendre
+ * l'inverse ferait un bénéfice imaginaire.
+ *
+ * Aucun chiffre n'est recalculé ici : abonnement total, parts et bénéfice
+ * viennent tous de `compute()`, le moteur de production.
  */
 
-/**
- * Plafond du curseur des coûts fixes. Le moteur accepte cent mille euros par
- * mois ; sur ce panneau, la course entière serait alors illisible pour les
- * quelques milliers d'euros où tout se joue.
- */
-const FIXED_CEILING = 20_000
+/** Une ligne de saisie : un libellé, un montant, son unité, sa conversion. */
+function AmountRow({
+  label,
+  hint,
+  value,
+  unit,
+  monthly,
+  onChange,
+}: {
+  label: string
+  hint: string
+  value: number
+  unit: string
+  /** L'équivalent mensuel, quand la cadence saisie n'est pas le mois. */
+  monthly?: string
+  onChange: (value: number) => void
+}) {
+  const t = useT()
+
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <span className="min-w-0 flex-1 text-sm">{t(label)}</span>
+        <div className="relative shrink-0">
+          <span
+            className="pointer-events-none absolute inset-y-0 left-2.5 flex items-center text-sm text-muted-foreground"
+            aria-hidden
+          >
+            €
+          </span>
+          <Input
+            type="number"
+            min={0}
+            step="0.5"
+            inputMode="decimal"
+            value={Number.isInteger(value) ? value : Number(value.toFixed(2))}
+            /* Un champ vidé rend une chaîne vide, dont `Number` fait zéro — ce
+               qui est le comportement voulu. `|| 0` couvre le NaN d'une saisie
+               illisible : on ne propage jamais un NaN dans le moteur. */
+            onChange={(event) => onChange(Math.max(0, Number(event.target.value) || 0))}
+            aria-label={t(label)}
+            className="h-9 w-28 pl-6 pr-2 text-right font-mono tabular-nums"
+          />
+        </div>
+        <span className="w-9 shrink-0 text-sm text-muted-foreground">{t(unit)}</span>
+      </div>
+      <p className="text-[11px] text-muted-foreground">
+        {monthly && (
+          <span className="text-foreground/70">
+            = {monthly}
+            {t('/mo')} ·{' '}
+          </span>
+        )}
+        {t(hint)}
+      </p>
+    </div>
+  )
+}
 
 export function MarginPanel({
   results,
+  addOn,
   costPerCustomer,
   fixedCosts,
   period,
+  onAddOn,
   onCostPerCustomer,
   onFixedCosts,
 }: {
   results: SimulatorResults
+  /** Supplément par client, en euros par mois. */
+  addOn: number
   /** Coût de service par client, en euros par mois. */
   costPerCustomer: number
   fixedCosts: number
-  /** La cadence choisie dans le panneau : le coût s'y saisit et s'y lit. */
+  /** La cadence choisie dans le panneau : les montants par client s'y saisissent. */
   period: BillingPeriod
+  onAddOn: (monthly: number) => void
   onCostPerCustomer: (monthly: number) => void
-  onFixedCosts: (value: number) => void
+  onFixedCosts: (monthly: number) => void
 }) {
   const t = useT()
   const { arpu, mrr, variableCost, acquisitionCost, sdeMonthly, netMargin } = results.revenue
   const unit = billingPeriodOption(period).unit
+  const monthlyOf = (value: number) => (period === 'monthly' ? undefined : formatPrice(value))
 
-  /*
-   * Le curseur ne dépasse pas le prix. Payer plus pour servir un client qu'il ne
-   * rapporte est une situation réelle, mais le moteur borne la marge brute à
-   * zéro : laisser le curseur aller au-delà afficherait un coût que le calcul
-   * n'appliquerait pas. On s'arrête donc là où le modèle s'arrête.
-   */
-  const ceiling = Math.max(arpu, 1)
-  const shown = fromMonthly(Math.min(costPerCustomer, ceiling), period)
-  const step = Math.max(0.5, Math.round(fromMonthly(ceiling, period) / 60))
+  // Le supplément, en revenu : il est payé par tous les clients, comme le prix.
+  const addOnRevenue = addOn * (arpu > 0 ? mrr / arpu : 0)
 
   /*
    * Les quatre parts, dans l'ordre où l'argent s'en va. Le bénéfice peut être
-   * négatif — on dépense alors plus qu'on n'encaisse — et la barre le montre
-   * en rouge plutôt que de replier le segment à zéro : une entreprise qui perd
-   * de l'argent ne doit pas ressembler à une entreprise qui gagne peu.
+   * négatif — on dépense alors plus qu'on n'encaisse — et la barre le montre en
+   * rouge plutôt que de replier le segment à zéro : une entreprise qui perd de
+   * l'argent ne doit pas ressembler à une entreprise qui gagne peu.
    */
   const parts = [
     { key: 'serve', label: 'Serving them', value: variableCost, tone: 'bg-foreground/25' },
@@ -91,113 +145,125 @@ export function MarginPanel({
     },
   ]
 
-  // Les parts se lisent sur le revenu, sauf en perte : la barre représente
-  // alors ce qui sort, qui dépasse ce qui entre.
+  // Les parts se lisent sur le revenu, sauf en perte : la barre représente alors
+  // ce qui sort, qui dépasse ce qui entre.
   const span = Math.max(mrr, parts.reduce((total, part) => total + Math.abs(part.value), 0))
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-          {t('What you actually keep')}
-        </p>
-        <p className="flex items-baseline gap-3">
-          <span
-            className={`font-mono text-2xl font-semibold tabular-nums lg:text-3xl ${
-              sdeMonthly >= 0 ? 'text-lume' : 'text-destructive'
-            }`}
-          >
-            {formatCurrency(sdeMonthly)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {t('/mo')} · {formatPercent(netMargin, 0)} {t('net margin')}
-          </span>
-        </p>
+    <div className="space-y-5">
+      <div className="grid gap-x-10 gap-y-5 lg:grid-cols-2">
+        <div className="space-y-3">
+          <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {t('Per customer')}
+          </p>
+
+          <AmountRow
+            label="They also pay you"
+            hint="An add-on, a seat, a usage pack — on top of the plan."
+            value={fromMonthly(addOn, period)}
+            unit={unit}
+            monthly={monthlyOf(addOn)}
+            onChange={(value) => onAddOn(toMonthly(value, period))}
+          />
+
+          <AmountRow
+            label="They cost you"
+            hint="Hosting, the tokens you resell, the support you answer."
+            value={fromMonthly(costPerCustomer, period)}
+            unit={unit}
+            monthly={monthlyOf(costPerCustomer)}
+            onChange={(value) => onCostPerCustomer(toMonthly(value, period))}
+          />
+
+          <AmountRow
+            label="Team and tools"
+            hint="What you pay every month whoever shows up: you, a freelance, the tools."
+            value={fixedCosts}
+            unit="/mo"
+            onChange={onFixedCosts}
+          />
+        </div>
+
+        {/* Les trois réponses aux trois questions : ce que l'abonnement fait au
+            total, ce que le supplément rapporte, ce qu'il reste à la fin. */}
+        <dl className="grid content-start gap-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-border/60 pb-2">
+            <dt className="text-sm text-muted-foreground">{t('Full subscription')}</dt>
+            <dd className="font-mono text-xl font-semibold tabular-nums">
+              {formatPrice(fromMonthly(arpu, period))}
+              <span className="text-sm font-normal text-muted-foreground">{t(unit)}</span>
+              {period !== 'monthly' && (
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  ({formatPrice(arpu)}
+                  {t('/mo')})
+                </span>
+              )}
+            </dd>
+          </div>
+
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-border/60 pb-2">
+            <dt className="text-sm text-muted-foreground">{t('The add-on brings in')}</dt>
+            <dd className="font-mono text-xl font-semibold tabular-nums text-lume">
+              {formatCurrency(addOnRevenue)}
+              <span className="text-sm font-normal text-muted-foreground">{t('/mo')}</span>
+            </dd>
+          </div>
+
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <dt className="text-sm text-muted-foreground">{t('What you actually keep')}</dt>
+            <dd
+              className={`font-mono text-2xl font-semibold tabular-nums ${
+                sdeMonthly >= 0 ? 'text-lume' : 'text-destructive'
+              }`}
+            >
+              {formatCurrency(sdeMonthly)}
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                {Math.round(netMargin * 100)}% {t('net margin')}
+              </span>
+            </dd>
+          </div>
+        </dl>
       </div>
 
       {/* La barre : le revenu, découpé en ce qu'il devient. */}
-      <div
-        className="flex h-4 w-full gap-0.5 overflow-hidden rounded-full bg-secondary"
-        role="img"
-        aria-label={t(
-          '{mrr} of revenue: {serve} serving, {acquire} acquiring, {fixed} fixed, {profit} kept.',
-          {
-            mrr: formatCurrency(mrr),
-            serve: formatCurrency(variableCost),
-            acquire: formatCurrency(acquisitionCost),
-            fixed: formatCurrency(fixedCosts),
-            profit: formatCurrency(sdeMonthly),
-          },
-        )}
-      >
-        {parts.map((part) => (
-          <span
-            key={part.key}
-            className={`h-full ${part.tone} ${part.key === 'profit' ? 'shadow-[0_0_12px_-2px_var(--lume)]' : ''}`}
-            style={{ width: `${span > 0 ? (Math.abs(part.value) / span) * 100 : 0}%` }}
-          />
-        ))}
-      </div>
-
-      <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-sm">{t('Cost per customer')}</span>
-            <span className="font-mono text-sm tabular-nums text-muted-foreground">
-              {formatPrice(shown)}
-              {t(unit)} · {formatCurrency(variableCost)}
-              {t('/mo')} {t('in total')}
-            </span>
-          </div>
-          <Slider
-            value={[shown]}
-            min={0}
-            max={fromMonthly(ceiling, period)}
-            step={step}
-            onValueChange={([value]) => onCostPerCustomer(toMonthly(value, period))}
-            thumbLabel={t('Cost per customer')}
-            thumbValueText={`${formatPrice(shown)} ${t('per customer')}`}
-          />
-          <p className="text-[11px] text-muted-foreground">
-            {t('What one customer costs you to serve: hosting, the tokens you resell, support.')}
-          </p>
+      <div className="space-y-2">
+        <div
+          className="flex h-4 w-full gap-0.5 overflow-hidden rounded-full bg-secondary"
+          role="img"
+          aria-label={t(
+            '{mrr} of revenue: {serve} serving, {acquire} acquiring, {fixed} fixed, {profit} kept.',
+            {
+              mrr: formatCurrency(mrr),
+              serve: formatCurrency(variableCost),
+              acquire: formatCurrency(acquisitionCost),
+              fixed: formatCurrency(fixedCosts),
+              profit: formatCurrency(sdeMonthly),
+            },
+          )}
+        >
+          {parts.map((part) => (
+            <span
+              key={part.key}
+              className={`h-full ${part.tone} ${
+                part.key === 'profit' ? 'shadow-[0_0_12px_-2px_var(--lume)]' : ''
+              }`}
+              style={{ width: `${span > 0 ? (Math.abs(part.value) / span) * 100 : 0}%` }}
+            />
+          ))}
         </div>
 
-        <div className="space-y-1.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <span className="text-sm">{t('Team and tools')}</span>
-            <span className="font-mono text-sm tabular-nums text-muted-foreground">
-              {formatCurrency(fixedCosts)}
-              {t('/mo')}
-            </span>
-          </div>
-          <Slider
-            value={[Math.min(fixedCosts, FIXED_CEILING)]}
-            min={0}
-            max={FIXED_CEILING}
-            step={100}
-            onValueChange={([value]) => onFixedCosts(value)}
-            thumbLabel={t('Team and tools')}
-            thumbValueText={`${formatCurrency(fixedCosts)} ${t('per month')}`}
-          />
-          <p className="text-[11px] text-muted-foreground">
-            {t('What you pay every month whoever shows up: you, a freelance, the tools.')}
-          </p>
-        </div>
+        <ul className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-muted-foreground">
+          {parts.map((part) => (
+            <li key={part.key} className="flex items-center gap-1.5">
+              <span className={`size-2 rounded-full ${part.tone}`} aria-hidden />
+              {t(part.label)}
+              <span className="font-mono tabular-nums text-foreground/70">
+                {formatCurrency(part.value)}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
-
-      {/* La légende dit ce que la barre montre. Sans elle, quatre gris. */}
-      <ul className="flex flex-wrap gap-x-5 gap-y-1 text-[11px] text-muted-foreground">
-        {parts.map((part) => (
-          <li key={part.key} className="flex items-center gap-1.5">
-            <span className={`size-2 rounded-full ${part.tone}`} aria-hidden />
-            {t(part.label)}
-            <span className="font-mono tabular-nums text-foreground/70">
-              {formatCurrency(part.value)}
-            </span>
-          </li>
-        ))}
-      </ul>
     </div>
   )
 }
