@@ -5,7 +5,7 @@ import type { Route } from './router'
  * cinq onglets tombent sous les 70 px chacun et le choix ne se lit plus.
  *
  * Chacune répond à une intention de visite différente — « ça vaut combien ? »,
- * « pourquoi ce chiffre ? », « je me situe où ? », « où en étais-je ? » — et
+ * « pourquoi ce chiffre ? », « je me situe où ? », « où en est mon idée ? » — et
  * non à un morceau de l'interface. C'est ce qui les rend stables : elles ne
  * bougeront pas quand l'interface, elle, bougera.
  */
@@ -20,7 +20,7 @@ export const SECTIONS: Section[] = [
   { id: 'home', label: 'Simulate', hash: '#/' },
   { id: 'learn', label: 'Understand', hash: '#/comprendre' },
   { id: 'aviary', label: 'Aviary', hash: '#/voliere' },
-  { id: 'saved', label: 'My runs', hash: '#/mes-calculs' },
+  { id: 'nest', label: 'The nest', hash: '#/nid' },
 ]
 
 /**

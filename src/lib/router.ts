@@ -5,14 +5,14 @@ export type Route =
   /** `grain` : un lien pédagogique entrant, qui vise un module de la section. */
   | { view: 'learn'; grain?: string }
   | { view: 'aviary' }
-  | { view: 'saved' }
+  | { view: 'nest' }
   | { view: 'simulator' }
   | { view: 'lab' }
   | { view: 'colombe'; id: string }
 
 /**
  * Mini-routeur par hash. Quatre sections de navigation — accueil, comprendre,
- * volière, mes calculs — plus le simulateur complet, les profils, le banc
+ * volière, le nid — plus le simulateur complet, les profils, le banc
  * d'essai, et la compatibilité avec les liens de partage historiques (#s=…),
  * qui ouvrent le simulateur avec leurs réglages.
  */
@@ -25,7 +25,8 @@ export function parseRoute(hash: string): Route {
   if (path === '/simulateur') return { view: 'simulator' }
   if (path === '/comprendre') return { view: 'learn' }
   if (path === '/voliere') return { view: 'aviary' }
-  if (path === '/mes-calculs') return { view: 'saved' }
+  // « mes-calculs » a été partagé et mis en favori : il continue d'ouvrir le nid.
+  if (path === '/nid' || path === '/mes-calculs') return { view: 'nest' }
   if (path === '/lab') return { view: 'lab' }
 
   // Un lien pédagogique vise un module de la section « Comprendre ».

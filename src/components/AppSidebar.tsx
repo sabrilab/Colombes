@@ -1,4 +1,4 @@
-import { Bookmark, Compass, Gauge, GraduationCap } from 'lucide-react'
+import { Compass, Egg, Gauge, GraduationCap } from 'lucide-react'
 import { ColombesWordmark, DoveLogo } from '@/components/DoveLogo'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,7 @@ const ICONS: Record<Section['id'], typeof Gauge> = {
   home: Gauge,
   learn: GraduationCap,
   aviary: Compass,
-  saved: Bookmark,
+  nest: Egg,
   simulator: Gauge,
   lab: Gauge,
   colombe: Compass,

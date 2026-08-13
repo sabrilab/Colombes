@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { HomeView } from '@/components/views/HomeView'
 import { LearnView } from '@/components/views/LearnView'
 import { AviaryView } from '@/components/views/AviaryView'
-import { SavedView } from '@/components/views/SavedView'
+import { NestView } from '@/components/views/NestView'
 import type { Route } from '@/lib/router'
 
 /**
@@ -29,7 +29,7 @@ export function SectionRoutes({ route }: { route: Route }) {
       {route.view === 'home' && <HomeView />}
       {route.view === 'learn' && <LearnView openGrain={route.grain} />}
       {route.view === 'aviary' && <AviaryView />}
-      {route.view === 'saved' && <SavedView />}
+      {route.view === 'nest' && <NestView />}
     </>
   )
 }

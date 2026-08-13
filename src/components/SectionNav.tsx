@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import gsap from 'gsap'
-import { Compass, GraduationCap, Bookmark, Gauge } from 'lucide-react'
+import { Compass, GraduationCap, Egg, Gauge } from 'lucide-react'
 import { SECTIONS, activeSection, type Section } from '@/lib/sections'
 import { navigate, useRoute } from '@/lib/router'
 import { useT } from '@/store/simulator'
@@ -10,7 +10,7 @@ const ICONS: Record<Section['id'], typeof Gauge> = {
   home: Gauge,
   learn: GraduationCap,
   aviary: Compass,
-  saved: Bookmark,
+  nest: Egg,
   simulator: Gauge,
   lab: Gauge,
   colombe: Compass,

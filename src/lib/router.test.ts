@@ -25,7 +25,12 @@ describe('parseRoute', () => {
     expect(parseRoute('#/')).toEqual({ view: 'home' })
     expect(parseRoute('#/comprendre')).toEqual({ view: 'learn' })
     expect(parseRoute('#/voliere')).toEqual({ view: 'aviary' })
-    expect(parseRoute('#/mes-calculs')).toEqual({ view: 'saved' })
+    expect(parseRoute('#/nid')).toEqual({ view: 'nest' })
+  })
+
+  it('garde vivant l’ancien lien vers « mes calculs »', () => {
+    // Il a été partagé et mis en favori : le renommer ne doit pas le casser.
+    expect(parseRoute('#/mes-calculs')).toEqual({ view: 'nest' })
   })
 
   it('mène un lien pédagogique vers son module, dans la section Comprendre', () => {

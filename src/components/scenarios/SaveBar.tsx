@@ -10,17 +10,24 @@ export function SaveBar() {
   const savedSims = useSimulator((state) => state.savedSims)
   const saveSimulation = useSimulator((state) => state.saveSimulation)
   const [name, setName] = useState('')
+  /*
+   * La ligne de contexte se saisit ici, au moment où l'on sait encore ce qu'on
+   * vient de modéliser. La demander plus tard revient à ne jamais l'avoir : on
+   * rouvre une bibliothèque pour comparer, pas pour documenter.
+   */
+  const [note, setNote] = useState('')
   const t = useT()
 
   const full = savedSims.length >= MAX_SAVED_SIMULATIONS
 
   function handleSave() {
-    saveSimulation(name)
+    saveSimulation(name, note)
     setName('')
+    setNote('')
     toast(
       name.trim()
-        ? t('“{name}” saved to your library', { name: name.trim() })
-        : t('Saved to your library'),
+        ? t('“{name}” is an egg in the nest', { name: name.trim() })
+        : t('Laid in the nest'),
     )
   }
 
@@ -35,6 +42,16 @@ export function SaveBar() {
         placeholder={t('Simulation title')}
         className="h-9 w-48"
         aria-label={t('Title for this simulation')}
+      />
+      <Input
+        value={note}
+        onChange={(event) => setNote(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' && !full) handleSave()
+        }}
+        placeholder={t('What is it? Who pays for it?')}
+        className="h-9 w-64"
+        aria-label={t('What is it? Who pays for it?')}
       />
       <Button size="sm" className="lume-pill px-4" onClick={handleSave} disabled={full}>
         {t('Save simulation')}
