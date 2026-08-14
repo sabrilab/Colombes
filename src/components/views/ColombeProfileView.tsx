@@ -29,7 +29,7 @@ export function ColombeProfileView({ id }: { id: string }) {
         <AppHeader />
         <main className="mx-auto max-w-4xl px-4 py-16 text-center lg:px-6">
           <p className="text-lg">{t('This dove has flown away.')}</p>
-          <Button className="mt-4" variant="outline" onClick={() => navigate('#/')}>
+          <Button className="mt-4" variant="outline" onClick={() => navigate('#/voliere')}>
             {t('Back to the aviary')}
           </Button>
         </main>
@@ -61,7 +61,7 @@ export function ColombeProfileView({ id }: { id: string }) {
       <main className="mx-auto max-w-5xl space-y-4 px-4 py-6 lg:px-6">
         <button
           type="button"
-          onClick={() => navigate('#/')}
+          onClick={() => navigate('#/voliere')}
           /* Le lien de retour est la sortie de secours de la page : il lui
              faut un corps qu'un pouce attrape, pas une ligne de 20 px. */
           className="reveal -ml-2 inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:text-foreground sm:min-h-0 sm:ml-0 sm:px-0"
@@ -144,7 +144,7 @@ export function ColombeProfileView({ id }: { id: string }) {
           <Button className="lume-pill px-5" onClick={openInSimulator}>
             {t('Open in the simulator')}
           </Button>
-          <Button variant="outline" onClick={() => navigate('#/')}>
+          <Button variant="outline" onClick={() => navigate('#/voliere')}>
             {t('See another dove')}
           </Button>
         </div>

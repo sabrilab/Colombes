@@ -18,6 +18,9 @@ export const FR: Record<string, string> = {
   Understand: 'Comprendre',
   Aviary: 'Volière',
   'The nest': 'Le nid',
+  Back: 'Retour',
+  'Six invented apps and six companies you know, on one scale.':
+    'Six apps inventées et six entreprises que vous connaissez, sur une seule échelle.',
   'Six invented apps, each one an archetype you will recognise, and six real companies placed on the same scale. Open any of them to see what makes its multiple — then load it into the simulator and change your mind about something.':
     'Six apps inventées, chacune un archétype que vous reconnaîtrez, et six entreprises réelles placées sur la même échelle. Ouvrez-en une pour voir ce qui fait son multiple — puis chargez-la dans le simulateur et changez d’avis sur quelque chose.',
   'Every idea you save lands here as an egg. It fills as you learn what it is, what it costs, whether the code is alive — and it hatches the day someone pays for it. Then it becomes an animal and joins the aviary.':
@@ -298,8 +301,7 @@ export const FR: Record<string, string> = {
   'Save simulation': 'Enregistrer la simulation',
   '“{name}” is an egg in the nest': '« {name} » est un œuf dans le nid',
   'Laid in the nest': 'Déposée dans le nid',
-  '{count} saved · find them on the home page':
-    '{count} enregistrées · retrouvez-les sur l’accueil',
+  '{count} in the nest — go and see': '{count} dans le nid — aller voir',
   'based on {name}': 'd’après {name}',
   'Rename {name}': 'Renommer {name}',
   'Duplicate {name}': 'Dupliquer {name}',

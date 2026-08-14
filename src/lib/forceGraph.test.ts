@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_FORCES, energy, seedPositions, step, type GraphLink, type GraphNode } from './forceGraph'
+import {
+  DEFAULT_FORCES,
+  clampToFrame,
+  energy,
+  seedPositions,
+  step,
+  type GraphLink,
+  type GraphNode,
+} from './forceGraph'
 
 function node(id: string, x: number, y: number, radius = 20): GraphNode {
   return { id, x, y, vx: 0, vy: 0, radius }
@@ -68,5 +76,36 @@ describe('forceGraph', () => {
         expect(Math.hypot(seeds[i].x - seeds[j].x, seeds[i].y - seeds[j].y)).toBeGreaterThan(1)
       }
     }
+  })
+})
+
+describe('clampToFrame', () => {
+  const FRAME = { halfWidth: 360, halfHeight: 230, top: 40, bottom: 64, side: 46 }
+
+  it('ramène dans le cadre ce qui en sort', () => {
+    const nodes: GraphNode[] = [
+      { id: 'haut', x: 0, y: -400, vx: 0, vy: 0, radius: 26 },
+      { id: 'droite', x: 900, y: 0, vx: 0, vy: 0, radius: 26 },
+    ]
+    clampToFrame(nodes, FRAME)
+    expect(nodes[0].y).toBe(-190)
+    expect(nodes[1].x).toBe(314)
+  })
+
+  it('laisse tranquille ce qui est déjà dedans', () => {
+    const nodes: GraphNode[] = [{ id: 'a', x: 12, y: -30, vx: 0, vy: 0, radius: 26 }]
+    clampToFrame(nodes, FRAME)
+    expect(nodes[0]).toMatchObject({ x: 12, y: -30 })
+  })
+
+  it('garde plus de place en bas qu’en haut, pour le nom', () => {
+    // Un nœud porte son étiquette sous lui : des marges égales couperaient le
+    // texte alors que l'œuf, lui, tient dans le cadre.
+    const nodes: GraphNode[] = [
+      { id: 'bas', x: 0, y: 999, vx: 0, vy: 0, radius: 26 },
+      { id: 'haut', x: 0, y: -999, vx: 0, vy: 0, radius: 26 },
+    ]
+    clampToFrame(nodes, FRAME)
+    expect(FRAME.halfHeight - nodes[0].y).toBeGreaterThan(nodes[1].y + FRAME.halfHeight)
   })
 })

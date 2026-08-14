@@ -146,6 +146,35 @@ export function step(
   }
 }
 
+/**
+ * Le cadre visible, en unités du dessin, avec ses marges.
+ *
+ * Elles ne sont pas égales : un nœud porte son nom **sous** lui, si bien qu'il
+ * touche le bas du cadre bien avant d'y arriver lui-même.
+ */
+export interface Frame {
+  halfWidth: number
+  halfHeight: number
+  top: number
+  bottom: number
+  side: number
+}
+
+/**
+ * Ramène les nœuds dans le cadre.
+ *
+ * La gravité les rappelle vers le centre mais ne garantit rien : à cinq idées
+ * qui se repoussent, les deux plus excentrées sortaient par le haut et par la
+ * droite, et un œuf coupé par le bord du cadre passe pour un défaut d'affichage.
+ * On borne donc après coup — la physique reste libre, la fenêtre non.
+ */
+export function clampToFrame(nodes: GraphNode[], frame: Frame): void {
+  for (const node of nodes) {
+    node.x = Math.min(frame.halfWidth - frame.side, Math.max(-frame.halfWidth + frame.side, node.x))
+    node.y = Math.min(frame.halfHeight - frame.bottom, Math.max(-frame.halfHeight + frame.top, node.y))
+  }
+}
+
 /** L'énergie du système. Elle doit tendre vers zéro, sinon le nid ne se pose jamais. */
 export function energy(nodes: readonly GraphNode[]): number {
   return nodes.reduce((total, node) => total + node.vx * node.vx + node.vy * node.vy, 0)

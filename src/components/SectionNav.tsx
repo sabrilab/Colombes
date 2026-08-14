@@ -80,7 +80,7 @@ function Tab({
       className={`relative isolate flex overflow-hidden rounded-[1.1rem] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
         rail
           ? 'w-full min-h-11 items-center gap-3 px-3 text-sm tracking-tight'
-          : 'min-h-12 flex-1 flex-col items-center justify-center gap-0.5 px-2 pb-0.5 text-[10px] leading-none tracking-tight'
+          : 'min-h-14 flex-1 flex-col items-center justify-center gap-1 px-2 text-[11px] leading-none tracking-tight'
       } ${
         onYellow
           ? `focus-visible:outline-foreground/50 ${active ? 'nav-ink' : 'nav-ink-dim'}`
@@ -105,7 +105,7 @@ function Tab({
           transition={{ type: 'spring', stiffness: 420, damping: 34, mass: 0.7 }}
         />
       )}
-      <Icon className={rail ? 'size-[1.15rem] shrink-0' : 'size-[1.15rem]'} aria-hidden />
+      <Icon className={rail ? 'size-[1.15rem] shrink-0' : 'size-[1.35rem]'} aria-hidden />
       <span className="leading-none">{t(section.label)}</span>
     </button>
   )
@@ -113,7 +113,9 @@ function Tab({
 
 /**
  * La navigation principale : barre basse au pouce sur téléphone, colonne dans
- * la barre latérale au-delà. Même matière que le reste — verre translucide,
+ * la barre latérale au-delà. Trois onglets, larges et hauts de cinquante-six
+ * pixels — la hauteur d'une barre d'onglets de téléphone, et la raison pour
+ * laquelle on l'atteint sans regarder. Même matière que le reste — verre translucide,
  * biseau haut éclairé — et le focus glisse plutôt qu'il ne saute.
  *
  * Une troisième variante a existé, `inline` : les quatre onglets recopiés au

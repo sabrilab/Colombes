@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { navigate } from '@/lib/router'
 import { MAX_SAVED_SIMULATIONS, useSimulator, useT } from '@/store/simulator'
 
 /** Enregistrer une simulation, par opposition à l'épinglage qui ne sert
@@ -62,9 +63,15 @@ export function SaveBar() {
         </span>
       ) : (
         savedSims.length > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {t('{count} saved · find them on the home page', { count: savedSims.length })}
-          </span>
+          /* Un lien, pas une phrase : après avoir enregistré, la question
+             suivante est « et maintenant, où est-ce que je la retrouve ». */
+          <button
+            type="button"
+            onClick={() => navigate('#/nid')}
+            className="min-h-9 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            {t('{count} in the nest — go and see', { count: savedSims.length })}
+          </button>
         )
       )}
     </div>

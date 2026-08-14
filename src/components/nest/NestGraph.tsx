@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { EggGlyph } from '@/components/nest/EggGlyph'
-import { DEFAULT_FORCES, seedPositions, step, type GraphLink, type GraphNode } from '@/lib/forceGraph'
+import {
+  DEFAULT_FORCES,
+  clampToFrame,
+  seedPositions,
+  step,
+  type Frame,
+  type GraphLink,
+  type GraphNode,
+} from '@/lib/forceGraph'
+import { isTap } from '@/lib/gesture'
 import type { NestIdea } from '@/lib/nestView'
 import { useT } from '@/store/simulator'
 
@@ -28,6 +37,12 @@ const RADIUS = { idea: 26, note: 6 }
 /** En dessous, on considère le nid posé et on rend la main au navigateur. */
 const SLEEP = 0.02
 
+/**
+ * Le cadre du dessin, et les marges qui gardent chaque œuf entier. En bas il en
+ * faut plus : c'est là que tombe le nom.
+ */
+const FRAME: Frame = { halfWidth: 360, halfHeight: 230, top: 40, bottom: 64, side: 46 }
+
 export function NestGraph({
   ideas,
   selected,
@@ -41,7 +56,10 @@ export function NestGraph({
   const groupsRef = useRef(new Map<string, SVGGElement>())
   const edgesRef = useRef(new Map<string, SVGLineElement>())
   const nodesRef = useRef<GraphNode[]>([])
-  const dragRef = useRef<{ id: string; moved: boolean } | null>(null)
+  const svgRef = useRef<SVGSVGElement>(null)
+  const dragRef = useRef<{ id: string; from: { x: number; y: number } } | null>(null)
+  /** Un glissement est en cours, ou vient de finir : le clic qui suit n'est pas un choix. */
+  const movedRef = useRef(false)
   const t = useT()
 
   /**
@@ -53,14 +71,27 @@ export function NestGraph({
     const built: GraphNode[] = []
     const edges: GraphLink[] = []
     const seeds = seedPositions(ideas.length, 110)
+    /*
+     * Ce que le nid était juste avant.
+     *
+     * La liste des idées change plus souvent qu'on ne croit — les signaux des
+     * dépôts arrivent après coup, un tri se change, un client se compte. Sans
+     * cette reprise, la constellation repartait de ses positions de semis à
+     * chaque fois : les œufs sautaient à l'écran sans raison visible, et un
+     * doigt posé sur l'un d'eux le perdait en route.
+     */
+    const before = new Map(nodesRef.current.map((node) => [node.id, node]))
+    const keep = (id: string, fallback: { x: number; y: number }) =>
+      before.get(id) ?? { ...fallback, vx: 0, vy: 0 }
 
     ideas.forEach((idea, index) => {
+      const home = keep(idea.sim.id, seeds[index])
       built.push({
         id: idea.sim.id,
-        x: seeds[index].x,
-        y: seeds[index].y,
-        vx: 0,
-        vy: 0,
+        x: home.x,
+        y: home.y,
+        vx: home.vx ?? 0,
+        vy: home.vy ?? 0,
         radius: RADIUS.idea,
       })
 
@@ -73,12 +104,16 @@ export function NestGraph({
       satellites.forEach((kind, order) => {
         const id = `${idea.sim.id}:${kind}`
         const angle = order * 2.1 + index
+        const spot = keep(id, {
+          x: home.x + Math.cos(angle) * 46,
+          y: home.y + Math.sin(angle) * 46,
+        })
         built.push({
           id,
-          x: seeds[index].x + Math.cos(angle) * 46,
-          y: seeds[index].y + Math.sin(angle) * 46,
-          vx: 0,
-          vy: 0,
+          x: spot.x,
+          y: spot.y,
+          vx: spot.vx ?? 0,
+          vy: spot.vy ?? 0,
           radius: RADIUS.note,
         })
         edges.push({ a: idea.sim.id, b: id, rest: 52 })
@@ -115,12 +150,14 @@ export function NestGraph({
     if (reduced) {
       // Mouvement réduit : on résout d'un coup et on peint la position finale.
       for (let i = 0; i < 400; i++) step(nodesRef.current, links, DEFAULT_FORCES)
+      clampToFrame(nodesRef.current, FRAME)
       paint()
       return
     }
 
     const tick = () => {
       step(nodesRef.current, links, DEFAULT_FORCES)
+      clampToFrame(nodesRef.current, FRAME)
       paint()
 
       const moving = nodesRef.current.some(
@@ -149,39 +186,67 @@ export function NestGraph({
     if (!node) return
     ;(event.target as Element).setPointerCapture?.(event.pointerId)
     node.held = true
-    dragRef.current = { id, moved: false }
+    movedRef.current = false
+    dragRef.current = { id, from: { x: event.clientX, y: event.clientY } }
     wake()
   }
 
   function pointerMove(event: React.PointerEvent) {
     const drag = dragRef.current
-    if (!drag) return
-    const holder = holderRef.current
-    const node = nodesRef.current.find((entry) => entry.id === drag.id)
-    if (!holder || !node) return
+    const node = drag && nodesRef.current.find((entry) => entry.id === drag.id)
+    if (!drag || !node) return
 
-    const box = holder.getBoundingClientRect()
-    node.x = event.clientX - box.left - box.width / 2
-    node.y = event.clientY - box.top - box.height / 2
-    drag.moved = true
+    // Tant que le doigt tremble sur place, il désigne ; il ne tire pas.
+    // Voir `lib/gesture.ts` — sans ce seuil, rien ne s'ouvrait au téléphone.
+    if (!movedRef.current && isTap(drag.from, { x: event.clientX, y: event.clientY })) return
+    movedRef.current = true
+
+    /*
+     * Du pixel d'écran à l'unité du dessin. La matrice du SVG fait la
+     * conversion exactement : la vue est mise à l'échelle et centrée dans son
+     * cadre, si bien qu'un calcul à la main sur la boîte du conteneur se
+     * trompe des deux — du facteur et du décalage. Le nœud partait alors bien
+     * plus loin que le doigt.
+     */
+    const svg = svgRef.current
+    const matrix = svg?.getScreenCTM()?.inverse()
+    if (!svg || !matrix) return
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix)
+    node.x = point.x
+    node.y = point.y
   }
 
-  function pointerUp(id: string) {
-    const drag = dragRef.current
+  function release(id: string) {
     dragRef.current = null
     const node = nodesRef.current.find((entry) => entry.id === id)
     if (node) node.held = false
-    // Un contact sans déplacement est un choix, pas un glissement.
-    if (drag && !drag.moved) onSelect(selected === id ? null : id)
+  }
+
+  /*
+   * La sélection tient au clic, pas au relâchement du pointeur.
+   *
+   * Le navigateur émet le clic lui-même après un contact, ce qui donne le même
+   * geste à la souris, au doigt, au clavier et aux technologies d'assistance,
+   * sans rien tenir en mémoire entre deux événements. La première version
+   * comptait sur un objet mémorisé au contact et relu au relâchement ; quand le
+   * nid se reconstruisait entre les deux — un signal de dépôt qui arrive —
+   * l'objet avait disparu et le contact ne faisait rien, une fois sur deux.
+   * Ici, le pire des cas ouvre la fiche, ce qui est précisément ce qu'on
+   * voulait.
+   */
+  function click(id: string) {
+    if (movedRef.current) return
+    onSelect(selected === id ? null : id)
   }
 
   return (
     <div
       ref={holderRef}
-      className="relative min-h-[26rem] flex-1 touch-none overflow-hidden rounded-2xl border border-border/60 bg-card/30"
+      className="relative min-h-[19rem] flex-1 touch-none overflow-hidden rounded-2xl border border-border/60 bg-card/30 lg:min-h-[26rem]"
       onPointerMove={pointerMove}
     >
       <svg
+        ref={svgRef}
         viewBox="-360 -230 720 460"
         className="absolute inset-0 size-full"
         role="img"
@@ -209,10 +274,25 @@ export function NestGraph({
               ref={(element) => {
                 if (element) groupsRef.current.set(id, element)
               }}
-              className="cursor-grab active:cursor-grabbing"
+              role="button"
+              tabIndex={0}
+              aria-label={idea.sim.name}
+              aria-pressed={on}
+              className="cursor-grab outline-none active:cursor-grabbing"
               onPointerDown={(event) => pointerDown(event, id)}
-              onPointerUp={() => pointerUp(id)}
+              onPointerUp={() => release(id)}
+              onPointerCancel={() => release(id)}
+              onClick={() => click(id)}
+              onKeyDown={(event) => {
+                if (event.key !== 'Enter' && event.key !== ' ') return
+                event.preventDefault()
+                onSelect(selected === id ? null : id)
+              }}
             >
+              {/* La cible, plus large que le dessin. Un œuf fait cinquante-deux
+                  pixels de diamètre ; le doigt en demande quarante-quatre au
+                  minimum, et il vise le centre d'une chose, pas son contour. */}
+              <circle r={RADIUS.idea + 12} fill="transparent" />
               <circle
                 r={RADIUS.idea + (on ? 9 : 5)}
                 fill="none"
@@ -233,7 +313,10 @@ export function NestGraph({
               <text
                 y={RADIUS.idea + 20}
                 textAnchor="middle"
-                className="pointer-events-none fill-foreground font-display text-[11px] font-semibold"
+                /* Le nom fait partie du nœud : le toucher le sélectionne. Il
+                   était inerte, ce qui donnait une cible de la taille de l'œuf
+                   avec un mot juste en dessous qui ne répondait pas. */
+                className="select-none fill-foreground font-display text-[11px] font-semibold"
               >
                 {idea.sim.name}
               </text>

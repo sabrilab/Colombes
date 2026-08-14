@@ -43,6 +43,23 @@ export function navigate(hash: string): void {
   window.location.hash = hash
 }
 
+/**
+ * Revenir d'où l'on vient.
+ *
+ * Les écrans de détail — le simulateur complet, un profil — se poussent depuis
+ * une section et doivent se refermer vers elle. On rend la main à l'historique
+ * plutôt que de coder un parent en dur, parce qu'on arrive au simulateur depuis
+ * l'accueil comme depuis le nid, et qu'un bouton « retour » qui ramène ailleurs
+ * qu'à l'endroit d'où l'on vient est pire que pas de bouton.
+ *
+ * Le repli sert au cas où l'on a ouvert un lien partagé directement : il n'y a
+ * alors rien derrière, et `history.back()` sortirait du site.
+ */
+export function goBack(fallback = '#/'): void {
+  if (window.history.length > 1) window.history.back()
+  else navigate(fallback)
+}
+
 function subscribe(onChange: () => void): () => void {
   window.addEventListener('hashchange', onChange)
   return () => window.removeEventListener('hashchange', onChange)

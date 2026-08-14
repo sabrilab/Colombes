@@ -443,6 +443,17 @@
       inset 0 1px 0 0 oklch(1 0 0 / 0.3);
   }
 
+  /* Un rang qu'on pousse du doigt : la barre de défilement n'y apporte rien et
+     en occupe la hauteur. Le contenu déborde volontairement, c'est le geste
+     qui le révèle. */
+  .no-bar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-bar::-webkit-scrollbar {
+    display: none;
+  }
+
   /* Le même biseau, en verre neutre : pour les boutons secondaires. */
   .glass-bevel {
     background:

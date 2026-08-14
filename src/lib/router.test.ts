@@ -21,7 +21,7 @@ describe('parseRoute', () => {
     expect(parseRoute('#/lab')).toEqual({ view: 'lab' })
   })
 
-  it('reconnaît les quatre sections de navigation', () => {
+  it('reconnaît les sections de navigation', () => {
     expect(parseRoute('#/')).toEqual({ view: 'home' })
     expect(parseRoute('#/comprendre')).toEqual({ view: 'learn' })
     expect(parseRoute('#/voliere')).toEqual({ view: 'aviary' })

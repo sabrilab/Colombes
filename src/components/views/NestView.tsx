@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Check, Code2, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { DoveLogo } from '@/components/DoveLogo'
 import { TierBadge } from '@/components/AnimalGlyph'
 import { EggGlyph } from '@/components/nest/EggGlyph'
 import { NestGraph } from '@/components/nest/NestGraph'
 import { useAnnounceAccounts } from '@/components/SectionShell'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { formatCompactCurrency, formatCurrency } from '@/lib/format'
 import { fetchRepoSignals, parseRepo, repoUrl, type RepoSignals } from '@/lib/github'
 import { buildNest, nestCensus, orderNest, NEST_ORDERS, type NestOrder, type NestIdea } from '@/lib/nestView'
@@ -65,6 +67,7 @@ export function NestView() {
   const goal = useSimulator((state) => state.goal)
   const [order, setOrder] = useState<NestOrder>('ready')
   const [selected, setSelected] = useState<string | null>(null)
+  const isMobile = useIsMobile()
   const announceAccounts = useAnnounceAccounts()
   const t = useT()
 
@@ -80,19 +83,6 @@ export function NestView() {
   )
   const census = nestCensus(ideas)
   const open = ideas.find((idea) => idea.sim.id === selected) ?? null
-
-  /*
-   * Sur un téléphone, la fiche s'ouvre sous le graphe — donc hors de l'écran.
-   * Toucher un œuf et ne rien voir bouger passe pour une panne. On l'amène
-   * jusqu'à l'œil ; sur grand écran elle est déjà visible et `nearest` ne fait
-   * alors rien du tout.
-   */
-  const sheetRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!selected) return
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    sheetRef.current?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'nearest' })
-  }, [selected])
 
   return (
     <>
@@ -132,15 +122,20 @@ export function NestView() {
         </div>
       ) : (
         <>
-          <div className="mt-6 flex flex-wrap items-center gap-2">
+          {/*
+            Une seule ligne qui défile, plutôt que quatre pastilles qui passent
+            à la ligne. Un rang de puces qu'on pousse du doigt est le geste que
+            fait un téléphone partout ailleurs ; deux lignes de boutons, non —
+            et elles repoussaient le nid sous le pli.
+          */}
+          <div className="no-bar -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-wrap lg:px-0">
             {NEST_ORDERS.map((option) => (
               <button
                 key={option.id}
                 type="button"
                 onClick={() => setOrder(option.id)}
                 aria-pressed={order === option.id}
-                title={t(option.note)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                className={`min-h-9 shrink-0 rounded-full px-3.5 text-xs font-semibold transition-colors ${
                   order === option.id
                     ? 'bg-lume text-[oklch(0.2_0.03_112)]'
                     : 'glass-bevel text-muted-foreground hover:text-foreground'
@@ -149,27 +144,73 @@ export function NestView() {
                 {t(option.label)}
               </button>
             ))}
-            {/* Deux comptes, deux libellés : « 1 œufs » se voit, et une app qui
-                écrit mal les nombres qu'elle affiche perd le peu de crédit
-                qu'elle a sur ceux qu'elle calcule. */}
-            <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
-              {t(census.egg === 1 ? '{count} egg' : '{count} eggs', { count: census.egg })} ·{' '}
-              {t(census.hatched === 1 ? '{count} hatched idea' : '{count} hatched ideas', {
-                count: census.hatched,
-              })}
-            </span>
           </div>
+
+          {/*
+            Ce que dit le tri, en toutes lettres. C'était une infobulle : sur un
+            téléphone, une infobulle n'existe pas. Et deux comptes en deux
+            libellés, parce que « 1 œufs » se voit — une app qui écrit mal les
+            nombres qu'elle affiche perd le crédit de ceux qu'elle calcule.
+          */}
+          <p className="mt-2 font-mono text-[11px] tabular-nums text-muted-foreground">
+            {t(census.egg === 1 ? '{count} egg' : '{count} eggs', { count: census.egg })} ·{' '}
+            {t(census.hatched === 1 ? '{count} hatched idea' : '{count} hatched ideas', {
+              count: census.hatched,
+            })}{' '}
+            · {t(NEST_ORDERS.find((option) => option.id === order)?.note ?? '')}
+          </p>
 
           <div className="mt-4 flex flex-col gap-4 lg:flex-row">
             <NestGraph ideas={ideas} selected={selected} onSelect={setSelected} />
-            <div ref={sheetRef} className="lg:w-[22rem] lg:shrink-0">
-              {open ? (
+
+            {/* Au téléphone la liste reste toujours là, sous la constellation :
+                c'est elle qu'on vient chercher quand on veut retrouver une
+                idée, et la fiche s'ouvre par-dessus sans la faire disparaître.
+                Sur grand écran la colonne de droite porte l'une ou l'autre. */}
+            <div className="lg:w-[22rem] lg:shrink-0">
+              {!isMobile && open ? (
                 <IdeaSheet idea={open} onClose={() => setSelected(null)} />
               ) : (
-                <RankList ideas={ideas} onSelect={setSelected} />
+                <RankList ideas={ideas} selected={selected} onSelect={setSelected} />
               )}
             </div>
           </div>
+
+          {/*
+            La feuille par le bas, et pourquoi elle plutôt qu'un panneau de plus
+            dans la page : elle arrive sous le pouce, elle se ferme d'un contact
+            à côté, et elle laisse voir d'où elle sort. C'est le geste que fait
+            un téléphone depuis toujours, donc celui qu'on n'a pas à apprendre.
+          */}
+          {isMobile && (
+            <Sheet open={open !== null} onOpenChange={(next) => !next && setSelected(null)}>
+              <SheetContent
+                side="bottom"
+                /* Le clavier ne doit pas s'ouvrir tout seul : Radix donne le
+                   focus au premier élément atteignable, ici le champ de
+                   contexte, et la feuille arriverait avec un curseur dedans. */
+                onOpenAutoFocus={(event) => event.preventDefault()}
+                /* Une hauteur fixe plutôt qu'un maximum : la feuille garde la
+                   même taille d'une idée à l'autre, et son action principale
+                   tombe toujours au même endroit sous le pouce. */
+                className="flex h-[80svh] flex-col gap-0 rounded-t-3xl p-0 pb-[env(safe-area-inset-bottom)]"
+              >
+                <SheetHeader className="sr-only">
+                  <SheetTitle>{open?.sim.name ?? t('The nest')}</SheetTitle>
+                </SheetHeader>
+                {/* La poignée ne sert à rien et dit tout : c'est elle qui
+                    annonce qu'on a affaire à une feuille, donc qu'on peut la
+                    refermer. */}
+                <span
+                  aria-hidden
+                  className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-foreground/20"
+                />
+                <div className="min-h-0 flex-1 overflow-y-auto">
+                  {open && <IdeaSheet idea={open} flat />}
+                </div>
+              </SheetContent>
+            </Sheet>
+          )}
         </>
       )}
     </>
@@ -185,9 +226,11 @@ export function NestView() {
  */
 function RankList({
   ideas,
+  selected,
   onSelect,
 }: {
   ideas: NestIdea[]
+  selected: string | null
   onSelect: (id: string) => void
 }) {
   const t = useT()
@@ -203,7 +246,10 @@ function RankList({
             <button
               type="button"
               onClick={() => onSelect(idea.sim.id)}
-              className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-foreground/[0.03]"
+              aria-current={selected === idea.sim.id ? 'true' : undefined}
+              className={`flex min-h-12 w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-foreground/[0.03] ${
+                selected === idea.sim.id ? 'bg-foreground/[0.05]' : ''
+              }`}
             >
               <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
                 {String(index + 1).padStart(2, '0')}
@@ -268,7 +314,16 @@ function CheckRow({ check }: { check: NestIdea['checks'][number] }) {
  * qu'un réglage — c'est lui qui fait éclore. Il est donc écrit en clair, sans
  * curseur : on ne fait pas glisser un fait.
  */
-function IdeaSheet({ idea, onClose }: { idea: NestIdea; onClose: () => void }) {
+function IdeaSheet({
+  idea,
+  onClose,
+  flat = false,
+}: {
+  idea: NestIdea
+  onClose?: () => void
+  /** Dans une feuille : pas de cadre, la feuille en est déjà un. */
+  flat?: boolean
+}) {
   const { sim, results, status } = idea
   const openSimulation = useSimulator((state) => state.openSimulation)
   const describeSimulation = useSimulator((state) => state.describeSimulation)
@@ -297,8 +352,8 @@ function IdeaSheet({ idea, onClose }: { idea: NestIdea; onClose: () => void }) {
   }
 
   return (
-    <Card className="gap-0 p-0">
-      <div className="card-band flex items-start gap-3 border-b border-border/50 p-3">
+    <Card className={`gap-0 p-0 ${flat ? 'border-0 bg-transparent shadow-none' : ''}`}>
+      <div className={`card-band flex items-start gap-3 border-b border-border/50 p-3 ${flat ? 'pr-12' : ''}`}>
         <EggGlyph
           status={status}
           readiness={idea.readiness}
@@ -320,14 +375,16 @@ function IdeaSheet({ idea, onClose }: { idea: NestIdea; onClose: () => void }) {
           </p>
         </div>
         {idea.animal && <TierBadge animal={idea.animal} />}
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label={t('Back to the nest')}
-          className="shrink-0 rounded p-1 text-muted-foreground/60 hover:text-foreground"
-        >
-          <Undo2 className="size-4" aria-hidden />
-        </button>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t('Back to the nest')}
+            className="shrink-0 rounded p-1 text-muted-foreground/60 hover:text-foreground"
+          >
+            <Undo2 className="size-4" aria-hidden />
+          </button>
+        )}
       </div>
 
       <div className="space-y-3 p-3">
@@ -460,7 +517,14 @@ function IdeaSheet({ idea, onClose }: { idea: NestIdea; onClose: () => void }) {
           </ol>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+        {/* Dans une feuille, l'action principale se colle au bas : la fiche est
+            plus haute qu'un téléphone, et un bouton qu'il faut aller chercher
+            en défilant n'est pas une action principale. */}
+        <div
+          className={`flex flex-wrap items-center gap-2 pt-1 ${
+            flat ? 'sticky bottom-0 -mx-3 -mb-3 border-t border-border/50 bg-background px-3 py-3' : ''
+          }`}
+        >
           <Button
             className="lume-pill h-9 flex-1 px-4"
             onClick={() => {

@@ -8,7 +8,7 @@ import { SimulatorView } from '@/components/views/SimulatorView'
 import { ColombeProfileView } from '@/components/views/ColombeProfileView'
 import { PadLabView } from '@/components/views/PadLabView'
 import { useRoute } from '@/lib/router'
-import { SECTIONS } from '@/lib/sections'
+import { isShellView } from '@/lib/sections'
 import { applyHashInputs } from '@/store/simulator'
 
 /** La transition partage le morceau de Motion déjà chargé par la barre. */
@@ -26,7 +26,7 @@ export default function App() {
   }, [route])
 
   /**
-   * Les quatre sections partagent une coque montée une fois pour toutes.
+   * Les sections partagent une coque montée une fois pour toutes.
    * C'est la condition du glissement : si l'en-tête et la barre étaient
    * remontés à chaque changement, la pastille du focus n'aurait aucun
    * ancêtre commun d'une section à l'autre — elle réapparaîtrait ailleurs
@@ -35,9 +35,7 @@ export default function App() {
    * Le simulateur, les profils et le banc d'essai gardent leur propre
    * chrome : ce sont des vues de détail, pas des sections.
    */
-  const isSection = SECTIONS.some((section) => section.id === route.view)
-
-  if (isSection) {
+  if (isShellView(route)) {
     return (
       <TooltipProvider delayDuration={200}>
         <div className="min-h-svh bg-background text-foreground">
@@ -64,7 +62,10 @@ export default function App() {
     return (
       <TooltipProvider delayDuration={200}>
         <div className="min-h-svh bg-background text-foreground">
-          <AppShell>
+          {/* Écran de détail : un retour en haut, pas d'onglets. Il a déjà sa
+              propre barre basse — le chiffre et les réglages — et deux barres
+              empilées sous le pouce, c'est une de trop. */}
+          <AppShell back tabs={false}>
             <SimulatorView />
           </AppShell>
         </div>

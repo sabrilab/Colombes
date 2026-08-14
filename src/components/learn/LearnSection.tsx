@@ -1,6 +1,8 @@
 import { lazy, Suspense, useEffect } from 'react'
+import { ChevronRight, Compass } from 'lucide-react'
 import { ColombesWordmark, DoveLogo } from '@/components/DoveLogo'
 import { GRAINS, type GrainId } from '@/lib/learn'
+import { navigate } from '@/lib/router'
 import { useT } from '@/store/simulator'
 
 /** Les scènes portent du calcul et de la 3D : chacune dans son propre morceau. */
@@ -98,7 +100,10 @@ export function LearnSection({ openGrain }: { openGrain?: string }) {
   }, [openGrain])
 
   return (
-    <section className="mt-14 lg:mt-20" aria-labelledby="learn-title">
+    /* Sans marge haute : cette section a longtemps vécu sous le simulateur,
+       où elle avait besoin d'air au-dessus. Elle est maintenant un écran à elle
+       seule, et un écran ne commence pas par cinquante pixels de vide. */
+    <section aria-labelledby="learn-title">
       {/* Le bandeau d'ouverture est un bouton citron à l'échelle d'une carte :
           même matière que « Affiner dans le simulateur », juste au-dessus. */}
       <div className="lume-slab rounded-2xl px-5 py-9 text-center sm:px-10 sm:py-12">
@@ -115,6 +120,28 @@ export function LearnSection({ openGrain }: { openGrain?: string }) {
           )}
         </p>
       </div>
+
+      {/*
+        La volière avait son propre onglet. Elle n'en a plus, et elle ne pouvait
+        pas disparaître avec : rien d'autre dans l'application n'y menait. Elle
+        entre donc ici, en tête, à sa vraie place — six entreprises connues sur
+        la même échelle, c'est la cinquième façon de comprendre le chiffre, pas
+        une destination séparée.
+      */}
+      <button
+        type="button"
+        onClick={() => navigate('#/voliere')}
+        className="glass-bevel mt-4 flex min-h-16 w-full items-center gap-3 rounded-2xl px-4 py-3 text-left transition-colors hover:border-foreground/25"
+      >
+        <Compass className="size-5 shrink-0 text-lume" aria-hidden />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">{t('The aviary')}</span>
+          <span className="block text-xs leading-snug text-muted-foreground">
+            {t('Six invented apps and six companies you know, on one scale.')}
+          </span>
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      </button>
 
       <div className="mt-10 space-y-12">
         {GRAINS.map((grain, index) => (
