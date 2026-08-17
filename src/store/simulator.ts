@@ -4,6 +4,7 @@ import { compute } from '@/lib/engine'
 import type { SimulatorInputs, SimulatorResults, Tier } from '@/lib/engine/types'
 import { DEFAULT_INPUTS } from '@/lib/defaults'
 import { addTierTo, removeTierAt } from '@/lib/tiers'
+import { quickInputs } from '@/lib/quickSim'
 import { readInputsFromHash } from '@/lib/urlState'
 import { detectLanguage, translate, type Language } from '@/lib/i18n'
 import type { Goal } from '@/lib/goals'
@@ -30,6 +31,15 @@ export interface SavedSimulation {
    * valorisations dont on a oublié les hypothèses ne sert à rien.
    */
   note?: string
+  /**
+   * Le visage de l'idée : un emoji, ou une image réduite en `data:`.
+   *
+   * Douze noms se ressemblent tous ; douze visages, non. C'est la seule
+   * propriété de cette liste qui n'entre dans aucun calcul, et elle se défend
+   * quand même : on reconnaît son idée avant de lire son nom, et une idée qu'on
+   * reconnaît est une idée qu'on rouvre.
+   */
+  avatar?: string
   /**
    * Le dépôt public de l'idée, « owner/repo ». Il sert à deux choses : ouvrir le
    * code d'un clic, et lire quelques signaux vérifiables — depuis quand ça
@@ -65,6 +75,15 @@ export interface JournalEntry {
   text: string
 }
 
+/** Ce qu'on demande pour poser un œuf, et rien de plus. */
+export interface IdeaDraft {
+  name: string
+  note?: string
+  avatar?: string
+  price: number
+  customers: number
+}
+
 /** Au-delà, on coupe la queue : un journal sert à se souvenir, pas à archiver. */
 const MAX_JOURNAL = 40
 
@@ -90,6 +109,19 @@ interface SimulatorState {
   /** Origine de l'état courant, pour l'attribuer si on l'enregistre. */
   currentBasedOn: string | null
   saveSimulation: (name: string, note?: string) => void
+  /**
+   * Poser un œuf sans passer par le simulateur.
+   *
+   * `saveSimulation` enregistre l'état courant : elle suppose qu'on a déjà
+   * réglé quelque chose. Celle-ci part de l'idée — un nom, une ligne, un prix,
+   * des clients — et fabrique la simulation qui va avec. C'est le geste
+   * d'entrée de l'application, et il ne doit rien demander de plus que ce qu'on
+   * sait le premier jour. Rend l'identifiant créé, ou `null` si le nid est
+   * plein.
+   */
+  createIdea: (draft: IdeaDraft) => string | null
+  /** Le visage d'une idée. Chaîne vide pour l'enlever. */
+  setAvatar: (id: string, avatar: string) => void
   renameSimulation: (id: string, name: string) => void
   /** Change le contexte d'une idée — sa ligne et son dépôt — sans toucher aux réglages. */
   describeSimulation: (id: string, patch: { note?: string; repo?: string }) => void
@@ -174,6 +206,35 @@ export const useSimulator = create<SimulatorState>()(
           // La dernière enregistrée arrive en tête : c'est celle qu'on rouvre.
           return { savedSims: [entry, ...state.savedSims] }
         }),
+
+      createIdea: (draft) => {
+        const id = crypto.randomUUID()
+        let created: string | null = null
+        set((state) => {
+          if (state.savedSims.length >= MAX_SAVED_SIMULATIONS) return state
+          created = id
+          const at = Date.now()
+          const entry: SavedSimulation = {
+            id,
+            name: draft.name.trim() || `Idée ${state.savedSims.length + 1}`,
+            inputs: quickInputs({ price: draft.price, customers: draft.customers }),
+            basedOn: null,
+            note: draft.note?.trim() || undefined,
+            avatar: draft.avatar || undefined,
+            savedAt: at,
+            journal: [{ at, text: 'Déposée dans le nid' }],
+          }
+          return { savedSims: [entry, ...state.savedSims] }
+        })
+        return created
+      },
+
+      setAvatar: (id, avatar) =>
+        set((state) => ({
+          savedSims: state.savedSims.map((sim) =>
+            sim.id === id ? { ...sim, avatar: avatar || undefined } : sim,
+          ),
+        })),
 
       renameSimulation: (id, name) =>
         set((state) => ({

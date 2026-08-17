@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Check, Code2, Undo2 } from 'lucide-react'
+import { Check, Code2, Plus, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
-import { DoveLogo } from '@/components/DoveLogo'
 import { TierBadge } from '@/components/AnimalGlyph'
 import { EggGlyph } from '@/components/nest/EggGlyph'
+import { FacePicker } from '@/components/nest/FacePicker'
+import { IdeaFace } from '@/components/nest/IdeaFace'
 import { NestGraph } from '@/components/nest/NestGraph'
+import { NewEggSheet } from '@/components/nest/NewEggSheet'
 import { useAnnounceAccounts } from '@/components/SectionShell'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { formatCompactCurrency, formatCurrency } from '@/lib/format'
@@ -67,6 +69,7 @@ export function NestView() {
   const goal = useSimulator((state) => state.goal)
   const [order, setOrder] = useState<NestOrder>('ready')
   const [selected, setSelected] = useState<string | null>(null)
+  const [laying, setLaying] = useState(false)
   const isMobile = useIsMobile()
   const announceAccounts = useAnnounceAccounts()
   const t = useT()
@@ -87,12 +90,23 @@ export function NestView() {
   return (
     <>
       <header className="max-w-2xl">
-        <h1
-          className="font-display reveal text-2xl font-bold uppercase tracking-tight sm:text-3xl"
-          style={{ '--reveal-order': 0 } as React.CSSProperties}
-        >
-          {t('The nest')}
-        </h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1
+            className="font-display reveal text-2xl font-bold uppercase tracking-tight sm:text-3xl"
+            style={{ '--reveal-order': 0 } as React.CSSProperties}
+          >
+            {t('The nest')}
+          </h1>
+          {/* Le creux du nid porte déjà ce geste, au milieu du graphe. Celui-ci
+              existe parce qu'une action principale doit aussi se trouver là où
+              l'œil la cherche : en haut, à droite du titre. */}
+          {savedSims.length > 0 && (
+            <Button className="lume-pill h-10 shrink-0 px-4" onClick={() => setLaying(true)}>
+              <Plus className="size-4" aria-hidden />
+              {t('New idea')}
+            </Button>
+          )}
+        </div>
         <p
           className="reveal mt-3 text-sm leading-relaxed text-muted-foreground"
           style={{ '--reveal-order': 1 } as React.CSSProperties}
@@ -104,22 +118,7 @@ export function NestView() {
       </header>
 
       {savedSims.length === 0 ? (
-        <div className="mt-10 flex flex-col items-center gap-4 rounded-2xl border border-dashed border-border/70 px-6 py-14 text-center">
-          <DoveLogo className="w-10 text-lume/40" />
-          <p className="max-w-sm text-sm text-muted-foreground">
-            {t('The nest is empty. Run a simulation, name it, and it will wait here as an egg.')}
-          </p>
-          <Button className="lume-pill px-5" onClick={() => navigate('#/simulateur')}>
-            {t('Open the simulator')}
-          </Button>
-          <button
-            type="button"
-            onClick={announceAccounts}
-            className="min-h-9 text-xs text-muted-foreground underline-offset-4 hover:underline"
-          >
-            {t('Where are my ideas stored?')}
-          </button>
-        </div>
+        <Onboarding onStart={() => setLaying(true)} onAccounts={announceAccounts} />
       ) : (
         <>
           {/*
@@ -161,7 +160,12 @@ export function NestView() {
           </p>
 
           <div className="mt-4 flex flex-col gap-4 lg:flex-row">
-            <NestGraph ideas={ideas} selected={selected} onSelect={setSelected} />
+            <NestGraph
+              ideas={ideas}
+              selected={selected}
+              onSelect={setSelected}
+              onCreate={() => setLaying(true)}
+            />
 
             {/* Au téléphone la liste reste toujours là, sous la constellation :
                 c'est elle qu'on vient chercher quand on veut retrouver une
@@ -213,7 +217,89 @@ export function NestView() {
           )}
         </>
       )}
+
+      <NewEggSheet open={laying} onOpenChange={setLaying} onCreated={setSelected} />
     </>
+  )
+}
+
+/**
+ * Le premier écran, quand le nid est vide.
+ *
+ * C'est le seul moment où l'application a le droit d'expliquer, et elle n'a
+ * qu'une chose à faire comprendre : ce qui remplit un œuf, et ce qui le fait
+ * éclore. Trois lignes, dans l'ordre où ça arrive, et le geste juste en dessous
+ * — un mode d'emploi qu'on lit avant d'avoir essayé ne sert à rien, alors
+ * autant qu'il tienne en dix secondes.
+ *
+ * Les trois dessins ne sont pas des icônes choisies pour illustrer : ce sont
+ * les états réels du même œuf, à leur vrai niveau de remplissage, ceux qu'on
+ * retrouvera dans le nid. Le troisième éclot pour de bon — montrer deux œufs
+ * fendus de suite ferait croire que l'éclosion est une nuance de remplissage,
+ * alors que c'est un changement de nature.
+ */
+function Onboarding({ onStart, onAccounts }: { onStart: () => void; onAccounts: () => void }) {
+  const t = useT()
+
+  const steps = [
+    {
+      status: 'egg' as const,
+      readiness: 0.2,
+      animal: null,
+      title: 'You lay an egg',
+      body: 'One idea, one line about it, a price you think someone would pay.',
+    },
+    {
+      status: 'egg' as const,
+      readiness: 0.8,
+      animal: null,
+      title: 'It fills as you learn',
+      body: 'The code exists, the repository moves, the price holds up. Five things — the egg shows how many.',
+    },
+    {
+      status: 'hatched' as const,
+      readiness: 1,
+      animal: 'Deer',
+      title: 'It hatches when someone pays',
+      body: 'Not when you believe in it: when a customer pays. Then it becomes an animal and joins the aviary.',
+    },
+  ]
+
+  return (
+    <div className="mt-8">
+      <div className="grid gap-3 sm:grid-cols-3">
+        {steps.map((step, index) => (
+          <div
+            key={step.title}
+            className="reveal glass-bevel rounded-2xl p-4"
+            style={{ '--reveal-order': index + 2 } as React.CSSProperties}
+          >
+            <EggGlyph
+              status={step.status}
+              readiness={step.readiness}
+              animal={step.animal}
+              className="size-8 text-lume"
+            />
+            <p className="mt-3 text-sm font-semibold">{t(step.title)}</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t(step.body)}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 flex flex-col items-center gap-3">
+        <Button className="lume-pill h-12 px-6 text-base" onClick={onStart}>
+          <Plus className="size-4" aria-hidden />
+          {t('Lay my first egg')}
+        </Button>
+        <button
+          type="button"
+          onClick={onAccounts}
+          className="min-h-9 text-xs text-muted-foreground underline-offset-4 hover:underline"
+        >
+          {t('Where are my ideas stored?')}
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -254,13 +340,13 @@ function RankList({
               <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
                 {String(index + 1).padStart(2, '0')}
               </span>
-              <EggGlyph
+              <IdeaFace
+                avatar={idea.sim.avatar}
                 status={idea.status}
                 readiness={idea.readiness}
                 animal={idea.animal}
-                className={`size-5 shrink-0 ${
-                  idea.status === 'abandoned' ? 'text-muted-foreground' : 'text-lume'
-                }`}
+                name={idea.sim.name}
+                className="size-6 text-xl"
               />
               <span className="min-w-0 flex-1 truncate text-sm">{idea.sim.name}</span>
               {/* Une abandonnée n'a pas de maturité à afficher : le pourcentage
@@ -334,6 +420,8 @@ function IdeaSheet({
   const [draft, setDraft] = useState('')
   const [reason, setReason] = useState('')
   const [asking, setAsking] = useState(false)
+  const [dressing, setDressing] = useState(false)
+  const setAvatarOf = useSimulator((state) => state.setAvatar)
   const language = useSimulator((state) => state.language)
   const t = useT()
 
@@ -354,14 +442,25 @@ function IdeaSheet({
   return (
     <Card className={`gap-0 p-0 ${flat ? 'border-0 bg-transparent shadow-none' : ''}`}>
       <div className={`card-band flex items-start gap-3 border-b border-border/50 p-3 ${flat ? 'pr-12' : ''}`}>
-        <EggGlyph
-          status={status}
-          readiness={idea.readiness}
-          animal={idea.animal}
-          className={`size-8 shrink-0 ${
-            status === 'abandoned' ? 'text-muted-foreground' : 'text-lume'
-          }`}
-        />
+        {/* Le visage se change en le touchant : c'est le seul endroit où l'on
+            revient une fois l'idée posée, et changer d'avis sur une image
+            arrive plus souvent que la choisir. */}
+        <button
+          type="button"
+          onClick={() => setDressing((value) => !value)}
+          aria-label={t('Change the face')}
+          aria-expanded={dressing}
+          className="shrink-0 rounded-full ring-offset-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <IdeaFace
+            avatar={sim.avatar}
+            status={status}
+            readiness={idea.readiness}
+            animal={idea.animal}
+            name={sim.name}
+            className="size-9 text-3xl"
+          />
+        </button>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{sim.name}</p>
           <p className="text-[11px] text-muted-foreground">
@@ -388,6 +487,16 @@ function IdeaSheet({
       </div>
 
       <div className="space-y-3 p-3">
+        {dressing && (
+          <FacePicker
+            value={sim.avatar ?? ''}
+            onChange={(avatar) => {
+              setAvatarOf(sim.id, avatar)
+              setDressing(false)
+            }}
+          />
+        )}
+
         {editing ? (
           <Input
             autoFocus

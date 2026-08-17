@@ -25,9 +25,35 @@ export const FR: Record<string, string> = {
     'Six apps inventées, chacune un archétype que vous reconnaîtrez, et six entreprises réelles placées sur la même échelle. Ouvrez-en une pour voir ce qui fait son multiple — puis chargez-la dans le simulateur et changez d’avis sur quelque chose.',
   'Every idea you save lands here as an egg. It fills as you learn what it is, what it costs, whether the code is alive — and it hatches the day someone pays for it. Then it becomes an animal and joins the aviary.':
     'Chaque idée enregistrée atterrit ici sous forme d’œuf. Il se remplit à mesure que vous savez ce que c’est, ce que ça coûte, si le code est vivant — et il éclot le jour où quelqu’un paie pour ça. L’idée devient alors un animal et rejoint la volière.',
-  'The nest is empty. Run a simulation, name it, and it will wait here as an egg.':
-    'Le nid est vide. Lancez une simulation, nommez-la, et elle vous attendra ici sous forme d’œuf.',
   'Open the simulator': 'Ouvrir le simulateur',
+
+  // — Poser un œuf —
+  'New idea': 'Nouvelle idée',
+  'Lay a new egg': 'Poser un nouvel œuf',
+  'new egg': 'nouvel œuf',
+  'A new egg': 'Un nouvel œuf',
+  'Nothing here is final — the price, the name and the picture all change later.':
+    'Rien n’est définitif ici — le prix, le nom et l’image se changent après.',
+  'Give it a face': 'Donnez-lui un visage',
+  'Use an image': 'Mettre une image',
+  'Remove the picture': 'Retirer l’image',
+  'Change the face': 'Changer le visage',
+  Name: 'Nom',
+  'In one line': 'En une ligne',
+  'Lay it in the nest': 'Le poser dans le nid',
+  MRR: 'MRR',
+
+  // — Le premier écran, quand le nid est vide —
+  'You lay an egg': 'Vous posez un œuf',
+  'One idea, one line about it, a price you think someone would pay.':
+    'Une idée, une ligne pour dire ce que c’est, un prix que quelqu’un paierait.',
+  'It fills as you learn': 'Il se remplit à mesure que vous savez',
+  'The code exists, the repository moves, the price holds up. Five things — the egg shows how many.':
+    'Le code existe, le dépôt bouge, le prix tient. Cinq choses — l’œuf montre combien.',
+  'It hatches when someone pays': 'Il éclot quand quelqu’un paie',
+  'Not when you believe in it: when a customer pays. Then it becomes an animal and joins the aviary.':
+    'Pas quand vous y croyez : quand un client paie. L’idée devient alors un animal et rejoint la volière.',
+  'Lay my first egg': 'Poser mon premier œuf',
   'Closest to hatching': 'Prête à éclore',
   'What is missing the least.': 'Celle à qui il manque le moins.',
   'Worth most': 'Vaut le plus',

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { EggGlyph } from '@/components/nest/EggGlyph'
+import { IdeaFace } from '@/components/nest/IdeaFace'
 import {
   DEFAULT_FORCES,
   clampToFrame,
@@ -43,14 +43,28 @@ const SLEEP = 0.02
  */
 const FRAME: Frame = { halfWidth: 360, halfHeight: 230, top: 40, bottom: 64, side: 46 }
 
+/**
+ * Le creux du nid, au centre.
+ *
+ * Ce n'est pas un bouton posé sur un dessin : c'est un nœud de la simulation,
+ * tenu au centre, dont les idées s'écartent comme elles s'écartent les unes des
+ * autres. La constellation s'organise donc autour de lui — ce qui est
+ * exactement ce qu'on veut dire, un nid a ses œufs autour de son creux.
+ */
+const CENTRE = 'nest:new'
+const CENTRE_RADIUS = 34
+
 export function NestGraph({
   ideas,
   selected,
   onSelect,
+  onCreate,
 }: {
   ideas: NestIdea[]
   selected: string | null
   onSelect: (id: string | null) => void
+  /** Poser un œuf, depuis le creux du nid. */
+  onCreate: () => void
 }) {
   const holderRef = useRef<HTMLDivElement>(null)
   const groupsRef = useRef(new Map<string, SVGGElement>())
@@ -83,6 +97,10 @@ export function NestGraph({
     const before = new Map(nodesRef.current.map((node) => [node.id, node]))
     const keep = (id: string, fallback: { x: number; y: number }) =>
       before.get(id) ?? { ...fallback, vx: 0, vy: 0 }
+
+    // Le creux : tenu, donc immobile, mais bien présent dans la répulsion —
+    // c'est lui qui écarte les œufs du centre.
+    built.push({ id: CENTRE, x: 0, y: 0, vx: 0, vy: 0, radius: CENTRE_RADIUS, held: true })
 
     ideas.forEach((idea, index) => {
       const home = keep(idea.sim.id, seeds[index])
@@ -300,14 +318,14 @@ export function NestGraph({
                 strokeWidth={on ? 1.5 : 1}
               />
               <circle r={RADIUS.idea} fill="oklch(0.16 0.006 110)" />
-              <foreignObject x={-15} y={-15} width="30" height="30" pointerEvents="none">
-                <EggGlyph
+              <foreignObject x={-16} y={-16} width="32" height="32" pointerEvents="none">
+                <IdeaFace
+                  avatar={idea.sim.avatar}
                   status={idea.status}
                   readiness={idea.readiness}
                   animal={idea.animal}
-                  className={`size-full ${
-                    idea.status === 'abandoned' ? 'text-muted-foreground' : 'text-lume'
-                  }`}
+                  name={idea.sim.name}
+                  className="size-8 text-[1.6rem]"
                 />
               </foreignObject>
               <text
@@ -324,10 +342,49 @@ export function NestGraph({
           )
         })}
 
+        {/* Le creux du nid. Il ne bouge pas, donc il n'a besoin d'aucune des
+            mécaniques de glissement : un bouton, et rien d'autre. */}
+        <g
+          role="button"
+          tabIndex={0}
+          aria-label={t('Lay a new egg')}
+          className="cursor-pointer outline-none"
+          onClick={onCreate}
+          onKeyDown={(event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return
+            event.preventDefault()
+            onCreate()
+          }}
+        >
+          <circle r={CENTRE_RADIUS} fill="transparent" />
+          <circle
+            r={CENTRE_RADIUS - 8}
+            fill="oklch(0.16 0.006 110)"
+            stroke="var(--lume)"
+            strokeOpacity="0.5"
+            strokeWidth="1.2"
+            strokeDasharray="4 4"
+          />
+          <path
+            d="M-8 0h16M0 -8v16"
+            stroke="var(--lume)"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            fill="none"
+          />
+          <text
+            y={CENTRE_RADIUS + 12}
+            textAnchor="middle"
+            className="pointer-events-none fill-lume/70 font-mono text-[9px] uppercase tracking-[0.12em]"
+          >
+            {t('new egg')}
+          </text>
+        </g>
+
         {/* Les satellites passent après les idées : ils ne doivent jamais
             recouvrir ce qu'on vient toucher. */}
         {nodes
-          .filter((node) => node.radius === RADIUS.note)
+          .filter((node) => node.id !== CENTRE && node.radius === RADIUS.note)
           .map((node) => (
             <g
               key={node.id}
