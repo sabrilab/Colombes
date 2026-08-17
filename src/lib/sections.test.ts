@@ -17,6 +17,12 @@ describe('SECTIONS', () => {
   })
 })
 
+describe('SECTIONS, dans l’ordre', () => {
+  it('ouvre sur le nid : c’est lui, l’accueil', () => {
+    expect(SECTIONS[0]).toMatchObject({ id: 'nest', hash: '#/' })
+  })
+})
+
 describe('activeSection', () => {
   it('rattache la volière et les profils à « Comprendre »', () => {
     // La volière n'a plus d'onglet : sans ce rattachement, on y arriverait avec
@@ -26,7 +32,7 @@ describe('activeSection', () => {
   })
 
   it('rattache le simulateur complet à « Simuler »', () => {
-    expect(activeSection({ view: 'simulator' })).toBe('home')
+    expect(activeSection({ view: 'simulator' })).toBe('ballpark')
   })
 
   it('n’allume rien sur le banc d’essai', () => {

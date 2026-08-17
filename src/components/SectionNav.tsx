@@ -7,7 +7,7 @@ import { navigate, useRoute } from '@/lib/router'
 import { useT } from '@/store/simulator'
 
 const ICONS: Record<Section['id'], typeof Gauge> = {
-  home: Gauge,
+  ballpark: Gauge,
   learn: GraduationCap,
   aviary: Compass,
   nest: Egg,

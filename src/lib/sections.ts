@@ -7,8 +7,9 @@ import type { Route } from './router'
  * plus rend la réponse plus longue. Les trois qui restent sont trois intentions
  * de visite qu'on ne peut pas confondre :
  *
+ *  — **Le nid**, « où en sont mes idées ? ». C'est l'accueil : on ouvre cette
+ *    application pour poser une idée, pas pour régler des curseurs ;
  *  — **Simuler**, « ça vaut combien ? » ;
- *  — **Le nid**, « où en sont mes idées ? » ;
  *  — **Comprendre**, « pourquoi ce chiffre ? ».
  *
  * La volière avait le sien. Elle ne le méritait pas : montrer six entreprises
@@ -24,8 +25,8 @@ export interface Section {
 }
 
 export const SECTIONS: Section[] = [
-  { id: 'home', label: 'Simulate', hash: '#/' },
-  { id: 'nest', label: 'The nest', hash: '#/nid' },
+  { id: 'nest', label: 'The nest', hash: '#/' },
+  { id: 'ballpark', label: 'Simulate', hash: '#/simuler' },
   { id: 'learn', label: 'Understand', hash: '#/comprendre' },
 ]
 
@@ -35,7 +36,7 @@ export const SECTIONS: Section[] = [
  * onglet ; le simulateur n'en est pas, c'est un écran de détail qu'on pousse et
  * dont on revient.
  */
-export const SHELL_VIEWS: Route['view'][] = ['home', 'nest', 'learn', 'aviary']
+export const SHELL_VIEWS: Route['view'][] = ['nest', 'ballpark', 'learn', 'aviary']
 
 export function isShellView(route: Route): boolean {
   return SHELL_VIEWS.includes(route.view)
@@ -53,7 +54,7 @@ export function activeSection(route: Route): Section['id'] | null {
     case 'colombe':
       return 'learn'
     case 'simulator':
-      return 'home'
+      return 'ballpark'
     case 'lab':
       return null
     default:

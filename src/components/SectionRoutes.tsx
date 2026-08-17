@@ -26,7 +26,7 @@ export function SectionRoutes({ route }: { route: Route }) {
 
   return (
     <>
-      {route.view === 'home' && <HomeView />}
+      {route.view === 'ballpark' && <HomeView />}
       {route.view === 'learn' && <LearnView openGrain={route.grain} />}
       {route.view === 'aviary' && <AviaryView />}
       {route.view === 'nest' && <NestView />}

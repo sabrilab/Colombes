@@ -1,31 +1,41 @@
 import { useSyncExternalStore } from 'react'
 
 export type Route =
-  | { view: 'home' }
+  /** Le nid : l'accueil. On entre ici pour poser une idée. */
+  | { view: 'nest' }
+  /** Le simulateur « à la louche » : un prix, des clients, un ordre de grandeur. */
+  | { view: 'ballpark' }
   /** `grain` : un lien pédagogique entrant, qui vise un module de la section. */
   | { view: 'learn'; grain?: string }
   | { view: 'aviary' }
-  | { view: 'nest' }
   | { view: 'simulator' }
   | { view: 'lab' }
   | { view: 'colombe'; id: string }
 
 /**
- * Mini-routeur par hash. Quatre sections de navigation — accueil, comprendre,
- * volière, le nid — plus le simulateur complet, les profils, le banc
- * d'essai, et la compatibilité avec les liens de partage historiques (#s=…),
- * qui ouvrent le simulateur avec leurs réglages.
+ * Mini-routeur par hash.
+ *
+ * La racine est le nid, et ce n'est pas un détail d'adressage : on ouvre cette
+ * application pour poser une idée, pas pour régler des curseurs. Le simulateur
+ * à la louche garde tout ce qu'il faisait et prend son adresse propre,
+ * `#/simuler` — il vient après, quand l'idée existe.
+ *
+ * Les anciennes adresses continuent d'ouvrir ce qu'elles ouvraient : `#/nid` et
+ * `#/mes-calculs` mènent au nid, les liens de partage (`#s=…`) au simulateur
+ * complet avec leurs réglages.
  */
 export function parseRoute(hash: string): Route {
   const clean = hash.replace(/^#/, '')
   if (clean.startsWith('s=')) return { view: 'simulator' }
 
   const path = clean.replace(/\/+$/, '')
-  if (path === '' || path === '/') return { view: 'home' }
+  if (path === '' || path === '/') return { view: 'nest' }
+  if (path === '/simuler') return { view: 'ballpark' }
   if (path === '/simulateur') return { view: 'simulator' }
   if (path === '/comprendre') return { view: 'learn' }
   if (path === '/voliere') return { view: 'aviary' }
-  // « mes-calculs » a été partagé et mis en favori : il continue d'ouvrir le nid.
+  // Deux adresses d'avant, partagées et mises en favori. Le nid a déménagé à la
+  // racine ; elles y mènent toujours.
   if (path === '/nid' || path === '/mes-calculs') return { view: 'nest' }
   if (path === '/lab') return { view: 'lab' }
 
@@ -36,7 +46,7 @@ export function parseRoute(hash: string): Route {
   const colombe = path.match(/^\/colombe\/([a-z0-9-]+)$/)
   if (colombe) return { view: 'colombe', id: colombe[1] }
 
-  return { view: 'home' }
+  return { view: 'nest' }
 }
 
 export function navigate(hash: string): void {

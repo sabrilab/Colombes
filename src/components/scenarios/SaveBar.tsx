@@ -67,7 +67,7 @@ export function SaveBar() {
              suivante est « et maintenant, où est-ce que je la retrouve ». */
           <button
             type="button"
-            onClick={() => navigate('#/nid')}
+            onClick={() => navigate('#/')}
             className="min-h-9 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
             {t('{count} in the nest — go and see', { count: savedSims.length })}

@@ -3,9 +3,9 @@ import { parseRoute } from './router'
 
 describe('parseRoute', () => {
   it('reconnaît l accueil', () => {
-    expect(parseRoute('')).toEqual({ view: 'home' })
-    expect(parseRoute('#')).toEqual({ view: 'home' })
-    expect(parseRoute('#/')).toEqual({ view: 'home' })
+    expect(parseRoute('')).toEqual({ view: 'nest' })
+    expect(parseRoute('#')).toEqual({ view: 'nest' })
+    expect(parseRoute('#/')).toEqual({ view: 'nest' })
   })
 
   it('reconnaît le simulateur', () => {
@@ -22,14 +22,16 @@ describe('parseRoute', () => {
   })
 
   it('reconnaît les sections de navigation', () => {
-    expect(parseRoute('#/')).toEqual({ view: 'home' })
+    expect(parseRoute('#/')).toEqual({ view: 'nest' })
+    expect(parseRoute('#/simuler')).toEqual({ view: 'ballpark' })
     expect(parseRoute('#/comprendre')).toEqual({ view: 'learn' })
     expect(parseRoute('#/voliere')).toEqual({ view: 'aviary' })
-    expect(parseRoute('#/nid')).toEqual({ view: 'nest' })
   })
 
-  it('garde vivant l’ancien lien vers « mes calculs »', () => {
-    // Il a été partagé et mis en favori : le renommer ne doit pas le casser.
+  it('garde vivants les anciens liens vers le nid', () => {
+    // Ils ont été partagés et mis en favori : déplacer le nid à la racine ne
+    // doit pas les casser.
+    expect(parseRoute('#/nid')).toEqual({ view: 'nest' })
     expect(parseRoute('#/mes-calculs')).toEqual({ view: 'nest' })
   })
 
@@ -42,8 +44,8 @@ describe('parseRoute', () => {
   })
 
   it('retombe sur l accueil nu si le grain est mal formé', () => {
-    expect(parseRoute('#/apprendre/')).toEqual({ view: 'home' })
-    expect(parseRoute('#/apprendre/A_B')).toEqual({ view: 'home' })
+    expect(parseRoute('#/apprendre/')).toEqual({ view: 'nest' })
+    expect(parseRoute('#/apprendre/A_B')).toEqual({ view: 'nest' })
   })
 
   it('route les liens de partage historiques vers le simulateur', () => {
@@ -51,7 +53,7 @@ describe('parseRoute', () => {
   })
 
   it('retombe sur l accueil pour tout hash inconnu', () => {
-    expect(parseRoute('#/nimporte/quoi')).toEqual({ view: 'home' })
-    expect(parseRoute('#/colombe/')).toEqual({ view: 'home' })
+    expect(parseRoute('#/nimporte/quoi')).toEqual({ view: 'nest' })
+    expect(parseRoute('#/colombe/')).toEqual({ view: 'nest' })
   })
 })
