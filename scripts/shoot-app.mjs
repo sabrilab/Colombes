@@ -26,9 +26,17 @@ const ROOT = 'dist'
 const OUT = process.argv[2] ?? 'video/assets/screens'
 const chrome = process.env.CHROME ?? process.env.REMOTION_BROWSER
 
-/** Le fragment demandé est passé à l'amorce, qui le repose après écriture. */
-const SEED = `<!doctype html><meta charset="utf-8"><script>
-localStorage.setItem(${JSON.stringify(SEED_KEY)}, ${JSON.stringify(SEED_STATE)})
+/**
+ * L'amorce, servie sur la même origine : elle écrit le stockage puis se
+ * remplace par l'application. `?vide` l'efface au lieu de l'écrire, pour
+ * photographier ce que voit un premier passage.
+ */
+const seedPage = (fill) => `<!doctype html><meta charset="utf-8"><script>
+localStorage.${
+  fill
+    ? `setItem(${JSON.stringify(SEED_KEY)}, ${JSON.stringify(SEED_STATE)})`
+    : `removeItem(${JSON.stringify(SEED_KEY)})`
+}
 location.replace(location.hash ? '/' + location.hash : '/')
 </script>`
 
@@ -42,9 +50,12 @@ location.replace(location.hash ? '/' + location.hash : '/')
  * deux fois ; elle est écrite ici pour ne pas l'être une troisième.
  */
 const VIEWS = [
-  { name: 'nest-phone', hash: '#/nid', width: 500, height: 900 },
-  { name: 'nest-desk', hash: '#/nid', width: 1500, height: 1000 },
-  { name: 'home-phone', hash: '#/', width: 500, height: 900 },
+  { name: 'nest-phone', hash: '#/', width: 500, height: 900 },
+  { name: 'nest-desk', hash: '#/', width: 1500, height: 1000 },
+  // Le nid vide : l'accueil d'un premier passage, le seul écran qui explique.
+  { name: 'onboarding-phone', hash: '#/', width: 500, height: 900, seed: false },
+  { name: 'onboarding-desk', hash: '#/', width: 1500, height: 1000, seed: false },
+  { name: 'ballpark-phone', hash: '#/simuler', width: 500, height: 900 },
   { name: 'learn-phone', hash: '#/comprendre', width: 500, height: 900 },
   { name: 'simulator-phone', hash: '#/simulateur', width: 500, height: 900 },
 ]
@@ -66,7 +77,7 @@ const server = createServer((request, response) => {
   const path = decodeURIComponent(new URL(request.url, 'http://x').pathname)
   if (path === '/seed.html') {
     response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' })
-    response.end(SEED)
+    response.end(seedPage(!new URL(request.url, 'http://x').searchParams.has('vide')))
     return
   }
   // `normalize` d'abord, sinon un `..` dans l'adresse sortirait de `dist/`.
@@ -107,13 +118,25 @@ for (const view of VIEWS) {
     '--use-gl=angle',
     '--enable-unsafe-swiftshader',
     '--hide-scrollbars',
+    /*
+     * Mouvement réduit, et ce n'est pas un confort d'accessibilité ici.
+     *
+     * Les animations d'entrée sont jouées par le compositeur, en temps réel ;
+     * le temps virtuel, lui, défile d'un coup. Une page qui n'a rien d'autre à
+     * faire est donc photographiée **pendant** son apparition — titre à moitié
+     * transparent, cartes invisibles — et on croit à un défaut de mise en page
+     * qui n'existe pas. En mouvement réduit tout est en place dès la première
+     * image, et c'est de toute façon un état que l'application doit savoir
+     * rendre.
+     */
+    '--force-prefers-reduced-motion',
     // Un profil neuf par vue : Chromium verrouille le profil par défaut, et
     // deux lancements qui se suivent se le disputent sans jamais rien écrire.
     `--user-data-dir=${join(tmpdir(), `colombes-app-${view.name}`)}`,
     `--window-size=${view.width},${view.height}`,
     '--virtual-time-budget=9000',
     `--screenshot=${join(OUT, `${view.name}.png`)}`,
-    `http://127.0.0.1:${PORT}/seed.html${view.hash}`,
+    `http://127.0.0.1:${PORT}/seed.html${view.seed === false ? '?vide' : ''}${view.hash}`,
   ])
 
   const { size } = statSync(join(OUT, `${view.name}.png`))

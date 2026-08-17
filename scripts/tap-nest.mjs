@@ -1,8 +1,8 @@
 /**
  * Vérifie au doigt ce qu'aucune capture ne peut dire.
  *
- * Toucher un œuf ouvre-t-il sa fiche ? Le glisser le déplace-t-il **sans**
- * l'ouvrir ? Ces deux questions ont une réponse différente à la souris et au
+ * Peut-on poser un œuf ? Toucher un œuf ouvre-t-il sa fiche ? Le glisser le
+ * déplace-t-il **sans** l'ouvrir ? Ces deux questions ont une réponse différente à la souris et au
  * doigt, et c'est le doigt qui a raison : la première version du nid s'ouvrait
  * parfaitement au clic et ne s'ouvrait jamais au toucher, parce qu'un doigt
  * bouge toujours d'un pixel ou deux et que ce pixel comptait comme un
@@ -129,15 +129,111 @@ await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints
  * contexte d'évaluation reste sur l'ancien document, tout semble vide, et on
  * corrige une mise en page qui n'avait rien.
  */
-await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/#/nid` })
+await send('Page.navigate', { url: `http://127.0.0.1:${PORT}/` })
 await wait(3000)
+
+const failures = []
+
+async function mounted() {
+  for (let attempt = 0; attempt < 40; attempt++) {
+    await wait(500)
+    if (await evaluate('document.querySelectorAll("button").length > 0')) return true
+  }
+  return false
+}
+
+/** Un contact : posé, à peine bougé — comme un pouce — puis relâché. */
+async function tap({ x, y }) {
+  await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] })
+  await wait(40)
+  await send('Input.dispatchTouchEvent', {
+    type: 'touchMove',
+    touchPoints: [{ x: x + 2, y: y + 1 }],
+  })
+  await wait(40)
+  await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  await wait(500)
+}
+
+/** Le centre d'un élément désigné par un sélecteur, ou par son libellé. */
+async function boxOf(expression) {
+  const raw = await evaluate(`(() => {
+    const element = ${expression}
+    if (!element) return null
+    const r = element.getBoundingClientRect()
+    if (r.width === 0) return null
+    return JSON.stringify({ x: r.left + r.width / 2, y: r.top + r.height / 2 })
+  })()`)
+  return raw ? JSON.parse(raw) : null
+}
+
+const byText = (pattern) =>
+  `[...document.querySelectorAll('button')].find((b) => ${pattern}.test(b.textContent))`
+
+// ── Poser un œuf, depuis un nid vide. C'est le premier geste de l'application ;
+// s'il ne marche pas, rien d'autre ne compte.
+await evaluate(`localStorage.removeItem(${JSON.stringify(SEED_KEY)})`)
+await send('Page.reload')
+if (!(await mounted())) throw new Error('L’application ne monte pas.')
+
+const start = await boxOf(byText('/first egg|premier œuf/i'))
+if (!start) {
+  failures.push('le nid vide n’offre pas de quoi poser un premier œuf')
+} else {
+  await tap(start)
+  await wait(600)
+
+  const open = await evaluate('Boolean(document.querySelector(\'[data-slot="sheet-content"]\'))')
+  if (!open) failures.push('« poser mon premier œuf » n’ouvre pas la feuille')
+
+  // Le nom : on met le doigt dans le champ, puis on tape.
+  // `:not([type=file])` : le premier champ de la feuille est l'import d'image,
+  // masqué et donc large de zéro — on visait un point qui n'existe pas.
+  const field = await boxOf(
+    'document.querySelector(\'[data-slot="sheet-content"] input:not([type=file])\')',
+  )
+  if (!field) failures.push('le champ du nom est introuvable dans la feuille')
+  if (field) await tap(field)
+  await send('Input.insertText', { text: 'Ortolan' })
+
+  const face = await boxOf('document.querySelector(\'[data-slot="sheet-content"] button[aria-label="🎧"]\')')
+  if (face) await tap(face)
+
+  const lay = await boxOf(byText('/nest|nid/i'))
+  if (!lay) {
+    failures.push('la feuille n’a pas de bouton pour poser l’œuf')
+  } else {
+    await tap(lay)
+    await wait(1200)
+
+    const laid = JSON.parse(
+      await evaluate(`(() => {
+        const raw = localStorage.getItem(${JSON.stringify(SEED_KEY)})
+        const sims = raw ? JSON.parse(raw).state.savedSims : []
+        return JSON.stringify(sims.map((sim) => ({ name: sim.name, avatar: sim.avatar, mrr: sim.inputs.tiers[0].price * sim.inputs.customers })))
+      })()`),
+    )
+
+    if (laid.length === 1 && laid[0].name === 'Ortolan') {
+      console.log(`✓ l’œuf est posé — « ${laid[0].name} », ${laid[0].avatar ?? 'sans visage'}`)
+    } else {
+      failures.push(`l’œuf n’est pas arrivé dans le nid (${JSON.stringify(laid)})`)
+    }
+    if (laid[0]?.avatar !== '🎧') failures.push('le visage choisi n’a pas été gardé')
+    if (!laid[0]?.mrr) failures.push('l’idée créée n’a pas de simulation derrière elle')
+
+    const shown = await evaluate(
+      'Boolean(document.querySelector(\'[role="button"][aria-label="Ortolan"]\'))',
+    )
+    if (shown) console.log('✓ il apparaît dans la constellation')
+    else failures.push('l’œuf posé n’apparaît pas dans le graphe')
+  }
+}
+
+// ── La suite se joue sur un nid déjà peuplé.
 await evaluate(`localStorage.setItem(${JSON.stringify(SEED_KEY)}, ${JSON.stringify(SEED_STATE)})`)
 await send('Page.reload')
-
-for (let attempt = 0; attempt < 40; attempt++) {
-  await wait(500)
-  if (await evaluate('document.querySelectorAll("button").length > 0')) break
-}
+if (!(await mounted())) throw new Error('L’application ne monte pas.')
 
 const NODE = '[role="button"][aria-label="Boucle"]'
 const placeOf = () => evaluate(`document.querySelector('${NODE}')?.getAttribute('transform') ?? null`)
@@ -169,19 +265,9 @@ for (let attempt = 0; attempt < 30; attempt++) {
 }
 if (!place) throw new Error('Le nid ne s’est pas affiché : aucun nœud « Boucle ».')
 
-const failures = []
-
-// ── Un contact : posé, à peine bougé — comme un pouce — puis relâché.
-const target = await centreOf()
-await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [target] })
-await wait(40)
-await send('Input.dispatchTouchEvent', {
-  type: 'touchMove',
-  touchPoints: [{ x: target.x + 2, y: target.y + 1 }],
-})
-await wait(40)
-await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-await wait(900)
+// ── Un contact sur un œuf.
+await tap(await centreOf())
+await wait(400)
 
 if (await sheetOpen()) {
   console.log('✓ un contact ouvre la fiche')
